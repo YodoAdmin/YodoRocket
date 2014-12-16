@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="@dimen/navigation_drawer_width"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:background="@drawable/background">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/optionsView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white"
+            android:text="@string/option_label" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@android:color/darker_gray"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:drawableLeft="@drawable/set_language"
+            android:drawableStart="@drawable/set_language"
+            android:drawablePadding="10dp"
+            android:background="@drawable/highlight_button"
+            android:singleLine="true"
+            android:gravity="start|center_vertical"
+            android:text="@string/set_language"
+            android:onClick="setLanguageClick"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:drawableLeft="@drawable/set_currency"
+            android:drawableStart="@drawable/set_currency"
+            android:drawablePadding="10dp"
+            android:background="@drawable/highlight_button"
+            android:singleLine="true"
+            android:gravity="start|center_vertical"
+            android:text="@string/set_currency"
+            android:onClick="setCurrencyClick" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:drawableLeft="@drawable/settings"
+            android:drawableStart="@drawable/settings"
+            android:drawablePadding="10dp"
+            android:background="@drawable/highlight_button"
+            android:singleLine="true"
+            android:gravity="start|center_vertical"
+            android:text="@string/set_username"
+            android:onClick="setUsernameClick"/>
+
+        <CheckBox
+            android:id="@+id/advertisingCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawablePadding="10dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="10dp"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:text="@string/adv_service"
+            android:onClick="setAdvertisingClick"/>
+
+        <Spinner
+            android:id="@+id/scannerSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/toolsView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_marginTop="20dp"
+            android:textColor="@android:color/white"
+            android:text="@string/tools_label" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@android:color/darker_gray"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:drawableLeft="@drawable/get_balance"
+            android:drawableStart="@drawable/get_balance"
+            android:drawablePadding="10dp"
+            android:background="@drawable/highlight_button"
+            android:singleLine="true"
+            android:gravity="start|center_vertical"
+            android:text="@string/get_balance"
+            android:onClick="getBalanceClick" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:drawableLeft="@drawable/about"
+            android:drawableStart="@drawable/about"
+            android:drawablePadding="10dp"
+            android:background="@drawable/highlight_button"
+            android:singleLine="true"
+            android:gravity="start|center_vertical"
+            android:text="@string/about"
+            android:onClick="aboutClick" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:drawableLeft="@drawable/logout"
+            android:drawableStart="@drawable/logout"
+            android:drawablePadding="10dp"
+            android:background="@drawable/highlight_button"
+            android:singleLine="true"
+            android:gravity="start|center_vertical"
+            android:text="@string/logout"
+            android:onClick="logoutClick" />
+
+    </LinearLayout>
+</ScrollView>
