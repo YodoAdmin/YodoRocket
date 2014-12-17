@@ -28,8 +28,9 @@ public class YodoRequest extends ResultReceiver {
 
     /** ID for each request */
     public enum RequestType {
-        ERROR       ( "00" ), // ERROR
-        AUTH_REQUEST( "01" ); // RT=0, ST=4
+        ERROR            ( "00" ), // ERROR
+        AUTH_REQUEST     ( "01" ), // RT=0, ST=4
+        QUERY_BAL_REQUEST( "02" ); // RT=5, ST=3
 
         private final String name;
 
@@ -54,6 +55,9 @@ public class YodoRequest extends ResultReceiver {
 
     /** the external listener to the service */
     private RESTListener externalListener;
+
+    /** User's data separator */
+    private static final String	REQ_SEP = ",";
 
     /**
      * Create a new ResultReceive to receive results.  Your
@@ -93,20 +97,45 @@ public class YodoRequest extends ResultReceiver {
     }
 
     public void requestAuthentication(Activity activity, String hardwareToken) {
-        String sEncryptedUsrData, pRequest;
+        String sEncryptedMerchData, pRequest;
 
         // Encrypting to create request
         oEncrypter.setsUnEncryptedString( hardwareToken );
         oEncrypter.rsaEncrypt( activity );
-        sEncryptedUsrData = oEncrypter.bytesToHex();
+        sEncryptedMerchData = oEncrypter.bytesToHex();
 
         pRequest = ServerRequest.createAuthenticationRequest(
-                sEncryptedUsrData,
+                sEncryptedMerchData,
                 Integer.parseInt( ServerRequest.AUTH_HW_MERCH_SUBREQ )
         );
 
         Intent intent = new Intent(activity, RESTService.class );
         intent.putExtra( RESTService.ACTION_RESULT, RequestType.AUTH_REQUEST );
+        intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
+        intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
+        activity.startService( intent );
+    }
+
+    public void requestHistory(Activity activity, String hardwareToken, String pip) {
+        String sEncryptedMerchData, pRequest;
+        StringBuilder sBalanceData = new StringBuilder();
+
+        sBalanceData.append( hardwareToken ).append( REQ_SEP );
+        sBalanceData.append( pip ).append( REQ_SEP );
+        sBalanceData.append( ServerRequest.QUERY_HISTORY_BALANCE );
+
+        // Encrypting to create request
+        oEncrypter.setsUnEncryptedString( sBalanceData.toString() );
+        oEncrypter.rsaEncrypt( activity );
+        sEncryptedMerchData = oEncrypter.bytesToHex();
+
+        pRequest = ServerRequest.createQueryRequest(
+                sEncryptedMerchData,
+                Integer.parseInt( ServerRequest.QUERY_ACC_SUBREQ )
+        );
+
+        Intent intent = new Intent(activity, RESTService.class );
+        intent.putExtra( RESTService.ACTION_RESULT, RequestType.QUERY_BAL_REQUEST );
         intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
         intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
         activity.startService( intent );

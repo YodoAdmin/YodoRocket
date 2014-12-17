@@ -12,6 +12,16 @@ public class ServerRequest {
 	/** Parameters used for creating an authenticate request */
 	private static final String AUTH_REQ            = "0";
 	public static final String AUTH_HW_MERCH_SUBREQ = "4";
+
+    /** Parameters used for creating a balance request */
+    private static final String QUERY_REQ          = "4";
+    public static final String QUERY_BAL_TP_SUBREQ = "2";
+    public static final String QUERY_ACC_SUBREQ    = "3";
+
+    /** Query Records */
+    public static final int QUERY_HISTORY_BALANCE = 10;
+    public static final int QUERY_TODAY_BALANCE   = 12;
+    public static final int QUERY_MERCHANT_LOGO   = 14;
 	
 	/** Variable that holds request string separator */
 	private static final String	REQ_SEP = ",";
@@ -22,7 +32,7 @@ public class ServerRequest {
 	 * @param iAuthReqType Sub-type of the request
 	 * @return String Request for getting the authentication
 	 */
-	public static String createAuthenticationRequest(String pUsrData, int iAuthReqType){
+	public static String createAuthenticationRequest(String pUsrData, int iAuthReqType) {
 		StringBuilder sAuthenticationRequest = new StringBuilder();
 		sAuthenticationRequest.append( PROTOCOL_VERSION ).append( REQ_SEP );
 		sAuthenticationRequest.append( AUTH_REQ ).append( REQ_SEP );
@@ -34,7 +44,33 @@ public class ServerRequest {
 		}
 		sAuthenticationRequest.append( pUsrData );
 		
-		AppUtils.Logger(TAG, "Authentication Request: " + sAuthenticationRequest.toString());
+		AppUtils.Logger( TAG, "Authentication Request: " + sAuthenticationRequest.toString() );
 		return sAuthenticationRequest.toString();
 	}
+
+    /**
+     * Creates a query request
+     * @param pUsrData	Encrypted user's data
+     * @param iQueryReqType Sub-type of the request
+     * @return String Request for getting the balance
+     */
+    public static String createQueryRequest(String pUsrData, int iQueryReqType) {
+        StringBuilder sQueryRequest = new StringBuilder();
+        sQueryRequest.append( PROTOCOL_VERSION ).append( REQ_SEP );
+        sQueryRequest.append( QUERY_REQ ).append( REQ_SEP );
+
+        switch( iQueryReqType ) {
+            //RT = 4, ST = 2
+            case 2: sQueryRequest.append( QUERY_BAL_TP_SUBREQ ).append( REQ_SEP );
+                break;
+
+            //RT = 4, ST = 3
+            case 3: sQueryRequest.append( QUERY_ACC_SUBREQ ).append( REQ_SEP );
+                break;
+        }
+        sQueryRequest.append( pUsrData );
+
+        AppUtils.Logger( TAG, "Third Party Balance Request: " + sQueryRequest.toString() );
+        return sQueryRequest.toString();
+    }
 }

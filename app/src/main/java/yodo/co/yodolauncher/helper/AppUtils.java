@@ -16,7 +16,6 @@ public class AppUtils {
     /**
      * A helper class just o obtain the config file for the Shared Preferences
      * using the default values for this Shared Preferences app.
-     *
      * @param c The Context of the Android system.
      * @return Returns the shared preferences with the default values.
      */
@@ -26,7 +25,6 @@ public class AppUtils {
 
     /**
      * It saves the status of login.
-     *
      * @param c The Context of the Android system.
      * @param flag The status of the login.
      * @return true  The flag was saved successfully.
@@ -41,19 +39,17 @@ public class AppUtils {
 
     /**
      * It gets the status of the login.
-     *
      * @param c The Context of the Android system.
      * @return true  It is logged in.
      *         false It is not logged in.
      */
     public static Boolean isLoggedIn(Context c) {
         SharedPreferences config = getSPrefConfig(c);
-        return config.getBoolean(AppConfig.SPREF_LOGIN_STATE, false);
+        return config.getBoolean( AppConfig.SPREF_LOGIN_STATE, false );
     }
 
     /**
      * It saves the language array position to the preferences.
-     *
      * @param c The Context of the Android system.
      * @param n The language position on the array.
      * @return true  If it was saved.
@@ -68,18 +64,16 @@ public class AppUtils {
 
     /**
      * It gets the language position.
-     *
      * @param c The Context of the Android system.
      * @return int It returns the language position.
      */
     public static int getLanguage(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt(AppConfig.SPREF_CURRENT_LANGUAGE, AppConfig.DEFAULT_LANGUAGE);
+        return config.getInt( AppConfig.SPREF_CURRENT_LANGUAGE, AppConfig.DEFAULT_LANGUAGE );
     }
 
     /**
      * It saves the currency array position to the preferences.
-     *
      * @param c The Context of the Android system.
      * @param n The currency position on the array.
      * @return true  If it was saved.
@@ -94,7 +88,6 @@ public class AppUtils {
 
     /**
      * It gets the currency position.
-     *
      * @param c The Context of the Android system.
      * @return int It returns the currency position.
      */
@@ -105,7 +98,6 @@ public class AppUtils {
 
     /**
      * It saves the beacon name to the preferences.
-     *
      * @param c The Context of the Android system.
      * @param s The beacon name.
      * @return true  If it was saved.
@@ -120,13 +112,62 @@ public class AppUtils {
 
     /**
      * It gets the beacon name.
-     *
      * @param c The Context of the Android system.
      * @return int It returns the beacon name.
      */
     public static String getBeaconName(Context c) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getString( AppConfig.SPREF_CURRENT_BEACON, "" );
+    }
+
+    /**
+     * It saves if it is the first login.
+     * @param c The Context of the Android system.
+     * @param flag If it is the first login or not.
+     * @return true  The flag was saved successfully.
+     *         false The flag was not saved successfully.
+     */
+    public static Boolean saveFirstLogin(Context c, Boolean flag) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+        writer.putBoolean( AppConfig.SPREF_FIRST_LOGIN, flag );
+        return writer.commit();
+    }
+
+    /**
+     * It gets if it is the first login.
+     * @param c The Context of the Android system.
+     * @return true  It is logged in.
+     *         false It is not logged in.
+     */
+    public static Boolean isFirstLogin(Context c) {
+        SharedPreferences config = getSPrefConfig(c);
+        return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
+    }
+
+    /**
+     * It saves the state of the advertising service.
+     * @param c The Context of the Android system.
+     * @param flag If it is running or not.
+     * @return true  The flag was saved successfully.
+     *         false The flag was not saved successfully.
+     */
+    public static Boolean saveAdvertisingServiceRunning(Context c, Boolean flag) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+        writer.putBoolean( AppConfig.SPREF_ADVERTISING_SERVICE_RUNNING, flag );
+        return writer.commit();
+    }
+
+    /**
+     * It gets the status of the advertising service.
+     * @param c The Context of the Android system.
+     * @return true  Advertising service is on.
+     *         false Advertising service is off.
+     */
+    public static Boolean isAdvertisingServiceRunning(Context c) {
+        SharedPreferences config = getSPrefConfig(c);
+        return config.getBoolean( AppConfig.SPREF_ADVERTISING_SERVICE_RUNNING, false );
     }
 
     /**
@@ -172,12 +213,17 @@ public class AppUtils {
         return image;
     }
 
+    /**
+     * Logger for Android
+     * @param TAG The String of the TAG for the log
+     * @param text The text to print on the log
+     */
     public static void Logger(String TAG, String text) {
-        if(AppConfig.DEBUG) {
-            if(text == null)
-                Log.e(TAG, "Null Text");
+        if( AppConfig.DEBUG ) {
+            if( text == null )
+                Log.e( TAG, "Null Text" );
             else
-                Log.e(TAG, text);
+                Log.e( TAG, text );
         }
     }
 }

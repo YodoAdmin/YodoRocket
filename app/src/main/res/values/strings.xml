@@ -14,6 +14,11 @@
     <string name="no_internet">Sorry, seems that you don\'t have an Internet connection right now</string>
     <string name="no_hardware">You must turn on your bluetooth first</string>
 
+    <!-- General Messages -->
+    <string name="input_pip">Merch Identity Phrase (MIP)</string>
+    <string name="show_pass">Show Password</string>
+    <string name="remember_pass">Remember Password</string>
+
     <!-- Labels -->
     <string name="imei">IMEI:</string>
 
@@ -75,5 +80,9 @@
         <item>canada</item>
         <item>usa</item>
     </string-array>
+
+    <!-- Tutorial Instructions -->
+    <string name="tutorial_title">Navigator &amp; action items</string>
+    <string name="tutorial_message">Slide your finger to the left to hide the panel</string>
 
 </resources>

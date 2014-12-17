@@ -2,7 +2,25 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+        <item name="android:alertDialogTheme">@style/CustomDialogTheme</item>
+    </style>
+
+    <style name="CustomDialogTheme" parent="@android:style/Theme.Holo.Light.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowTitleStyle">@style/CustomDialogWindowTitle</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="CustomDialogWindowTitle" parent="@style/CustomDialogTheme">
+        <item name="android:textAppearance">@style/TextAppearance.CustomDialogWindowTitle</item>
+    </style>
+
+    <style name="TextAppearance.CustomDialogWindowTitle" parent="@android:style/TextAppearance.Holo.DialogWindowTitle">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
 </resources>

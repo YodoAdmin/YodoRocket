@@ -24,6 +24,15 @@ public class AppConfig {
 	 */
     public static final String SPREF_LOGIN_STATE = "SPLoginState";
 
+    /* First Login status.
+	 * type -- Boolean
+	 *
+	 * __Values__
+	 * true  -- First time that the user is logged in
+	 * false -- It was already logged in several times
+	 */
+    public static final String SPREF_FIRST_LOGIN = "SPFirstLogin";
+
     /* The current language.
 	 * type -- Integer
 	 */
@@ -38,6 +47,15 @@ public class AppConfig {
     * type -- String
     */
     public static final String SPREF_CURRENT_BEACON = "SPCurrentBeacon";
+
+    /* Advertising service status.
+	 * type -- Boolean
+	 *
+	 * __Values__
+	 * true  -- Service is running
+	 * false -- Service not running
+	 */
+    public static final String SPREF_ADVERTISING_SERVICE_RUNNING = "SPAdvertisingServiceRunning";
 
     /**
      * }} ======================================================================
@@ -61,4 +79,7 @@ public class AppConfig {
 	 * Default: position 0 (MexicanPeso)
 	 */
     public static final Integer DEFAULT_CURRENCY = 0;
+
+    /* Bluetooth Yodo POS name */
+    public static final String YODO_POS = "Yodo-Merch-";
 }

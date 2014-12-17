@@ -44,12 +44,12 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
     }
 
     private void updateData() {
-        String token = AppUtils.getHardwareToken( ac );
-        if( token == null ) {
+        String hardwareToken = AppUtils.getHardwareToken( ac );
+        if( hardwareToken == null ) {
             ToastMaster.makeText( ac, R.string.no_hardware, Toast.LENGTH_LONG ).show();
             finish();
         } else if( !AppUtils.isLoggedIn( ac ) ) {
-            YodoRequest.getInstance().requestAuthentication( this, token );
+            YodoRequest.getInstance().requestAuthentication( MainActivity.this, hardwareToken );
         } else {
             Intent intent = new Intent( MainActivity.this, LauncherActivity.class );
             startActivity( intent );

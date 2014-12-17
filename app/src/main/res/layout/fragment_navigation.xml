@@ -78,7 +78,8 @@
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:text="@string/adv_service"
-            android:onClick="setAdvertisingClick"/>
+            android:onClick="setAdvertisingClick"
+            android:checked="false" />
 
         <Spinner
             android:id="@+id/scannerSpinner"

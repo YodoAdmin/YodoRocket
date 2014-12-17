@@ -1,6 +1,7 @@
 package yodo.co.yodolauncher.main;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,11 +16,18 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
+import com.github.amlcurran.showcaseview.targets.Target;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
+
 import yodo.co.yodolauncher.R;
 import yodo.co.yodolauncher.adapter.CurrencyAdapter;
 import yodo.co.yodolauncher.component.ToastMaster;
+import yodo.co.yodolauncher.component.YodoHandler;
 import yodo.co.yodolauncher.data.Currency;
 import yodo.co.yodolauncher.helper.AlertDialogHelper;
+import yodo.co.yodolauncher.helper.AppConfig;
 import yodo.co.yodolauncher.helper.AppUtils;
 import yodo.co.yodolauncher.data.ServerResponse;
 import yodo.co.yodolauncher.net.YodoRequest;
@@ -31,15 +39,17 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
     /** The context object */
     private Context ac;
 
+    /** Bluetooth Admin */
+    private BluetoothAdapter mBluetoothAdapter;
+
+    /** Hardware Token */
+    private String hardwareToken;
+
     /** Gui controllers */
-    private TextView totalText;
-    private TextView paidText;
-    private TextView cashBackText;
-    private TextView balanceText;
-    private TextView actualText;
     private SlidingPaneLayout mSlidingLayout;
-    private CheckBox advertisingBox;
-    private Spinner available_scanners;
+
+    /** Messages Handler */
+    private static YodoHandler handlerMessages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +57,77 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
         setContentView(R.layout.activity_launcher);
 
         setupGUI();
+        updateData();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if( AppUtils.isAdvertisingServiceRunning(ac) )
+            setupAdvertising( false );
+    }
+
+    /**
+     * Initialized all the GUI main components
+     */
     private void setupGUI() {
         ac = LauncherActivity.this;
 
-        mSlidingLayout = (SlidingPaneLayout) findViewById( R.id.sliding_panel_layout );
+        // Globals
+        mSlidingLayout       = (SlidingPaneLayout) findViewById( R.id.sliding_panel_layout );
+
+        // Only used at creation
+        CheckBox mAdvertisingCheckBox = (CheckBox) findViewById(R.id.advertisingCheckBox);
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        handlerMessages   = new YodoHandler( LauncherActivity.this );
+        YodoRequest.getInstance().setListener( this );
+
+        if( AppUtils.isFirstLogin( ac ) ) {
+            mSlidingLayout.openPane();
+
+            new ShowcaseView.Builder( this )
+                    .setTarget( new ViewTarget( R.id.optionsView, this ) )
+                    .setContentTitle( R.string.tutorial_title )
+                    .setContentText( R.string.tutorial_message )
+                    .build();
+
+            AppUtils.saveFirstLogin(ac, false);
+        }
+
+        if( mBluetoothAdapter == null )
+            mAdvertisingCheckBox.setEnabled(false);
+        else {
+            final boolean isAdvertisingRunning =  AppUtils.isAdvertisingServiceRunning( ac );
+            mAdvertisingCheckBox.setChecked( isAdvertisingRunning );
+
+            if( isAdvertisingRunning )
+                setupAdvertising( false );
+        }
+    }
+
+    /**
+     * Set-up the basic information
+     */
+    private void updateData() {
+        hardwareToken = AppUtils.getHardwareToken( ac );
+    }
+
+    /**
+     * Set-up bluetooth for advertising
+     * @param force To force the require for being discoverable
+     */
+    private void setupAdvertising(boolean force) {
+        if( !mBluetoothAdapter.isEnabled() || force ) {
+            mBluetoothAdapter.enable();
+
+            Intent discoverableIntent = new Intent( BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE );
+            discoverableIntent.putExtra( BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0 );
+            startActivity( discoverableIntent );
+        }
+
+        mBluetoothAdapter.setName( AppConfig.YODO_POS + AppUtils.getBeaconName( ac ) );
     }
 
     /**
@@ -153,6 +228,12 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
      */
     public void setAdvertisingClick(View v) {
         mSlidingLayout.closePane();
+
+        final boolean isAdvertisingRunning = ((CheckBox) v).isChecked();
+        AppUtils.saveAdvertisingServiceRunning( ac , isAdvertisingRunning );
+
+        if( isAdvertisingRunning )
+            setupAdvertising( true );
     }
 
     /**
@@ -161,6 +242,23 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
      */
     public void getBalanceClick(View v) {
         mSlidingLayout.closePane();
+
+        final String title      = getString( R.string.input_pip );
+        final EditText inputBox = new EditText( ac );
+
+        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+                String pip = inputBox.getText().toString();
+                YodoRequest.getInstance().requestHistory( LauncherActivity.this, hardwareToken, pip );
+            }
+        };
+
+        AlertDialogHelper.showAlertDialog(
+                ac,
+                title,
+                inputBox, true, true,
+                onClick
+        );
     }
 
     /**
@@ -193,6 +291,23 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
 
     @Override
     public void onResponse(YodoRequest.RequestType type, ServerResponse response) {
+        //AppUtils.Logger(TAG, response.toString());
 
+        switch( type ) {
+            case ERROR:
+                handlerMessages.sendEmptyMessage( YodoHandler.GENERAL_ERROR );
+                break;
+
+            case QUERY_BAL_REQUEST:
+                String code = response.getCode();
+
+                if( code.equals( ServerResponse.AUTHORIZED ) ) {
+
+                } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
+
+                }
+
+                break;
+        }
     }
 }
