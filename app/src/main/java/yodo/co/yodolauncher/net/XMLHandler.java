@@ -19,6 +19,9 @@ public class XMLHandler extends DefaultHandler {
     private static final String MESSAGE_ELEM  = "message";
     private static final String TIME_ELEM     = "rtime";
 
+    /** Param elements */
+    private static final String LOGO_ELEM = "logo_url";
+
     /** Parser Elements */
     private Boolean currentElement = false;
     private String currentValue = null;
@@ -55,14 +58,19 @@ public class XMLHandler extends DefaultHandler {
         else if(localName.equalsIgnoreCase(TIME_ELEM)) {
             response.setRTime(Long.valueOf(currentValue));
         }
+
+        /** Params */
+        else if(localName.equalsIgnoreCase(LOGO_ELEM)) {
+            response.addParam( ServerResponse.LOGO, currentValue );
+        }
     }
 
     /** Called to get tag characters ( ex:- <name>AndroidPeople</name>
      * -- to get AndroidPeople Character ) */
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        if(currentElement) {
-            currentValue = new String(ch, start, length);
+        if( currentElement ) {
+            currentValue = new String( ch, start, length );
             currentElement = false;
         }
     }

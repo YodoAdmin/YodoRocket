@@ -12,6 +12,7 @@ import yodo.co.yodolauncher.helper.AppUtils;
 
 /**
  * Created by luis on 15/12/14.
+ * Request to the Yodo Server
  */
 public class YodoRequest extends ResultReceiver {
     /** DEBUG */
@@ -28,9 +29,10 @@ public class YodoRequest extends ResultReceiver {
 
     /** ID for each request */
     public enum RequestType {
-        ERROR            ( "00" ), // ERROR
-        AUTH_REQUEST     ( "01" ), // RT=0, ST=4
-        QUERY_BAL_REQUEST( "02" ); // RT=5, ST=3
+        ERROR             ( "00" ), // ERROR
+        AUTH_REQUEST      ( "01" ), // RT=0, ST=4
+        QUERY_BAL_REQUEST ( "02" ), // RT=5, ST=3
+        QUERY_LOGO_REQUEST( "03" ); // RT=5, ST=3
 
         private final String name;
 
@@ -64,7 +66,7 @@ public class YodoRequest extends ResultReceiver {
      * {@link #onReceiveResult} method will be called from the thread running
      * <var>handler</var> if given, or from an arbitrary thread if null.
      *
-     * @param handler
+     * @param handler Default
      */
     private YodoRequest(Handler handler) {
         super(handler);
@@ -83,17 +85,10 @@ public class YodoRequest extends ResultReceiver {
 
     /**
      * Add a listener to the service
-     * @param listener
+     * @param listener Listener for the requests to the server
      */
     public void setListener(RESTListener listener) {
         externalListener = listener ;
-    }
-
-    /**
-     * Remove a listener from the service
-     */
-    public void removeListener() {
-        externalListener = null;
     }
 
     public void requestAuthentication(Activity activity, String hardwareToken) {
@@ -109,7 +104,7 @@ public class YodoRequest extends ResultReceiver {
                 Integer.parseInt( ServerRequest.AUTH_HW_MERCH_SUBREQ )
         );
 
-        Intent intent = new Intent(activity, RESTService.class );
+        Intent intent = new Intent( activity, RESTService.class );
         intent.putExtra( RESTService.ACTION_RESULT, RequestType.AUTH_REQUEST );
         intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
         intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
@@ -134,8 +129,32 @@ public class YodoRequest extends ResultReceiver {
                 Integer.parseInt( ServerRequest.QUERY_ACC_SUBREQ )
         );
 
-        Intent intent = new Intent(activity, RESTService.class );
+        Intent intent = new Intent( activity, RESTService.class );
         intent.putExtra( RESTService.ACTION_RESULT, RequestType.QUERY_BAL_REQUEST );
+        intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
+        intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
+        activity.startService( intent );
+    }
+
+    public void requesttLogo(Activity activity, String hardwareToken) {
+        String sEncryptedMerchData, pRequest;
+        StringBuilder sMerchantLogoData = new StringBuilder();
+
+        sMerchantLogoData.append( hardwareToken ).append(REQ_SEP);
+        sMerchantLogoData.append( ServerRequest.QUERY_MERCHANT_LOGO );
+
+        // Encrypting to create request
+        oEncrypter.setsUnEncryptedString(sMerchantLogoData.toString());
+        oEncrypter.rsaEncrypt( activity );
+        sEncryptedMerchData = oEncrypter.bytesToHex();
+
+        pRequest = ServerRequest.createQueryRequest(
+                sEncryptedMerchData,
+                Integer.parseInt( ServerRequest.QUERY_ACC_SUBREQ )
+        );
+
+        Intent intent = new Intent( activity, RESTService.class );
+        intent.putExtra( RESTService.ACTION_RESULT, RequestType.QUERY_LOGO_REQUEST );
         intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
         intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
         activity.startService( intent );
@@ -150,7 +169,7 @@ public class YodoRequest extends ResultReceiver {
             ServerResponse response = (ServerResponse) resultData.getSerializable( RESTService.EXTRA_RESULT );
             externalListener.onResponse( action , response );
 
-            AppUtils.Logger(TAG, response.toString());
+            AppUtils.Logger( TAG, response.toString() );
         }
     }
 }

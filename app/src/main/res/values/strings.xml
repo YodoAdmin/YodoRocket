@@ -38,6 +38,14 @@
     <string name="about">About Yodo</string>
     <string name="logout">Logout</string>
 
+    <!-- Values Labels -->
+    <string name="total_purchase">Purchase: </string>
+    <string name="cash_tender">Cash Tender: </string>
+    <string name="cash_back">Cash Back: </string>
+    <string name="balance">Balance: </string>
+    <string name="zero">0.00</string>
+    <string name="no_item">- no item -</string>
+
     <!-- Input Labels -->
     <string name="clear">C</string>
 

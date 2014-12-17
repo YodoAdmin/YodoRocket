@@ -1,10 +1,20 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="AppTheme.Base">
         <item name="android:alertDialogTheme">@style/CustomDialogTheme</item>
     </style>
 
+    <style name="AppTheme.Base" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
+    <!-- Widgets -->
+
+    <!-- Custom Dialog -->
     <style name="CustomDialogTheme" parent="@android:style/Theme.Holo.Light.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -21,6 +31,29 @@
     <style name="TextAppearance.CustomDialogWindowTitle" parent="@android:style/TextAppearance.Holo.DialogWindowTitle">
         <item name="android:textColor">@android:color/black</item>
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Text View Labels -->
+    <style name="LabelTextView" parent="@android:style/TextAppearance">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">5dp</item>
+        <item name="android:layout_marginLeft">5dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:textSize">@dimen/text_size_values</item>
+    </style>
+
+    <!-- Text View Editable -->
+    <style name="EditTextView" parent="@android:style/TextAppearance">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:gravity">end</item>
+        <item name="android:clickable">true</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:text">@string/zero</item>
+        <item name="android:textSize">@dimen/text_size_values</item>
+        <item name="android:background">@drawable/show_text_field</item>
     </style>
 
 </resources>

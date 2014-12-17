@@ -10,25 +10,150 @@
     android:clickable="true"
     android:weightSum="2"
     android:orientation="horizontal"
+    android:baselineAligned="false"
     tools:context="yodo.co.yodolauncher.main.LauncherActivity$PlaceholderFragment">
 
+    <!-- Information Layout -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="25dp"
         android:layout_weight="1"
         android:gravity="center"
         android:orientation="vertical" >
 
-    </LinearLayout>
+        <!-- Top -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="50dp"
+            android:layout_gravity="center_horizontal">
 
+            <!-- Labels -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal">
+
+                <TextView
+                    style="@style/LabelTextView"
+                    android:textStyle="bold|italic"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="@string/total_purchase"/>
+
+                <TextView
+                    style="@style/LabelTextView"
+                    android:text="@string/cash_tender" />
+
+                <TextView
+                    style="@style/LabelTextView"
+                    android:text="@string/cash_back"/>
+
+                <!-- end Labels -->
+            </LinearLayout>
+
+            <!-- Text Fields -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/EditTextView"
+                    android:id="@+id/totalText"
+                    android:textStyle="bold"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:onClick="totalTextPressed"/>
+
+                <TextView
+                    style="@style/EditTextView"
+                    android:id="@+id/paidText"
+                    android:drawableLeft="@drawable/mexico"
+                    android:onClick="paidTextPressed"/>
+
+                <TextView
+                    style="@style/EditTextView"
+                    android:id="@+id/cashBackText"
+                    android:onClick="cashBackTextPressed"/>
+
+                <!-- end Text Fields -->
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@android:color/black"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold|italic"
+                android:text="@string/balance"
+                android:textSize="@dimen/text_size_values"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <TextView
+                android:id="@+id/balanceText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text=""
+                android:textSize="@dimen/text_size_values"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="backPressed"
+                android:src="@drawable/back"
+                android:contentDescription="@string/desc" />
+
+            <ImageView
+                android:id="@+id/yodoLogo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:onClick="payPressed"
+                android:layout_weight="1"
+                android:src="@drawable/yodo_gear"
+                android:contentDescription="@string/desc" />
+
+        </LinearLayout>
+    </LinearLayout>
+    <!-- End Information Layout -->
+
+    <!-- Operations Layout -->
     <LinearLayout
         android:id="@+id/operationsPanel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:weightSum="2" >
+        android:baselineAligned="false"
+        android:weightSum="2">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -42,61 +167,67 @@
                 android:id="@+id/b500"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:background="@drawable/material_button"
+                android:layout_margin="10dp"
                 android:layout_weight="1"
                 android:text="@string/coins_5"
                 android:textSize="@dimen/text_size_buttons"
-                android:onClick="valuePressed" />
+                android:onClick="valueClick" />
 
             <Button
                 android:id="@+id/b1000"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:background="@drawable/material_button"
+                android:layout_margin="10dp"
                 android:text="@string/coins_10"
                 android:layout_weight="1"
                 android:textSize="@dimen/text_size_buttons"
-                android:onClick="valuePressed" />
+                android:onClick="valueClick" />
 
             <Button
                 android:id="@+id/b2000"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:background="@drawable/material_button"
+                android:layout_margin="10dp"
                 android:text="@string/coins_20"
                 android:layout_weight="1"
                 android:textSize="@dimen/text_size_buttons"
-                android:onClick="valuePressed" />
+                android:onClick="valueClick" />
 
             <Button
                 android:id="@+id/b5000"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:onClick="valuePressed"
+                android:background="@drawable/material_button"
+                android:layout_margin="10dp"
                 android:text="@string/coins_50"
                 android:layout_weight="1"
-                android:textSize="@dimen/text_size_buttons" />
+                android:textSize="@dimen/text_size_buttons"
+                android:onClick="valueClick"/>
 
             <Button
                 android:id="@+id/b10000"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:onClick="valuePressed"
+                android:background="@drawable/material_button"
+                android:layout_margin="10dp"
                 android:text="@string/coins_100"
                 android:layout_weight="1"
-                android:textSize="@dimen/text_size_buttons" />
+                android:textSize="@dimen/text_size_buttons"
+                android:onClick="valueClick"/>
 
             <Button
                 android:id="@+id/b20000"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:onClick="valuePressed"
+                android:background="@drawable/material_button"
+                android:layout_margin="10dp"
                 android:text="@string/coins_200"
                 android:layout_weight="1"
-                android:textSize="@dimen/text_size_buttons" />
+                android:textSize="@dimen/text_size_buttons"
+                android:onClick="valueClick"/>
         </LinearLayout>
 
         <LinearLayout
@@ -120,7 +251,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/desc"
-                android:onClick="resetPressed"
+                android:onClick="resetClick"
                 android:layout_weight="0.25"
                 android:src="@drawable/refresh" />
 
@@ -149,10 +280,10 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="5dp"
                         android:background="@drawable/yellow_button"
-                        android:onClick="valuePressed"
                         android:text="@string/value_7"
                         android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers" />
+                        android:textSize="@dimen/text_size_numbers"
+                        android:onClick="valueClick"/>
 
                     <Button
                         android:id="@+id/b8"
@@ -160,10 +291,10 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="5dp"
                         android:background="@drawable/yellow_button"
-                        android:onClick="valuePressed"
                         android:text="@string/value_8"
                         android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers" />
+                        android:textSize="@dimen/text_size_numbers"
+                        android:onClick="valueClick"/>
 
                     <Button
                         android:id="@+id/b9"
@@ -171,10 +302,10 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="5dp"
                         android:background="@drawable/yellow_button"
-                        android:onClick="valuePressed"
                         android:text="@string/value_9"
                         android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers" />
+                        android:textSize="@dimen/text_size_numbers"
+                        android:onClick="valueClick"/>
                 </LinearLayout>
 
                 <!-- line 2 -->
@@ -197,7 +328,7 @@
                         android:text="@string/value_4"
                         android:layout_weight="1"
                         android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valuePressed" />
+                        android:onClick="valueClick" />
 
                     <Button
                         android:id="@+id/b5"
@@ -208,7 +339,7 @@
                         android:text="@string/value_5"
                         android:layout_weight="1"
                         android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valuePressed" />
+                        android:onClick="valueClick" />
 
                     <Button
                         android:id="@+id/b6"
@@ -219,7 +350,7 @@
                         android:text="@string/value_6"
                         android:layout_weight="1"
                         android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valuePressed" />
+                        android:onClick="valueClick" />
                 </LinearLayout>
 
                 <!-- line 3 -->
@@ -242,7 +373,7 @@
                         android:text="@string/value_1"
                         android:layout_weight="1"
                         android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valuePressed" />
+                        android:onClick="valueClick" />
 
                     <Button
                         android:id="@+id/b2"
@@ -253,7 +384,7 @@
                         android:text="@string/value_2"
                         android:layout_weight="1"
                         android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valuePressed" />
+                        android:onClick="valueClick" />
 
                     <Button
                         android:id="@+id/b3"
@@ -264,7 +395,7 @@
                         android:text="@string/value_3"
                         android:layout_weight="1"
                         android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valuePressed" />
+                        android:onClick="valueClick" />
                 </LinearLayout>
 
                 <!-- line 4 -->
@@ -279,6 +410,7 @@
                     android:weightSum="3" >
 
                     <Button
+
                         android:id="@+id/b0"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -287,7 +419,7 @@
                         android:text="@string/value_0"
                         android:layout_weight="1"
                         android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valuePressed" />
+                        android:onClick="valueClick" />
 
                     <Button
                         android:id="@+id/b00"
@@ -298,7 +430,7 @@
                         android:text="@string/value_00"
                         android:layout_weight="1"
                         android:textSize="@dimen/text_size_numbers_00"
-                        android:onClick="valuePressed" />
+                        android:onClick="valueClick" />
 
                     <Button
                         android:id="@+id/bDot"
@@ -309,10 +441,11 @@
                         android:text="@string/value_."
                         android:layout_weight="1"
                         android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valuePressed" />
+                        android:onClick="valueClick" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
+    <!-- End Operations Layout -->
 
 </LinearLayout>

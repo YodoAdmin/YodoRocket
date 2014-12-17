@@ -91,4 +91,8 @@ public class RESTService extends IntentService {
             receiver.send( STATUS_FAILED, null );
         }
     }
+
+    public static String getRoot() {
+        return IP;
+    }
 }

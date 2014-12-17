@@ -11,6 +11,7 @@ import android.util.Log;
 
 /**
  * Created by luis on 15/12/14.
+ * Utilities for the App, Mainly shared preferences
  */
 public class AppUtils {
     /**

@@ -1,5 +1,7 @@
 package yodo.co.yodolauncher.helper;
 
+import yodo.co.yodolauncher.net.RESTService;
+
 /**
  * Created by luis on 15/12/14.
  */
@@ -82,4 +84,7 @@ public class AppConfig {
 
     /* Bluetooth Yodo POS name */
     public static final String YODO_POS = "Yodo-Merch-";
+
+    /* Logo URL */
+    public static final String LOGO_PATH = RESTService.getRoot() + "/yodo-merch/uploads/img/logo/";
 }

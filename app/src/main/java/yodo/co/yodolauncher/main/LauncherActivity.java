@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -23,6 +24,7 @@ import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import yodo.co.yodolauncher.R;
 import yodo.co.yodolauncher.adapter.CurrencyAdapter;
+import yodo.co.yodolauncher.component.ImageLoader;
 import yodo.co.yodolauncher.component.ToastMaster;
 import yodo.co.yodolauncher.component.YodoHandler;
 import yodo.co.yodolauncher.data.Currency;
@@ -30,6 +32,7 @@ import yodo.co.yodolauncher.helper.AlertDialogHelper;
 import yodo.co.yodolauncher.helper.AppConfig;
 import yodo.co.yodolauncher.helper.AppUtils;
 import yodo.co.yodolauncher.data.ServerResponse;
+import yodo.co.yodolauncher.net.RESTService;
 import yodo.co.yodolauncher.net.YodoRequest;
 
 public class LauncherActivity extends Activity implements YodoRequest.RESTListener {
@@ -51,6 +54,9 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
     /** Messages Handler */
     private static YodoHandler handlerMessages;
 
+    /** ImageLoader */
+    ImageLoader imageLoader;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,11 +74,19 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
             setupAdvertising( false );
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        imageLoader.clearCache();
+    }
+
     /**
      * Initialized all the GUI main components
      */
     private void setupGUI() {
         ac = LauncherActivity.this;
+        imageLoader = new ImageLoader( ac );
 
         // Globals
         mSlidingLayout       = (SlidingPaneLayout) findViewById( R.id.sliding_panel_layout );
@@ -112,6 +126,8 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
      */
     private void updateData() {
         hardwareToken = AppUtils.getHardwareToken( ac );
+
+        YodoRequest.getInstance().requesttLogo( LauncherActivity.this, hardwareToken );
     }
 
     /**
@@ -289,9 +305,31 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
         AppUtils.saveLoginStatus( ac, false);
     }
 
+    /** Handle Nnumeric button clicked
+     *  @param v View, used to get the name
+     */
+    public void valueClick(View v) {
+        double actualValue = 0.00;
+
+        final String value = ((Button)v).getText().toString();
+
+        /*if(((Button)v).getText().equals("5.00") || ((Button)v).getText().equals("10.00") || ((Button)v).getText().equals("20.00") ||
+                ((Button)v).getText().equals("50.00") || ((Button)v).getText().equals("100.00") || ((Button)v).getText().equals("200.00")) {
+            if(!actualText.getText().toString().equals(""))
+                actualValue = Double.valueOf(actualText.getText().toString());
+            double value = Double.valueOf(actualValue + Double.valueOf(((Button)v).getText().toString()));
+            actualText.setText(String.format(Locale.US, "%.2f", value));
+        }
+        else {
+            Double result = Double.valueOf((actualText.getText().toString() + ((Button)v).getText()).replace(".", "")) / 100.00;
+            actualText.setText(String.format(Locale.US, "%.2f", result));
+        }
+        balanceText.setText(getCurrentBalance());*/
+    }
+
     @Override
     public void onResponse(YodoRequest.RequestType type, ServerResponse response) {
-        //AppUtils.Logger(TAG, response.toString());
+        String code;
 
         switch( type ) {
             case ERROR:
@@ -299,12 +337,26 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
                 break;
 
             case QUERY_BAL_REQUEST:
-                String code = response.getCode();
+                code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
 
                 } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
 
+                }
+
+                break;
+
+            case QUERY_LOGO_REQUEST:
+                code = response.getCode();
+
+                if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                    String logoName = response.getParam( ServerResponse.LOGO );
+
+                    if( logoName != null ) {
+                        ImageView logoImage = (ImageView) findViewById( R.id.companyLogo );
+                        imageLoader.DisplayImage( AppConfig.LOGO_PATH + logoName, logoImage );
+                    }
                 }
 
                 break;
