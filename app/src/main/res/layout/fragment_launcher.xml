@@ -1,6 +1,5 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -10,8 +9,7 @@
     android:clickable="true"
     android:weightSum="2"
     android:orientation="horizontal"
-    android:baselineAligned="false"
-    tools:context="yodo.co.yodolauncher.main.LauncherActivity$PlaceholderFragment">
+    android:baselineAligned="false">
 
     <!-- Information Layout -->
     <LinearLayout
@@ -67,19 +65,17 @@
                     style="@style/EditTextView"
                     android:id="@+id/totalText"
                     android:textStyle="bold"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:onClick="totalTextPressed"/>
+                    android:textAppearance="?android:attr/textAppearanceLarge"/>
 
                 <TextView
                     style="@style/EditTextView"
-                    android:id="@+id/paidText"
+                    android:id="@+id/cashTenderText"
                     android:drawableLeft="@drawable/mexico"
-                    android:onClick="paidTextPressed"/>
+                    android:drawableStart="@drawable/mexico"/>
 
                 <TextView
                     style="@style/EditTextView"
-                    android:id="@+id/cashBackText"
-                    android:onClick="cashBackTextPressed"/>
+                    android:id="@+id/cashBackText"/>
 
                 <!-- end Text Fields -->
             </LinearLayout>
@@ -111,7 +107,8 @@
                 android:id="@+id/balanceText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
                 android:text=""
                 android:textSize="@dimen/text_size_values"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
@@ -122,37 +119,57 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:orientation="horizontal" >
+            android:orientation="horizontal"
+            android:weightSum="2">
 
             <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:onClick="backPressed"
+                style="@style/ImageButton"
                 android:src="@drawable/back"
-                android:contentDescription="@string/desc" />
+                android:contentDescription="@string/desc"
+                android:onClick="backClick"/>
 
             <ImageView
-                android:id="@+id/yodoLogo"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:onClick="payPressed"
-                android:layout_weight="1"
+                style="@style/ImageButton"
                 android:src="@drawable/yodo_gear"
-                android:contentDescription="@string/desc" />
+                android:contentDescription="@string/desc"
+                android:onClick="yodoPayClick"/>
 
         </LinearLayout>
     </LinearLayout>
     <!-- End Information Layout -->
 
+    <!-- Preview Camera Layout -->
+    <RelativeLayout
+        android:id="@+id/previewPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:visibility="gone" >
+
+        <FrameLayout
+            android:id="@+id/cameraPreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/textViewOverlayText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="10dip"
+            android:gravity="bottom|center_horizontal"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:text="@string/place_qrcode" />
+
+    </RelativeLayout>
+    <!-- End Preview Camera Layout -->
+
     <!-- Operations Layout -->
-    <LinearLayout
+    <TableRow
         android:id="@+id/operationsPanel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="horizontal"
-        android:baselineAligned="false"
         android:weightSum="2">
 
         <LinearLayout
@@ -161,99 +178,64 @@
             android:layout_margin="30dp"
             android:layout_weight="1"
             android:background="@drawable/green_background"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <Button
+                style="@style/StaticValueButton"
                 android:id="@+id/b500"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/material_button"
-                android:layout_margin="10dp"
-                android:layout_weight="1"
-                android:text="@string/coins_5"
-                android:textSize="@dimen/text_size_buttons"
-                android:onClick="valueClick" />
+                android:text="@string/coins_5"/>
 
             <Button
+                style="@style/StaticValueButton"
                 android:id="@+id/b1000"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/material_button"
-                android:layout_margin="10dp"
-                android:text="@string/coins_10"
-                android:layout_weight="1"
-                android:textSize="@dimen/text_size_buttons"
-                android:onClick="valueClick" />
+                android:text="@string/coins_10"/>
 
             <Button
+                style="@style/StaticValueButton"
                 android:id="@+id/b2000"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/material_button"
-                android:layout_margin="10dp"
-                android:text="@string/coins_20"
-                android:layout_weight="1"
-                android:textSize="@dimen/text_size_buttons"
-                android:onClick="valueClick" />
+                android:text="@string/coins_20" />
 
             <Button
+                style="@style/StaticValueButton"
                 android:id="@+id/b5000"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/material_button"
-                android:layout_margin="10dp"
-                android:text="@string/coins_50"
-                android:layout_weight="1"
-                android:textSize="@dimen/text_size_buttons"
-                android:onClick="valueClick"/>
+                android:text="@string/coins_50"/>
 
             <Button
+                style="@style/StaticValueButton"
                 android:id="@+id/b10000"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/material_button"
-                android:layout_margin="10dp"
-                android:text="@string/coins_100"
-                android:layout_weight="1"
-                android:textSize="@dimen/text_size_buttons"
-                android:onClick="valueClick"/>
+                android:text="@string/coins_100"/>
 
             <Button
+                style="@style/StaticValueButton"
                 android:id="@+id/b20000"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/material_button"
-                android:layout_margin="10dp"
-                android:text="@string/coins_200"
-                android:layout_weight="1"
-                android:textSize="@dimen/text_size_buttons"
-                android:onClick="valueClick"/>
+                android:text="@string/coins_200"/>
+
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="10dp"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical" >
 
             <ImageView
                 android:id="@+id/companyLogo"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_margin="5dp"
                 android:contentDescription="@string/desc"
                 android:layout_weight="0.25"
                 android:src="@drawable/no_image" />
 
             <ImageView
+                style="@style/ImageButton"
                 android:id="@+id/resetButton"
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="@string/desc"
-                android:onClick="resetClick"
                 android:layout_weight="0.25"
-                android:src="@drawable/refresh" />
+                android:contentDescription="@string/desc"
+                android:src="@drawable/refresh"
+                android:onClick="resetClick"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -261,191 +243,92 @@
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
                 android:background="@color/gray"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <!-- line 1 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginRight="15dp"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:weightSum="3" >
+                <LinearLayout style="@style/CalcLayout">
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/b7"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_7"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick"/>
+                        android:text="@string/value_7"/>
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/b8"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_8"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick"/>
+                        android:text="@string/value_8"/>
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/b9"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_9"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick"/>
+                        android:text="@string/value_9"/>
+
                 </LinearLayout>
 
                 <!-- line 2 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginRight="15dp"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:weightSum="3" >
+                <LinearLayout style="@style/CalcLayout">
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/b4"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_4"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick" />
+                        android:text="@string/value_4"/>
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/b5"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_5"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick" />
+                        android:text="@string/value_5"/>
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/b6"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_6"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick" />
+                        android:text="@string/value_6"/>
+
                 </LinearLayout>
 
                 <!-- line 3 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginRight="15dp"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:weightSum="3" >
+                <LinearLayout style="@style/CalcLayout">
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/b1"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_1"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick" />
+                        android:text="@string/value_1"/>
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/b2"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_2"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick" />
+                        android:text="@string/value_2"/>
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/b3"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_3"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick" />
+                        android:text="@string/value_3"/>
+
                 </LinearLayout>
 
                 <!-- line 4 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginRight="15dp"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:weightSum="3" >
+                <LinearLayout style="@style/CalcLayout">
 
                     <Button
-
+                        style="@style/CalcButton"
                         android:id="@+id/b0"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_0"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick" />
+                        android:text="@string/value_0"/>
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/b00"
-                        android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
                         android:text="@string/value_00"
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers_00"
-                        android:onClick="valueClick" />
+                        android:textSize="@dimen/text_size_numbers_00"/>
 
                     <Button
+                        style="@style/CalcButton"
                         android:id="@+id/bDot"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/yellow_button"
-                        android:text="@string/value_."
-                        android:layout_weight="1"
-                        android:textSize="@dimen/text_size_numbers"
-                        android:onClick="valueClick" />
+                        android:text="@string/value_."/>
+
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </TableRow>
     <!-- End Operations Layout -->
 
 </LinearLayout>

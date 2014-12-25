@@ -5,14 +5,22 @@
         <item name="android:alertDialogTheme">@style/CustomDialogTheme</item>
     </style>
 
-    <style name="AppTheme.Base" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+    <style name="AppTheme.Base" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/colorPrimaryRed</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryRedDark</item>
         <item name="android:windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
+        <item name="colorAccent">@color/accent</item>
     </style>
 
     <!-- Widgets -->
+
+    <!-- ToolBar -->
+    <style name="ToolBarStyle" parent="Theme.AppCompat">
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
+        <item name="actionMenuTextColor">@android:color/white</item>
+    </style>
 
     <!-- Custom Dialog -->
     <style name="CustomDialogTheme" parent="@android:style/Theme.Holo.Light.Dialog">
@@ -52,8 +60,53 @@
         <item name="android:clickable">true</item>
         <item name="android:singleLine">true</item>
         <item name="android:text">@string/zero</item>
+        <item name="android:onClick">viewClick</item>
         <item name="android:textSize">@dimen/text_size_values</item>
         <item name="android:background">@drawable/show_text_field</item>
+    </style>
+
+    <!-- Button Calculator -->
+    <style name="CalcButton" parent="@android:style/TextAppearance">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:onClick">valueClick</item>
+        <item name="android:textSize">@dimen/text_size_numbers</item>
+        <item name="android:background">@drawable/yellow_button</item>
+    </style>
+
+    <!-- Button Values -->
+    <style name="StaticValueButton" parent="@android:style/TextAppearance">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">10dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:onClick">addClick</item>
+        <item name="android:textSize">@dimen/text_size_buttons</item>
+        <item name="android:background">@drawable/material_button_gray</item>
+    </style>
+
+    <!-- Calculator Layout -->
+    <style name="CalcLayout" parent="@android:style/TextAppearance">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingLeft">15dp</item>
+        <item name="android:paddingRight">15dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:weightSum">3</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <!-- Image Styles -->
+    <style name="ImageButton" parent="@android:style/TextAppearance">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:scaleType">center</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 
 </resources>

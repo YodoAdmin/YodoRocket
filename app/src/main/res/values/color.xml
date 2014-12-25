@@ -3,18 +3,24 @@
 
 	<color name="text">#000101</color>
 	
-	
 	<color name="white">#ffffff</color>
 	<color name="lightGray">#efefcf</color>
-	<color name="darkgray">#232325</color>
+	<color name="darkGray">#232325</color>
 	<color name="gray">#585858</color>
 
     <color name="colorPrimary">@color/material_blue_grey_800</color>
     <color name="colorPrimaryDark">@color/material_blue_grey_900</color>
 
+    <color name="accent">#B71C1C</color>
+    <color name="colorPrimaryRed">#FF4444</color>
+    <color name="colorPrimaryRedDark">#CC0000</color>
+
     <color name="colorSecondary">@color/material_deep_teal_200</color>
     <color name="colorSecondaryDark">@color/material_deep_teal_500</color>
     <color name="windowBackgroundColor">#333333</color>
     <color name="black_translucent">#80000000</color>
+
+    <color name="progress_bg">#727072</color>
+    <color name="progress_text">#ededed</color>
 
 </resources>
