@@ -104,6 +104,30 @@ public class AppUtils {
     }
 
     /**
+     * It saves the scanner array position to the preferences.
+     * @param c The Context of the Android system.
+     * @param n The scanner position on the array.
+     * @return true  If it was saved.
+     *         false If it was not saved.
+     */
+    public static Boolean saveScanner(Context c, int n) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+        writer.putInt( AppConfig.SPREF_CURRENT_SCANNER, n );
+        return writer.commit();
+    }
+
+    /**
+     * It gets the scanner position.
+     * @param c The Context of the Android system.
+     * @return int It returns the scanner position.
+     */
+    public static int getScanner(Context c) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getInt( AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER );
+    }
+
+    /**
      * It saves the beacon name to the preferences.
      * @param c The Context of the Android system.
      * @param s The beacon name.

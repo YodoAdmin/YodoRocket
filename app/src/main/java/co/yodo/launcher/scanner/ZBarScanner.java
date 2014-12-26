@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.Size;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TableRow;
 
 /** Import ZBar Class files */
 import net.sourceforge.zbar.ImageScanner;
@@ -33,7 +35,8 @@ public class ZBarScanner extends QRScanner {
     /** GUI Controllers */
     private ImageScanner scanner;
     private FrameLayout preview;
-	private LinearLayout opPanel;
+	private TableRow opPanel;
+    private RelativeLayout pvPanel;
 
     private boolean previewing = false;
     
@@ -54,14 +57,18 @@ public class ZBarScanner extends QRScanner {
         scanner.setConfig( 0, Config.X_DENSITY, 3 );
         scanner.setConfig( 0, Config.Y_DENSITY, 3 );
         
-        preview = (FrameLayout) act.findViewById( R.id.cameraPreview );
-        opPanel = (LinearLayout) act.findViewById( R.id.operationsPanel );
+        //preview = (RelativeLayout) act.findViewById( R.id.previewPanel );
+        //opPanel = (TableRow) act.findViewById( R.id.operationsPanel );
+
+        preview = (FrameLayout) act.findViewById(R.id.cameraPreview);
+        opPanel = (TableRow) act.findViewById(R.id.operationsPanel);
+        pvPanel = (RelativeLayout) act.findViewById(R.id.previewPanel);
 	}
 	
 	public static ZBarScanner getInstance(Activity activity) {
-		synchronized(ZBarScanner.class) {
-			if(instance == null)
-				instance = new ZBarScanner(activity);
+		synchronized( ZBarScanner.class ) {
+			if( instance == null )
+				instance = new ZBarScanner( activity );
 		}
 		return instance;
 	}
@@ -78,7 +85,7 @@ public class ZBarScanner extends QRScanner {
 			preview.addView( mPreview );
 			
 			opPanel.setVisibility( View.GONE );
-			preview.setVisibility( View.VISIBLE );
+            pvPanel.setVisibility( View.VISIBLE );
 			
 			mCamera.setPreviewCallback( previewCb );
 			mCamera.startPreview();
@@ -117,7 +124,7 @@ public class ZBarScanner extends QRScanner {
 
     private void releaseCamera() {
     	opPanel.setVisibility( View.VISIBLE );
-    	preview.setVisibility( View.GONE );
+        pvPanel.setVisibility( View.GONE );
     	
         if( mCamera != null ) {
         	mCamera.cancelAutoFocus();
@@ -126,18 +133,18 @@ public class ZBarScanner extends QRScanner {
             mCamera = null;
         }
         
-        if(mPreview != null) {
+        if( mPreview != null ) {
         	preview.removeView( mPreview );
         	mPreview = null;
         }
-        
+
         previewing = false;
     }
 
     private Runnable doAutoFocus = new Runnable() {
     	@Override
     	public void run() {
-    		if(previewing)
+    		if( previewing )
     			mCamera.autoFocus( autoFocusCB );
     	}
     };
@@ -160,10 +167,11 @@ public class ZBarScanner extends QRScanner {
                     
                 SymbolSet syms = scanner.getResults();
                 for( Symbol sym : syms ) {
-                    AppUtils.Logger( TAG, sym.getData() );
+                    String scanData = sym.getData();
+                    AppUtils.Logger( TAG, scanData );
         			
         			if( listener != null )
-        				listener.onNewData( resultData );
+        				listener.onNewData( scanData );
                 }
                 releaseCamera();
             }
@@ -194,7 +202,7 @@ public class ZBarScanner extends QRScanner {
                 try {
                     cam = Camera.open( camIdx );
                 } catch( RuntimeException e ) {
-                	AppUtils.Logger(TAG, "Camera failed to open: " + e.getLocalizedMessage());
+                	AppUtils.Logger( TAG, "Camera failed to open: " + e.getLocalizedMessage() );
                 }
             }
         }

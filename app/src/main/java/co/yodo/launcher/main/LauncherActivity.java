@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,9 +39,11 @@ import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.data.ServerResponse;
 import co.yodo.launcher.net.YodoRequest;
+import co.yodo.launcher.scanner.QRScanner;
 import co.yodo.launcher.scanner.QRScannerFactory;
+import co.yodo.launcher.scanner.QRScannerListener;
 
-public class LauncherActivity extends Activity implements YodoRequest.RESTListener {
+public class LauncherActivity extends Activity implements YodoRequest.RESTListener, QRScannerListener {
     /** DEBUG */
     private static final String TAG = LauncherActivity.class.getSimpleName();
 
@@ -56,7 +59,10 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
     /** Gui controllers */
     private SlidingPaneLayout mSlidingLayout;
     private TextView mBalanceView;
+    private Spinner mScannersSpinner;
+    private TextView mTotalView;
     private TextView mCashTenderView;
+    private TextView mCashBackView;
 
     /** Selected Text View */
     private TextView selectedView;
@@ -70,6 +76,9 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
     /** Balance Temp */
     private String historyData;
     private String todayData;
+
+    /** Current Scanners */
+    private QRScanner currentScanner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +105,16 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
         QRScannerFactory.destroy();
     }
 
+    @Override
+    public void onBackPressed() {
+        if(currentScanner != null && currentScanner.isScanning()) {
+            currentScanner.destroy();
+            return;
+        }
+
+        super.onBackPressed();
+    }
+
     /**
      * Initialized all the GUI main components
      */
@@ -104,22 +123,24 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
         imageLoader = new ImageLoader( ac );
 
         // Globals
-        mSlidingLayout  = (SlidingPaneLayout) findViewById( R.id.sliding_panel_layout );
-        mCashTenderView = (TextView) findViewById( R.id.cashTenderText );
-        mBalanceView    = (TextView) findViewById( R.id.balanceText );
+        mSlidingLayout   = (SlidingPaneLayout) findViewById( R.id.sliding_panel_layout );
+        mBalanceView     = (TextView) findViewById( R.id.balanceText );
+        mScannersSpinner = (Spinner) findViewById(R.id.scannerSpinner);
+        mTotalView       = (TextView) findViewById( R.id.totalText );
+        mCashTenderView  = (TextView) findViewById( R.id.cashTenderText );
+        mCashBackView    = (TextView) findViewById( R.id.cashBackText );
 
         // Only used at creation
         CheckBox mAdvertisingCheckBox = (CheckBox) findViewById(R.id.advertisingCheckBox);
-        TextView totalView    		  = (TextView) findViewById(R.id.totalText);
-        Spinner scannersSpinner       = (Spinner) findViewById(R.id.scannerSpinner);
 
-        scannersSpinner.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
+        mScannersSpinner.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 if( mSlidingLayout.isOpen() )
                     mSlidingLayout.closePane();
 
                 ( (TextView) parentView.getChildAt( 0 ) ).setTextColor( Color.WHITE );
+                AppUtils.saveScanner( ac, position );
                 AppUtils.Logger(TAG, ((TextView) selectedItemView).getText().toString());
             }
 
@@ -133,7 +154,8 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
                 android.R.layout.simple_list_item_1,
                 QRScannerFactory.SupportedScanners.values()
         );
-        scannersSpinner.setAdapter( adapter );
+        mScannersSpinner.setAdapter( adapter );
+        mScannersSpinner.setSelection( AppUtils.getScanner( ac ) );
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         handlerMessages   = new YodoHandler( LauncherActivity.this );
@@ -161,7 +183,7 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
                 setupAdvertising( false );
         }
 
-        selectedView = totalView;
+        selectedView = mTotalView;
         selectedView.setBackgroundResource( R.drawable.selected_text_field );
     }
 
@@ -201,9 +223,9 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
      * @return String The current balance with two decimals format
      */
     private String getCurrentBalance() {
-        String totalPurchase = ((TextView) findViewById( R.id.totalText )).getText().toString();
-        String cashTender    = ((TextView) findViewById( R.id.cashTenderText )).getText().toString();
-        String cashBack      = ((TextView) findViewById( R.id.cashBackText )).getText().toString();
+        String totalPurchase = mTotalView.getText().toString();
+        String cashTender    = mCashTenderView.getText().toString();
+        String cashBack      = mCashBackView.getText().toString();
 
         double total = Double.valueOf( cashTender ) - Double.valueOf( totalPurchase ) - Double.valueOf( cashBack );
         return String.format( Locale.US, "%.2f", total );
@@ -263,7 +285,7 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
                 AppUtils.saveCurrency( ac, item );
 
                 Drawable icon = AppUtils.getDrawableByName( ac, icons[ item ] );
-                mCashTenderView.setCompoundDrawables(icon, null, null, null);
+                mCashTenderView.setCompoundDrawables( icon, null, null, null );
 
                 dialog.dismiss();
             }
@@ -333,8 +355,16 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
             public void onClick(DialogInterface dialog, int item) {
                 String pip = inputBox.getText().toString();
                 AppUtils.hideSoftKeyboard( LauncherActivity.this );
-                YodoRequest.getInstance().createProgressDialog( LauncherActivity.this );
-                YodoRequest.getInstance().requestHistory( LauncherActivity.this, hardwareToken, pip );
+
+                YodoRequest.getInstance().createProgressDialog(
+                        LauncherActivity.this ,
+                        YodoRequest.ProgressDialogType.NORMAL
+                );
+
+                YodoRequest.getInstance().requestHistory(
+                        LauncherActivity.this,
+                        hardwareToken, pip
+                );
             }
         };
 
@@ -391,14 +421,11 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
      * @param v The View, not used
      */
     public void resetClick(View v) {
-        TextView totalView      = (TextView) findViewById( R.id.totalText );
-        TextView cashTenderView = (TextView) findViewById( R.id.cashTenderText );
-        TextView cashBackView   = (TextView) findViewById( R.id.cashBackText );
-
         String zero = getString( R.string.zero );
-        totalView.setText( zero );
-        cashTenderView.setText( zero );
-        cashBackView.setText( zero );
+
+        mTotalView.setText( zero );
+        mCashTenderView.setText( zero );
+        mCashBackView.setText( zero );
 
         mBalanceView.setText( getCurrentBalance() );
     }
@@ -417,7 +444,7 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
     }
 
     /** Handle numeric add clicked
-     *  @param v View, used to get the amount
+     *  @param v The View, used to get the amount
      */
     public void addClick(View v) {
         final String amount  = ((Button)v).getText().toString();
@@ -438,19 +465,21 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
     }
 
     /**
-     *
-     * @param v
+     * Opens the scanner to realize a payment
+     * @param v The View, not used
      */
     public void yodoPayClick(View v) {
-        if( qrscanner != null && qrscanner.isScanning() ) {
-            qrscanner.destroy();
+        if( currentScanner != null && currentScanner.isScanning() ) {
+            currentScanner.destroy();
             return;
         }
 
-        Spinner scanners = ((Spinner) v);
-        qrscanner = QRScannerFactory.getInstance(this, (QRScannerFactory.SupportedScanners) scanners.getSelectedItem());
-        qrscanner.setListener( this );
-        qrscanner.startScan();
+        currentScanner = QRScannerFactory.getInstance(
+                this,
+                (QRScannerFactory.SupportedScanners) mScannersSpinner.getSelectedItem()
+        );
+
+        currentScanner.startScan();
     }
 
     @Override
@@ -490,6 +519,48 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
                     }
                 }
 
+                break;
+
+            case EXCH_MERCH_REQUEST:
+                String message = getString(R.string.exchange_auth)    + " " + response.getAuthNumber() + "\n" +
+                                 getString(R.string.exchange_message) + " " + response.getMessage();
+
+                AlertDialogHelper.showAlertDialog( ac, response.getCode(), message );
+                break;
+        }
+    }
+
+    @Override
+    public void onNewData(String data) {
+        String totalPurchase = mTotalView.getText().toString();
+        String cashTender    = mCashTenderView.getText().toString();
+        String cashBack      = mCashBackView.getText().toString();
+
+        final String[] currency = getResources().getStringArray( R.array.currency_array );
+
+        switch( data.length() ) {
+            case AppConfig.SKS_SIZE:
+                YodoRequest.getInstance().createProgressDialog(
+                        LauncherActivity.this,
+                        YodoRequest.ProgressDialogType.TRANSPARENT
+                );
+
+                YodoRequest.getInstance().requestExchange(
+                        LauncherActivity.this,
+                        hardwareToken,
+                        data,
+                        totalPurchase,
+                        cashTender,
+                        cashBack,
+                        currency[ AppUtils.getCurrency( ac ) ]
+                );
+                break;
+
+            case AppConfig.ALT_SIZE:
+                break;
+
+            default:
+                ToastMaster.makeText( LauncherActivity.this, R.string.exchange_error, Toast.LENGTH_LONG ).show();
                 break;
         }
     }

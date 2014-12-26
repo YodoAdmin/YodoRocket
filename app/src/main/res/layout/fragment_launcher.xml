@@ -143,6 +143,8 @@
         android:id="@+id/previewPanel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginLeft="15dp"
+        android:layout_marginStart="15dp"
         android:layout_weight="1"
         android:visibility="gone" >
 
@@ -155,7 +157,7 @@
             android:id="@+id/textViewOverlayText"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="10dip"
+            android:paddingBottom="10dp"
             android:gravity="bottom|center_horizontal"
             android:textColor="@android:color/white"
             android:textSize="20sp"
@@ -170,12 +172,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:visibility="visible"
         android:weightSum="2">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="30dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
             android:layout_weight="1"
             android:background="@drawable/green_background"
             android:orientation="vertical">

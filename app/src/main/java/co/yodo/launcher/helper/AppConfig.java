@@ -4,6 +4,7 @@ import co.yodo.launcher.net.RESTService;
 
 /**
  * Created by luis on 15/12/14.
+ * Keys and defaults
  */
 public class AppConfig {
     /** DEBUG flag */
@@ -40,15 +41,20 @@ public class AppConfig {
 	 */
     public static final String SPREF_CURRENT_LANGUAGE = "SPCurrentLanguage";
 
+    /* The current beacon.
+    * type -- String
+    */
+    public static final String SPREF_CURRENT_BEACON = "SPCurrentBeacon";
+
     /* The current currency.
     * type -- Integer
     */
     public static final String SPREF_CURRENT_CURRENCY = "SPCurrentCurrency";
 
-    /* The current beacon.
-    * type -- String
+    /* The current scanner position.
+    * type -- Integer
     */
-    public static final String SPREF_CURRENT_BEACON = "SPCurrentBeacon";
+    public static final String SPREF_CURRENT_SCANNER = "SPCurrentScanner";
 
     /* Advertising service status.
 	 * type -- Boolean
@@ -58,10 +64,6 @@ public class AppConfig {
 	 * false -- Service not running
 	 */
     public static final String SPREF_ADVERTISING_SERVICE_RUNNING = "SPAdvertisingServiceRunning";
-
-    /**
-     * }} ======================================================================
-     */
 
     /**
      * Default values
@@ -82,9 +84,20 @@ public class AppConfig {
 	 */
     public static final Integer DEFAULT_CURRENCY = 0;
 
+    /*
+	 * Default value position for the scanner
+	 *
+	 * Default: position 0 (BarcodeScanner)
+	 */
+    public static final Integer DEFAULT_SCANNER = 0;
+
     /* Bluetooth Yodo POS name */
     public static final String YODO_POS = "Yodo-Merch-";
 
     /* Logo URL */
     public static final String LOGO_PATH = RESTService.getRoot() + "/yodo-merch/uploads/img/logo/";
+
+    /* SKS Sizes */
+    public static final int SKS_SIZE = 256;
+    public static final int ALT_SIZE = 257;
 }

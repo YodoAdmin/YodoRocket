@@ -31,6 +31,10 @@ public class QRScannerFactory {
 				qrscanner = ZBarScanner.getInstance( activity );
 			break;
 		}
+
+        if( qrscanner != null && activity instanceof QRScannerListener )
+            qrscanner.setListener( (QRScannerListener) activity );
+
 		return qrscanner;
 	}
 	

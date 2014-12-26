@@ -18,7 +18,7 @@ public class HardwareScanner extends QRScanner {
 	private static final String TAG = HardwareScanner.class.getName();
 	
 	/** GUI Controllers */
-	private AlertDialog alertDialog;
+	private AlertDialog inputDialog;
 	
 	/** Instance */
 	private static volatile HardwareScanner instance = null;
@@ -37,43 +37,36 @@ public class HardwareScanner extends QRScanner {
 	            	return true;
 	            
 				if( event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_ENTER ) {
-					String data = input.getText().toString();
+					String scanData = input.getText().toString();
 					
-					if( data != null ) {
-						alertDialog.dismiss();
+					if( scanData != null ) {
+                        inputDialog.dismiss();
 
-						AppUtils.Logger(TAG, data);
+						AppUtils.Logger(TAG, scanData);
                         AppUtils.hideSoftKeyboard( act );
 
                         if( listener != null )
-                            listener.onNewData( data );
+                            listener.onNewData( scanData );
 					}
 					return true;
 	            }
 				return false;
 			}
-	    });
+        	    });
 		
 		builder.setTitle( activity.getString( R.string.barcode_scanner ) );
+        builder.setIcon( R.drawable.ic_launcher );
 		builder.setView( input );
-		builder.setNegativeButton( activity.getString(R.string.cancel), null);
-		
-		alertDialog = builder.create();
-		alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-		
-		alertDialog.setOnDismissListener(new OnDismissListener() {
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				InputMethodManager imm = (InputMethodManager) act.getSystemService(Activity.INPUT_METHOD_SERVICE);
-		        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-			}
-        });
+		builder.setNegativeButton( activity.getString(R.string.cancel), null );
+
+        inputDialog = builder.create();
+        inputDialog.getWindow().setSoftInputMode( WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN );
 	}
 	
 	public static HardwareScanner getInstance(Activity activity) {
-		synchronized(HardwareScanner.class) {
+		synchronized( HardwareScanner.class ) {
 			if(instance == null)
-				instance = new HardwareScanner(activity);
+				instance = new HardwareScanner( activity );
 		}
 		return instance;
 	}
@@ -84,16 +77,18 @@ public class HardwareScanner extends QRScanner {
 	
 	@Override
 	public void startScan() {
-		alertDialog.show();
+        inputDialog.show();
 	}
 	
 	@Override
 	public boolean isScanning() {
-		return false;
+		return inputDialog.isShowing();
 	}
 
 	@Override
 	public void destroy() {
-		instance = null;
+        inputDialog.dismiss();
+        inputDialog = null;
+		instance    = null;
 	}
 }

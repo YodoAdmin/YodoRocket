@@ -16,9 +16,6 @@ import co.yodo.launcher.data.ServerResponse;
 import co.yodo.launcher.net.YodoRequest;
 
 public class MainActivity extends Activity implements YodoRequest.RESTListener {
-    /** DEBUG */
-    private static final String TAG = MainActivity.class.getSimpleName();
-
     /** The context object */
     private Context ac;
 

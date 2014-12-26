@@ -12,6 +12,7 @@ import java.util.Locale;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.component.Encrypter;
+import co.yodo.launcher.component.TransparentProgressDialog;
 import co.yodo.launcher.data.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
 
@@ -39,7 +40,8 @@ public class YodoRequest extends ResultReceiver {
         AUTH_REQUEST      ( "01" ), // RT=0, ST=4
         QUERY_BAL_REQUEST ( "02" ), // RT=5, ST=3
         QUERY_LOGO_REQUEST( "03" ), // RT=5, ST=3
-        REG_MERCH_REQUEST ( "04 "); // RT=9, ST=1
+        REG_MERCH_REQUEST ( "04 "), // RT=9, ST=1
+        EXCH_MERCH_REQUEST( "05" );	// RT=1, ST=1
 
         private final String name;
 
@@ -56,11 +58,18 @@ public class YodoRequest extends ResultReceiver {
         }
     }
 
+    /** ID for the types of progress dialog */
+    public enum ProgressDialogType {
+        NORMAL,
+        TRANSPARENT
+    }
+
     /** Object used to encrypt information */
     private Encrypter oEncrypter;
 
     /** Progress dialog */
     private ProgressDialog progressDialog;
+    private TransparentProgressDialog transProgressDialog;
 
     /** Singleton instance */
     private static YodoRequest instance = null;
@@ -70,6 +79,10 @@ public class YodoRequest extends ResultReceiver {
 
     /** User's data separator */
     private static final String	REQ_SEP = ",";
+
+    /** Merchant Data */
+    private static final String MOCK_GPS1 = "0,00";
+    private static final String MOCK_GPS2 = "0,00";
 
     /**
      * Create a new ResultReceive to receive results.  Your
@@ -101,17 +114,31 @@ public class YodoRequest extends ResultReceiver {
         externalListener = listener ;
     }
 
-    public void createProgressDialog(Activity activity) {
-        progressDialog = new ProgressDialog( activity );
-        progressDialog.setCancelable( false );
-        progressDialog.show();
-        progressDialog.setContentView( R.layout.custom_progressdialog );
+    public void createProgressDialog(Activity activity, ProgressDialogType type) {
+        switch( type ) {
+            case NORMAL:
+                progressDialog = new ProgressDialog( activity );
+                progressDialog.setCancelable( false );
+                progressDialog.show();
+                progressDialog.setContentView( R.layout.custom_progressdialog );
+                break;
+
+            case TRANSPARENT:
+                transProgressDialog = new TransparentProgressDialog( activity, R.drawable.spinner );
+                transProgressDialog.show();
+                break;
+        }
     }
 
     public void destroyProgressDialog() {
         if( progressDialog != null ) {
             progressDialog.dismiss();
             progressDialog = null;
+        }
+
+        if( transProgressDialog != null ) {
+            transProgressDialog.dismiss();
+            transProgressDialog = null;
         }
     }
 
@@ -184,7 +211,7 @@ public class YodoRequest extends ResultReceiver {
         activity.startService( intent );
     }
 
-    public void requestMerchantRegistration(Activity activity, String hardwareToken, String token) {
+    public void requestRegistration(Activity activity, String hardwareToken, String token) {
         String sEncryptedMerchData, pRequest;
         StringBuilder sMerchData = new StringBuilder();
 
@@ -202,11 +229,53 @@ public class YodoRequest extends ResultReceiver {
 
         pRequest = ServerRequest.createRegistrationRequest(
                 sEncryptedMerchData,
-                Integer.parseInt(ServerRequest.REG_MERCH_SUBREQ)
+                Integer.parseInt( ServerRequest.REG_MERCH_SUBREQ )
         );
 
         Intent intent = new Intent( activity, RESTService.class );
         intent.putExtra( RESTService.ACTION_RESULT, RequestType.REG_MERCH_REQUEST );
+        intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
+        intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
+        activity.startService( intent );
+    }
+
+    public void requestExchange(Activity activity, String hardwareToken, String client,
+                                String totalPurchase, String cashTender, String cashBack,
+                                String currency) {
+        String sEncryptedMerchData, sEncryptedExchangeUsrData, pRequest;
+        StringBuilder sEncryptedUsrData = new StringBuilder();
+        StringBuilder sExchangeUsrData = new StringBuilder();
+
+        /// Encrypting to create request
+        oEncrypter.setsUnEncryptedString(hardwareToken);
+        oEncrypter.rsaEncrypt(activity);
+        sEncryptedMerchData = oEncrypter.bytesToHex();
+
+        sEncryptedUsrData.append( sEncryptedMerchData ).append( REQ_SEP );
+        sEncryptedUsrData.append( client ).append( REQ_SEP );
+
+        sExchangeUsrData.append( MOCK_GPS1 ).append( REQ_SEP );
+        sExchangeUsrData.append( MOCK_GPS2 ).append(REQ_SEP);
+        sExchangeUsrData.append( totalPurchase ).append(REQ_SEP);
+        sExchangeUsrData.append( cashTender ).append( REQ_SEP );
+        sExchangeUsrData.append( cashBack ).append(REQ_SEP);
+        sExchangeUsrData.append( currency );
+
+        oEncrypter.setsUnEncryptedString(sExchangeUsrData.toString());
+        oEncrypter.rsaEncrypt(activity);
+        sEncryptedExchangeUsrData = oEncrypter.bytesToHex();
+        sEncryptedUsrData.append( sEncryptedExchangeUsrData );
+
+        //progressD = new TransparentProgressDialog(this, R.drawable.spinner);
+        //progressD.show();
+
+        pRequest = ServerRequest.createExchangeRequest(
+                sEncryptedUsrData.toString(),
+                Integer.parseInt(ServerRequest.REG_MERCH_SUBREQ)
+        );
+
+        Intent intent = new Intent( activity, RESTService.class );
+        intent.putExtra( RESTService.ACTION_RESULT, RequestType.EXCH_MERCH_REQUEST );
         intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
         intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
         activity.startService( intent );

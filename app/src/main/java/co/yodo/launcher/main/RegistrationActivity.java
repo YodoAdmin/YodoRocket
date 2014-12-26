@@ -81,10 +81,14 @@ public class RegistrationActivity extends ActionBarActivity implements YodoReque
             password.startAnimation( shake );
         } else {
             String hardwareToken = AppUtils.getHardwareToken( ac );
-
             AppUtils.hideSoftKeyboard( this );
-            YodoRequest.getInstance().createProgressDialog( this );
-            YodoRequest.getInstance().requestMerchantRegistration(
+
+            YodoRequest.getInstance().createProgressDialog(
+                    RegistrationActivity.this ,
+                    YodoRequest.ProgressDialogType.NORMAL
+            );
+
+            YodoRequest.getInstance().requestRegistration(
                     RegistrationActivity.this,
                     hardwareToken,
                     token

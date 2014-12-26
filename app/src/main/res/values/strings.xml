@@ -24,6 +24,13 @@
     <string name="merch_pip_hint">Activation Code</string>
     <string name="barcode_scanner">Scan the code</string>
 
+    <!-- Exchange Response -->
+    <string name="exchange_code">Code:</string>
+    <string name="exchange_auth">Authorization Number:</string>
+    <string name="exchange_message">Message:</string>
+    <string name="exchange_extra">Extra:</string>
+    <string name="exchange_error">Invalid SKS size</string>
+
     <!-- Labels -->
     <string name="imei">IMEI:</string>
 

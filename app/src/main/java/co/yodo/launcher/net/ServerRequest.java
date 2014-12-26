@@ -13,6 +13,10 @@ public class ServerRequest {
 	private static final String AUTH_REQ            = "0";
 	public static final String AUTH_HW_MERCH_SUBREQ = "4";
 
+    /** Parameters used for creating an exchange request */
+    private static final String EXCH_REQ         = "1";
+    public static final String EXCH_MERCH_SUBREQ = "1";
+
     /** Parameters used for creating a balance request */
     private static final String QUERY_REQ          = "4";
     public static final String QUERY_BAL_TP_SUBREQ = "2";
@@ -98,5 +102,27 @@ public class ServerRequest {
 
         AppUtils.Logger( TAG, "Registration Request: " + sRegistrationRequest.toString() );
         return sRegistrationRequest.toString();
+    }
+
+    /**
+     * Creates an exchange switch request
+     * @param pUsrData	Encrypted user's data
+     * @param iExchReqType Sub-type of the request
+     * @return	String	Request for getting the Exchange
+     */
+    public static String createExchangeRequest(String pUsrData, int iExchReqType){
+        StringBuilder sExchangeRequest = new StringBuilder();
+        sExchangeRequest.append( PROTOCOL_VERSION ).append( REQ_SEP );
+        sExchangeRequest.append( EXCH_REQ ).append( REQ_SEP );
+
+        switch( iExchReqType ) {
+            //RT = 1, ST = 1
+            case 1: sExchangeRequest.append( EXCH_MERCH_SUBREQ ).append( REQ_SEP );
+                break;
+        }
+        sExchangeRequest.append( pUsrData );
+
+        AppUtils.Logger( TAG, "Exchange Request: " + sExchangeRequest.toString() );
+        return sExchangeRequest.toString();
     }
 }
