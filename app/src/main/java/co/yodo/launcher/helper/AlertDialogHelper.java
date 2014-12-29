@@ -110,6 +110,25 @@ public class AlertDialogHelper {
      * Shows an alert dialog with an EditText
      * @param c The context of the application
      * @param title The title of the dialog
+     * @param view The view of the dialog
+     */
+    public static void showAlertDialog(final Context c, final String title, final View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder( c );
+        builder.setIcon( R.drawable.ic_launcher );
+        builder.setTitle( title );
+        builder.setView( view );
+        builder.setCancelable( false );
+
+        builder.setNegativeButton( c.getString( R.string.cancel ), null );
+
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /**
+     * Shows an alert dialog with an EditText
+     * @param c The context of the application
+     * @param title The title of the dialog
      * @param input The edit text for the password
      * @param show The boolean to include a checkbox to show the password
      * @param remember The boolean to include a checkbox to remember the password

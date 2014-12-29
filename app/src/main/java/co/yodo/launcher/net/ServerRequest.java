@@ -22,6 +22,14 @@ public class ServerRequest {
     public static final String QUERY_BAL_TP_SUBREQ = "2";
     public static final String QUERY_ACC_SUBREQ    = "3";
 
+    /** Parameters used for creating an alternate request */
+    private static final String ALTER_REQ               = "7";
+    public static final String ALTER_VISA_CRED_SUBREQ   = "1";
+    public static final String ALTER_PUB_TRANSIT_SUBREQ = "2";
+    public static final String ALTER_HEART_SUBREQ       = "3";
+    public static final String ALTER_VISA_PREP_SUBREQ   = "4";
+    public static final String ALTER_PAYPAL_SUBREQ      = "5";
+
     /** Parameters used for creating a registration request */
     private static final String REG_REQ         = "9";
     public static final String REG_MERCH_SUBREQ = "1";
@@ -124,5 +132,43 @@ public class ServerRequest {
 
         AppUtils.Logger( TAG, "Exchange Request: " + sExchangeRequest.toString() );
         return sExchangeRequest.toString();
+    }
+
+    /**
+     * Creates an alternate switch request
+     * @param pUsrData	Encrypted user's data
+     * @param iAlterReqType Sub-type of the request
+     * @return	String	Request for getting the Alternate Transaction
+     */
+    public static String createAlternateRequest(String pUsrData, int iAlterReqType){
+        StringBuilder sAlternateRequest = new StringBuilder();
+        sAlternateRequest.append( PROTOCOL_VERSION ).append( REQ_SEP );
+        sAlternateRequest.append( ALTER_REQ ).append( REQ_SEP );
+
+        switch( iAlterReqType ) {
+            //RT = 7, ST = 1
+            case 1: sAlternateRequest.append( ALTER_VISA_CRED_SUBREQ ).append( REQ_SEP );
+                break;
+
+            //RT = 7, ST = 2
+            case 2: sAlternateRequest.append( ALTER_PUB_TRANSIT_SUBREQ ).append( REQ_SEP );
+                break;
+
+            //RT = 7, ST = 3
+            case 3: sAlternateRequest.append( ALTER_HEART_SUBREQ ).append( REQ_SEP );
+                break;
+
+            //RT = 7, ST = 4
+            case 4: sAlternateRequest.append( ALTER_VISA_PREP_SUBREQ ).append( REQ_SEP );
+                break;
+
+            //RT = 7, ST = 5
+            case 5: sAlternateRequest.append( ALTER_PAYPAL_SUBREQ ).append( REQ_SEP );
+                break;
+        }
+        sAlternateRequest.append( pUsrData );
+
+        AppUtils.Logger( TAG, "Alternate Request: " + sAlternateRequest.toString() );
+        return sAlternateRequest.toString();
     }
 }

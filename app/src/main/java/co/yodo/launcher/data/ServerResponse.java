@@ -19,7 +19,14 @@ public class ServerResponse implements Serializable {
     public static final String ERROR_INSUFF_FUNDS  = "ER25";
 
     /** Param keys */
-    public static final String LOGO = "logo";
+    public static final String PARAMS      = "params";
+    public static final String LOGO        = "logo";
+    public static final String CREDIT      = "credit";
+    public static final String DEBIT       = "debit";
+    public static final String SETTLEMENT  = "settlement";
+    public static final String EQUIPMENT   = "equipments";
+    public static final String LEASE       = "lease";
+    public static final String TOTAL_LEASE = "totalLease";
 
 	private String code;
 	private String authNumber;
@@ -70,6 +77,8 @@ public class ServerResponse implements Serializable {
     public String getParam(String key) {
         return params.get(key);
     }
+
+    public HashMap<String, String> getParams() { return params; }
 	
 	@Override
 	public String toString() {

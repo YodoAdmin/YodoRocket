@@ -3,42 +3,42 @@
 
     <!-- Main Strings -->
     <string name="app_name">YodoLauncher</string>
-    <string name="action_settings">Settings</string>
-    <string name="version">Version: 0.0.1</string>
+    <string name="action_settings">Configuración</string>
+    <string name="version">Versión: 0.0.1</string>
     <string name="desc">Desc</string>
-    <string name="register">REGISTER</string>
-    <string name="loading">Loading</string>
+    <string name="register">REGISTRAR</string>
+    <string name="loading">Cargando</string>
     <string name="ok">OK</string>
-    <string name="cancel">Cancel</string>
+    <string name="cancel">Cancelar</string>
 
     <!-- Error Messages -->
-    <string name="error">This is embarrassing! An error occurred in the process</string>
-    <string name="no_internet">Sorry, seems that you don\'t have an Internet connection right now</string>
-    <string name="no_hardware">You must turn on your bluetooth first</string>
+    <string name="error">Esto es embarazoso! Ocurrio un error en el proceso</string>
+    <string name="no_internet">Lo sentimos, parece que no dispone de una una conexion a Internet</string>
+    <string name="no_hardware">Debe encender su bluetooth primero</string>
 
     <!-- General Messages -->
     <string name="input_pip">Merch Identity Phrase (MIP)</string>
-    <string name="show_pass">Show Password</string>
-    <string name="remember_pass">Remember Password</string>
-    <string name="input_token">Input your Token Password</string>
-    <string name="merch_pip_hint">Activation Code</string>
-    <string name="barcode_scanner">Scan the code</string>
+    <string name="show_pass">Mostrar Contraseña</string>
+    <string name="remember_pass">Recordar Contraseña</string>
+    <string name="input_token">Inserte el Token Password</string>
+    <string name="merch_pip_hint">Código de Activación</string>
+    <string name="barcode_scanner">Escanee el código</string>
 
     <!-- Exchange Response -->
-    <string name="exchange_code">Code:</string>
-    <string name="exchange_auth">Authorization Number:</string>
-    <string name="exchange_message">Message:</string>
+    <string name="exchange_code">Código:</string>
+    <string name="exchange_auth">Número de Autorización:</string>
+    <string name="exchange_message">Mensaje:</string>
     <string name="exchange_extra">Extra:</string>
-    <string name="exchange_error">Invalid SKS size</string>
+    <string name="exchange_error">Tamaño SKS inválido</string>
 
     <!-- Balance Messages -->
     <string name="yodo_title">Merchant Balance Report</string>
     <string name="yodo_cash">Yodo Cash</string>
     <string name="yodo_debits">Yodo Debits</string>
-    <string name="yodo_cumulative_balance">Cumulative Balance:</string>
-    <string name="to_date">to date:</string>
-    <string name="today">today:</string>
-    <string name="yodo_today_balance">Today\'s Balance:</string>
+    <string name="yodo_cumulative_balance">Balance Acumulado:</string>
+    <string name="to_date">hasta la fecha:</string>
+    <string name="today">hoy:</string>
+    <string name="yodo_today_balance">Balance de Hoy:</string>
 
     <!-- Labels -->
     <string name="imei">IMEI:</string>
@@ -48,25 +48,25 @@
     <string name="title_activity_registration">Yodo Registration</string>
 
     <!-- configuration labels -->
-    <string name="option_label">Options</string>
-    <string name="tools_label">Tools</string>
+    <string name="option_label">Opciones</string>
+    <string name="tools_label">Herramientas</string>
 
     <!-- configuration options -->
-    <string name="set_language">Languages</string>
-    <string name="set_currency">Currency</string>
-    <string name="set_username">Y-Beacon Name</string>
-    <string name="adv_service">Advertising Service</string>
-    <string name="get_balance">Get Balance</string>
-    <string name="about">About Yodo</string>
-    <string name="logout">Logout</string>
+    <string name="set_language">Lenguajes</string>
+    <string name="set_currency">Moneda</string>
+    <string name="set_username">Nombre Y-Beacon</string>
+    <string name="adv_service">Servicio de Publicidad</string>
+    <string name="get_balance">Obtener Balance</string>
+    <string name="about">Acerca de Yodo</string>
+    <string name="logout">Salir</string>
 
     <!-- Preview Messages -->
-    <string name="place_qrcode">Place you SKS code entirely in this window</string>
+    <string name="place_qrcode">Ubique el código SKS en esta ventana</string>
 
     <!-- Values Labels -->
-    <string name="total_purchase">Purchase: </string>
-    <string name="cash_tender">Cash Tender: </string>
-    <string name="cash_back">Cash Back: </string>
+    <string name="total_purchase">Total de Compra: </string>
+    <string name="cash_tender">Pago en Efectivo: </string>
+    <string name="cash_back">Vuelto: </string>
     <string name="balance">Balance: </string>
     <string name="zero">0.00</string>
     <string name="no_item">- no item -</string>
@@ -94,8 +94,8 @@
 
     <!-- Languages -->
     <string-array name="languages_array">
-        <item>English</item>
-        <item>Spanish</item>
+        <item>Inglés</item>
+        <item>Español</item>
     </string-array>
 
     <!-- Currency -->
@@ -113,7 +113,7 @@
     </string-array>
 
     <!-- Tutorial Instructions -->
-    <string name="tutorial_title">Navigator &amp; action items</string>
-    <string name="tutorial_message">Slide your finger to the left to hide the panel</string>
+    <string name="tutorial_title">Navegador &amp; items</string>
+    <string name="tutorial_message">Deslice el dedo hacia la izquierda para ocultar el panel</string>
 
 </resources>

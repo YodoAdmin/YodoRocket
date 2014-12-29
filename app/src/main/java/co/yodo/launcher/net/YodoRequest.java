@@ -39,9 +39,11 @@ public class YodoRequest extends ResultReceiver {
         ERROR_GENERAL     ( "00" ), // ERROR GENERAL
         AUTH_REQUEST      ( "01" ), // RT=0, ST=4
         QUERY_BAL_REQUEST ( "02" ), // RT=5, ST=3
-        QUERY_LOGO_REQUEST( "03" ), // RT=5, ST=3
-        REG_MERCH_REQUEST ( "04 "), // RT=9, ST=1
-        EXCH_MERCH_REQUEST( "05" );	// RT=1, ST=1
+        QUERY_DAY_REQUEST ( "03" ), // RT=5, ST=3
+        QUERY_LOGO_REQUEST( "04" ), // RT=5, ST=3
+        REG_MERCH_REQUEST ( "05 "), // RT=9, ST=1
+        EXCH_MERCH_REQUEST( "06" ),	// RT=1, ST=1
+        ALT_MERCH_REQUEST ( "07" );	// RT=7
 
         private final String name;
 
@@ -92,8 +94,8 @@ public class YodoRequest extends ResultReceiver {
      * @param handler Default
      */
     private YodoRequest(Handler handler) {
-        super(handler);
-        oEncrypter        = new Encrypter();
+        super( handler );
+        oEncrypter = new Encrypter();
     }
 
     /**
@@ -187,6 +189,31 @@ public class YodoRequest extends ResultReceiver {
         activity.startService( intent );
     }
 
+    public void requestDailyHistory(Activity activity, String hardwareToken, String pip) {
+        String sEncryptedMerchData, pRequest;
+        StringBuilder sBalanceData = new StringBuilder();
+
+        sBalanceData.append( hardwareToken ).append( REQ_SEP );
+        sBalanceData.append( pip ).append( REQ_SEP );
+        sBalanceData.append( ServerRequest.QUERY_TODAY_BALANCE );
+
+        // Encrypting to create request
+        oEncrypter.setsUnEncryptedString( sBalanceData.toString() );
+        oEncrypter.rsaEncrypt( activity );
+        sEncryptedMerchData = oEncrypter.bytesToHex();
+
+        pRequest = ServerRequest.createQueryRequest(
+                sEncryptedMerchData,
+                Integer.parseInt( ServerRequest.QUERY_ACC_SUBREQ )
+        );
+
+        Intent intent = new Intent( activity, RESTService.class );
+        intent.putExtra( RESTService.ACTION_RESULT, RequestType.QUERY_DAY_REQUEST );
+        intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
+        intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
+        activity.startService( intent );
+    }
+
     public void requestLogo(Activity activity, String hardwareToken) {
         String sEncryptedMerchData, pRequest;
         StringBuilder sMerchantLogoData = new StringBuilder();
@@ -247,8 +274,8 @@ public class YodoRequest extends ResultReceiver {
         StringBuilder sExchangeUsrData = new StringBuilder();
 
         /// Encrypting to create request
-        oEncrypter.setsUnEncryptedString(hardwareToken);
-        oEncrypter.rsaEncrypt(activity);
+        oEncrypter.setsUnEncryptedString( hardwareToken );
+        oEncrypter.rsaEncrypt( activity );
         sEncryptedMerchData = oEncrypter.bytesToHex();
 
         sEncryptedUsrData.append( sEncryptedMerchData ).append( REQ_SEP );
@@ -261,17 +288,62 @@ public class YodoRequest extends ResultReceiver {
         sExchangeUsrData.append( cashBack ).append(REQ_SEP);
         sExchangeUsrData.append( currency );
 
-        oEncrypter.setsUnEncryptedString(sExchangeUsrData.toString());
-        oEncrypter.rsaEncrypt(activity);
+        oEncrypter.setsUnEncryptedString( sExchangeUsrData.toString() );
+        oEncrypter.rsaEncrypt( activity );
         sEncryptedExchangeUsrData = oEncrypter.bytesToHex();
         sEncryptedUsrData.append( sEncryptedExchangeUsrData );
-
-        //progressD = new TransparentProgressDialog(this, R.drawable.spinner);
-        //progressD.show();
 
         pRequest = ServerRequest.createExchangeRequest(
                 sEncryptedUsrData.toString(),
                 Integer.parseInt(ServerRequest.REG_MERCH_SUBREQ)
+        );
+
+        Intent intent = new Intent( activity, RESTService.class );
+        intent.putExtra( RESTService.ACTION_RESULT, RequestType.ALT_MERCH_REQUEST );
+        intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
+        intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
+        activity.startService( intent );
+    }
+
+    public void requestAlternate(Activity activity, String hardwareToken, String client,
+                                String totalPurchase, String cashTender, String cashBack,
+                                String currency) {
+        String sEncryptedMerchData, sEncryptedExchangeUsrData, pRequest;
+        StringBuilder sEncryptedUsrData = new StringBuilder();
+        StringBuilder sExchangeUsrData = new StringBuilder();
+
+        // Get the client data and account type
+        String clientData  = client.substring( 0, client.length() - 1 );
+        String accountType = client.substring( client.length() - 1 );
+
+        if( !AppUtils.isNumber( accountType ) ) {
+            instance.send( RESTService.STATUS_FAILED, null );
+            return;
+        }
+
+        /// Encrypting to create request
+        oEncrypter.setsUnEncryptedString( hardwareToken );
+        oEncrypter.rsaEncrypt( activity );
+        sEncryptedMerchData = oEncrypter.bytesToHex();
+
+        sEncryptedUsrData.append( sEncryptedMerchData ).append( REQ_SEP );
+        sEncryptedUsrData.append( clientData ).append( REQ_SEP );
+
+        sExchangeUsrData.append( MOCK_GPS1 ).append( REQ_SEP );
+        sExchangeUsrData.append( MOCK_GPS2 ).append(REQ_SEP);
+        sExchangeUsrData.append( totalPurchase ).append(REQ_SEP);
+        sExchangeUsrData.append( cashTender ).append( REQ_SEP );
+        sExchangeUsrData.append( cashBack ).append(REQ_SEP);
+        sExchangeUsrData.append( currency );
+
+        oEncrypter.setsUnEncryptedString( sExchangeUsrData.toString() );
+        oEncrypter.rsaEncrypt( activity );
+        sEncryptedExchangeUsrData = oEncrypter.bytesToHex();
+        sEncryptedUsrData.append( sEncryptedExchangeUsrData );
+
+        pRequest = ServerRequest.createAlternateRequest(
+                sEncryptedUsrData.toString(),
+                Integer.parseInt( accountType )
         );
 
         Intent intent = new Intent( activity, RESTService.class );

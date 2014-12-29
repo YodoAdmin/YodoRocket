@@ -3,23 +3,49 @@ package co.yodo.launcher.helper;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
 import android.text.InputType;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
+import java.util.Locale;
+
+import co.yodo.launcher.R;
+
 /**
  * Created by luis on 15/12/14.
  * Utilities for the App, Mainly shared preferences
  */
 public class AppUtils {
+    /**
+     * A simple check to see if a string is a valid number before inserting
+     * into the shared preferences.
+     *
+     * @param s The number to be checked.
+     * @return true  It is a number.
+     *         false It is not a number.
+     */
+    public static Boolean isNumber(String s) {
+        try {
+            Integer.parseInt(s);
+        }
+        catch( NumberFormatException e ) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * A helper class just o obtain the config file for the Shared Preferences
      * using the default values for this Shared Preferences app.
@@ -260,6 +286,8 @@ public class AppUtils {
             password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
         else
             password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+        password.setTypeface( Typeface.MONOSPACE );
     }
 
     /**
@@ -272,6 +300,44 @@ public class AppUtils {
             InputMethodManager imm = (InputMethodManager) a.getSystemService( Context.INPUT_METHOD_SERVICE );
             imm.hideSoftInputFromWindow( v.getWindowToken(), 0 );
         }
+    }
+
+    /**
+     * Plays a sound of error
+     * @param c The Context of the Android system.
+     */
+    public static void errorSound(Context c) {
+        MediaPlayer mp = MediaPlayer.create( c, R.raw.error );
+        mp.setOnCompletionListener( new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+        mp.start();
+    }
+
+    public static void setLanguage(Context c) {
+        Locale appLoc;
+        int language = getLanguage( c );
+
+        switch( language ) {
+            case 1: // Spanish
+                appLoc = new Locale( "es" );
+                break;
+
+            default: // English
+                appLoc = new Locale( "en" );
+        }
+
+        Resources res = c.getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+
+        Locale.setDefault( appLoc );
+        Configuration config = new Configuration( res.getConfiguration() );
+        config.locale = appLoc;
+
+        res.updateConfiguration( config, dm );
     }
 
     /**

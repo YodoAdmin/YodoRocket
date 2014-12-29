@@ -2,12 +2,9 @@ package co.yodo.launcher.scanner;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import co.yodo.launcher.R;
@@ -47,6 +44,8 @@ public class HardwareScanner extends QRScanner {
 
                         if( listener != null )
                             listener.onNewData( scanData );
+
+                        input.setText( "" );
 					}
 					return true;
 	            }

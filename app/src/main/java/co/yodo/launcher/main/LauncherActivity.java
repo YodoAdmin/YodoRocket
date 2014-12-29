@@ -1,6 +1,5 @@
 package co.yodo.launcher.main;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,6 +9,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.widget.SlidingPaneLayout;
+import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,6 +18,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
+import java.util.HashMap;
 import java.util.Locale;
 
 import co.yodo.launcher.R;
@@ -43,7 +46,7 @@ import co.yodo.launcher.scanner.QRScanner;
 import co.yodo.launcher.scanner.QRScannerFactory;
 import co.yodo.launcher.scanner.QRScannerListener;
 
-public class LauncherActivity extends Activity implements YodoRequest.RESTListener, QRScannerListener {
+public class LauncherActivity extends ActionBarActivity implements YodoRequest.RESTListener, QRScannerListener {
     /** DEBUG */
     private static final String TAG = LauncherActivity.class.getSimpleName();
 
@@ -74,8 +77,8 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
     ImageLoader imageLoader;
 
     /** Balance Temp */
-    private String historyData;
-    private String todayData;
+    private HashMap<String, String> historyData;
+    private HashMap<String, String> todayData;
 
     /** Current Scanners */
     private QRScanner currentScanner;
@@ -197,6 +200,7 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
 
         String[] icons = getResources().getStringArray( R.array.currency_icon_array );
         Drawable icon  = AppUtils.getDrawableByName( ac, icons[ AppUtils.getCurrency( ac ) ] );
+        icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int)(mCashTenderView.getLineHeight() * 0.9 ) );
         mCashTenderView.setCompoundDrawables(icon, null, null, null);
 
         mBalanceView.setText( getCurrentBalance() );
@@ -232,6 +236,48 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
     }
 
     /**
+     * Creates a dialog to show the balance information
+     */
+    private void balanceDialog() {
+        LayoutInflater inflater = this.getLayoutInflater();
+        View layout = inflater.inflate( R.layout.dialog_balance, new LinearLayout( this ), false );
+
+        TextView todayCreditsText = ( (TextView) layout.findViewById( R.id.yodoTodayCashTextView ) );
+        TextView todayDebitsText  = ( (TextView) layout.findViewById( R.id.yodoTodayDebitsTextView ) );
+        TextView todayBalanceText = ( (TextView) layout.findViewById( R.id.yodoTodayBalanceTextView ) );
+
+        TextView creditsText = ( (TextView) layout.findViewById( R.id.yodoCashTextView ) );
+        TextView debitsText  = ( (TextView) layout.findViewById( R.id.yodoDebitsTextView ) );
+        TextView balanceText = ( (TextView) layout.findViewById( R.id.yodoBalanceTextView ) );
+
+        Double total = 0.0, result;
+
+        result = Double.valueOf( historyData.get( ServerResponse.DEBIT ) );
+        debitsText.setText( String.format( "%.2f", result ) );
+        total -= result;
+
+        result = Double.valueOf( historyData.get( ServerResponse.CREDIT ) );
+        creditsText.setText( String.format( "%.2f", result ) );
+        total += result;
+
+        balanceText.setText( String.format( "%.2f", total * -1 ) );
+        total = 0.0;
+
+        result = Double.valueOf( todayData.get( ServerResponse.DEBIT ) );
+        todayDebitsText.setText( String.format( "%.2f", result ) );
+        total -= result;
+
+        result = Double.valueOf( todayData.get( ServerResponse.CREDIT ) );
+        todayCreditsText.setText( String.format( "%.2f", result ) );
+        total += result;
+
+        todayBalanceText.setText( String.format( "%.2f", total * -1 ) );
+
+        AlertDialogHelper.showAlertDialog( ac, getString( R.string.yodo_title ), layout );
+        todayData = historyData = null;
+    }
+
+    /**
      * Changes the current language
      * @param v View, used to get the title
      */
@@ -244,6 +290,8 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
 
         DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int item) {
+                dialog.dismiss();
+
                 ToastMaster.makeText( ac, languages[item], Toast.LENGTH_SHORT ).show();
                 AppUtils.saveLanguage( ac, item );
 
@@ -285,7 +333,8 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
                 AppUtils.saveCurrency( ac, item );
 
                 Drawable icon = AppUtils.getDrawableByName( ac, icons[ item ] );
-                mCashTenderView.setCompoundDrawables( icon, null, null, null );
+                icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int)(mCashTenderView.getLineHeight() * 0.9 ) );
+                mCashTenderView.setCompoundDrawables(icon, null, null, null);
 
                 dialog.dismiss();
             }
@@ -365,6 +414,11 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
                         LauncherActivity.this,
                         hardwareToken, pip
                 );
+
+                YodoRequest.getInstance().requestDailyHistory(
+                        LauncherActivity.this,
+                        hardwareToken, pip
+                );
             }
         };
 
@@ -384,7 +438,7 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
         mSlidingLayout.closePane();
 
         final String title   = ((Button) v).getText().toString();
-        final String message = getString( R.string.imei)       + " " +
+        final String message = getString( R.string.imei )       + " " +
                                AppUtils.getHardwareToken( ac ) + "\n" +
                                getString( R.string.version );
 
@@ -485,7 +539,7 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
     @Override
     public void onResponse(YodoRequest.RequestType type, ServerResponse response) {
         YodoRequest.getInstance().destroyProgressDialog();
-        String code;
+        String code, message;
 
         switch( type ) {
             case ERROR_NO_INTERNET:
@@ -500,11 +554,48 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
                 code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
-
+                    historyData = response.getParams();
+                    if( todayData != null )
+                        balanceDialog();
                 } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
+                    AppUtils.errorSound( ac );
 
+                    Message msg = new Message();
+                    msg.what = YodoHandler.SERVER_ERROR;
+                    message  = response.getMessage() + "\n" + response.getParam( ServerResponse.PARAMS );
+
+                    Bundle bundle = new Bundle();
+                    bundle.putString( YodoHandler.CODE, code );
+                    bundle.putString( YodoHandler.MESSAGE, message );
+                    msg.setData( bundle );
+
+                    handlerMessages.sendMessage( msg );
+                    todayData = historyData = null;
                 }
+                break;
 
+            case QUERY_DAY_REQUEST:
+                code = response.getCode();
+
+                if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                    todayData = response.getParams();
+                    if( historyData != null )
+                        balanceDialog();
+                } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
+                    AppUtils.errorSound( ac );
+
+                    Message msg = new Message();
+                    msg.what = YodoHandler.SERVER_ERROR;
+                    message  = response.getMessage() + "\n" + response.getParam( ServerResponse.PARAMS );
+
+                    Bundle bundle = new Bundle();
+                    bundle.putString( YodoHandler.CODE, code );
+                    bundle.putString( YodoHandler.MESSAGE, message );
+                    msg.setData( bundle );
+
+                    handlerMessages.sendMessage( msg );
+                    todayData = historyData = null;
+                }
                 break;
 
             case QUERY_LOGO_REQUEST:
@@ -518,14 +609,31 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
                         imageLoader.DisplayImage( AppConfig.LOGO_PATH + logoName, logoImage );
                     }
                 }
-
                 break;
 
             case EXCH_MERCH_REQUEST:
-                String message = getString(R.string.exchange_auth)    + " " + response.getAuthNumber() + "\n" +
-                                 getString(R.string.exchange_message) + " " + response.getMessage();
+            case ALT_MERCH_REQUEST:
+                code = response.getCode();
 
-                AlertDialogHelper.showAlertDialog( ac, response.getCode(), message );
+                if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                    message = getString( R.string.exchange_auth ) + " " + response.getAuthNumber() + "\n" +
+                              getString( R.string.exchange_message ) + " " + response.getMessage();
+
+                    AlertDialogHelper.showAlertDialog( ac, response.getCode(), message );
+                } else {
+                    AppUtils.errorSound( ac );
+
+                    Message msg = new Message();
+                    msg.what = YodoHandler.SERVER_ERROR;
+                    message  = response.getMessage() + "\n" + response.getParam( ServerResponse.PARAMS );
+
+                    Bundle bundle = new Bundle();
+                    bundle.putString( YodoHandler.CODE, code );
+                    bundle.putString( YodoHandler.MESSAGE, message );
+                    msg.setData( bundle );
+
+                    handlerMessages.sendMessage( msg );
+                }
                 break;
         }
     }
@@ -557,6 +665,20 @@ public class LauncherActivity extends Activity implements YodoRequest.RESTListen
                 break;
 
             case AppConfig.ALT_SIZE:
+                YodoRequest.getInstance().createProgressDialog(
+                        LauncherActivity.this,
+                        YodoRequest.ProgressDialogType.TRANSPARENT
+                );
+
+                YodoRequest.getInstance().requestAlternate(
+                        LauncherActivity.this,
+                        hardwareToken,
+                        data,
+                        totalPurchase,
+                        cashTender,
+                        cashBack,
+                        currency[ AppUtils.getCurrency( ac ) ]
+                );
                 break;
 
             default:

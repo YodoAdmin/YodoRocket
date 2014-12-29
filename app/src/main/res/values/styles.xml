@@ -45,9 +45,9 @@
     <style name="LabelTextView">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginBottom">5dp</item>
-        <item name="android:layout_marginLeft">5dp</item>
-        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">@dimen/data_margin</item>
+        <item name="android:layout_marginLeft">@dimen/data_margin</item>
+        <item name="android:layout_marginTop">@dimen/data_marginTop</item>
         <item name="android:textSize">@dimen/text_size_values</item>
     </style>
 
@@ -55,7 +55,7 @@
     <style name="EditTextView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_margin">5dp</item>
+        <item name="android:layout_margin">@dimen/data_margin</item>
         <item name="android:gravity">end</item>
         <item name="android:clickable">true</item>
         <item name="android:singleLine">true</item>
@@ -69,7 +69,7 @@
     <style name="CalcButton">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_margin">5dp</item>
+        <item name="android:layout_margin">@dimen/margin_buttons_calculator</item>
         <item name="android:layout_weight">1</item>
         <item name="android:onClick">valueClick</item>
         <item name="android:textSize">@dimen/text_size_numbers</item>
@@ -80,7 +80,7 @@
     <style name="StaticValueButton">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_margin">10dp</item>
+        <item name="android:layout_margin">@dimen/margin_buttons</item>
         <item name="android:layout_weight">1</item>
         <item name="android:onClick">addClick</item>
         <item name="android:textSize">@dimen/text_size_buttons</item>
@@ -91,8 +91,8 @@
     <style name="CalcLayout">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingLeft">10dp</item>
-        <item name="android:paddingRight">10dp</item>
+        <item name="android:paddingLeft">@dimen/padding_calc</item>
+        <item name="android:paddingRight">@dimen/padding_calc</item>
         <item name="android:gravity">center</item>
         <item name="android:orientation">horizontal</item>
         <item name="android:weightSum">3</item>
@@ -104,8 +104,10 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_margin">5dp</item>
+        <item name="android:padding">5dp</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:scaleType">center</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:scaleType">centerInside</item>
         <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 

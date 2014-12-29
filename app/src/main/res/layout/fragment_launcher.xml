@@ -24,10 +24,10 @@
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="50dp"
-            android:layout_marginBottom="50dp"
+            android:layout_marginLeft="@dimen/data_horizontal_margin"
+            android:layout_marginRight="@dimen/data_horizontal_margin"
+            android:layout_marginTop="@dimen/data_vertical_margin"
+            android:layout_marginBottom="@dimen/data_vertical_margin"
             android:layout_gravity="center_horizontal">
 
             <!-- Labels -->
@@ -244,8 +244,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
+                android:paddingTop="@dimen/padding_calc"
+                android:paddingBottom="@dimen/padding_calc"
                 android:background="@color/gray"
                 android:orientation="vertical">
 
