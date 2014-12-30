@@ -135,13 +135,15 @@ public class AlertDialogHelper {
      * @param clickListener Action attached to the dialog
      */
     public static void showAlertDialog(final Context c, final String title,
-                                       final EditText input, final boolean show, final boolean remember,
+                                       final EditText input, final boolean show,
+                                       final boolean remember, final CheckBox rememberPassword,
                                        final DialogInterface.OnClickListener clickListener) {
         input.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD );
 
         LayoutInflater inflater = (LayoutInflater) c.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
         View layout = inflater.inflate( R.layout.dialog_with_password, new LinearLayout( c ), false );
-        ((LinearLayout) layout).addView(input, 0);
+        ((LinearLayout) layout).addView( input, 0 );
+        ((LinearLayout) layout).addView( rememberPassword );
 
         if( show ) {
             CheckBox showPassword = (CheckBox) layout.findViewById(R.id.showPassword);
@@ -157,13 +159,12 @@ public class AlertDialogHelper {
         }
 
         if( remember ) {
-            CheckBox rememberPassword = (CheckBox) layout.findViewById(R.id.rememberPassword);
-            rememberPassword.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+            String password = AppUtils.getPassword( c );
 
-                }
-            });
+            if( password != null ) {
+                input.setText( password );
+                rememberPassword.setChecked( true );
+            }
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder( c );

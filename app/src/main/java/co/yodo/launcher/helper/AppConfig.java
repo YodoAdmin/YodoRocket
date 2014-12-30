@@ -46,6 +46,11 @@ public class AppConfig {
     */
     public static final String SPREF_CURRENT_BEACON = "SPCurrentBeacon";
 
+    /* The current password, in case of remember option selected.
+    * type -- String
+    */
+    public static final String SPREF_CURRENT_PASSWORD = "SPCurrentPassword";
+
     /* The current currency.
     * type -- Integer
     */
@@ -90,6 +95,9 @@ public class AppConfig {
 	 * Default: position 0 (BarcodeScanner)
 	 */
     public static final Integer DEFAULT_SCANNER = 0;
+
+    /* Encrypt Key AES */
+    public static final String encryptionKey = "FEDCBA98765432100123456789ABCDEF";
 
     /* Bluetooth Yodo POS name */
     public static final String YODO_POS = "Yodo-Merch-";

@@ -399,11 +399,18 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
         final String title      = getString( R.string.input_pip );
         final EditText inputBox = new ClearEditText( ac );
+        final CheckBox remember = new CheckBox( ac );
+        remember.setText( R.string.remember_pass);
 
         DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int item) {
                 String pip = inputBox.getText().toString();
                 AppUtils.hideSoftKeyboard( LauncherActivity.this );
+
+                if( remember.isChecked() )
+                    AppUtils.savePassword( ac, pip );
+                else
+                    AppUtils.savePassword( ac, null );
 
                 YodoRequest.getInstance().createProgressDialog(
                         LauncherActivity.this ,
@@ -426,6 +433,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                 ac,
                 title,
                 inputBox, true, true,
+                remember,
                 onClick
         );
     }

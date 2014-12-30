@@ -178,6 +178,35 @@ public class AppUtils {
     }
 
     /**
+     * It saves the password to the preferences.
+     * @param c The Context of the Android system.
+     * @param s The password.
+     * @return true  If it was saved.
+     *         false If it was not saved.
+     */
+    public static Boolean savePassword(Context c, String s) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+
+        if( s != null )
+            writer.putString( AppConfig.SPREF_CURRENT_PASSWORD, s );
+        else
+            writer.remove( AppConfig.SPREF_CURRENT_PASSWORD );
+
+        return writer.commit();
+    }
+
+    /**
+     * It gets the password if saved.
+     * @param c The Context of the Android system.
+     * @return int It returns the password or nul.
+     */
+    public static String getPassword(Context c) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getString( AppConfig.SPREF_CURRENT_PASSWORD, null );
+    }
+
+    /**
      * It saves if it is the first login.
      * @param c The Context of the Android system.
      * @param flag If it is the first login or not.

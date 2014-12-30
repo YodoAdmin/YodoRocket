@@ -25,11 +25,17 @@
             android:name="co.yodo.launcher.main.MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="sensorLandscape">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="co.yodo.launcher.POS"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
         </activity>
 
         <!-- Start Services -->
