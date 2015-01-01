@@ -8,11 +8,16 @@ The YodoLauncher, basically an android application that can be called from exter
 
 * To call the launcher:
 
+```
+#!java
+
  Intent test = new Intent( "co.yodo.launcher.POS" );
  test.putExtra( "TOTAL", 25.00 );
  test.putExtra( "CASH_TENDER", 43.25 );
  test.putExtra( "CASH_BACK", 10.50 );
  startActivityForResult( test, 0 );
+
+```
 
 * To get the results:
 
