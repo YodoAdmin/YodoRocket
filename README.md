@@ -21,6 +21,10 @@ The YodoLauncher, basically an android application that can be called from exter
 
 * To get the results:
 
+```
+#!java
+
+
   public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if( requestCode == 0 ) {
             if( resultCode == RESULT_OK ) {
@@ -33,3 +37,5 @@ The YodoLauncher, basically an android application that can be called from exter
             }
         }
     }
+
+```
