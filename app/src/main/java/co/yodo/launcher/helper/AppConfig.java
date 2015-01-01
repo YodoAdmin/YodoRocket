@@ -1,6 +1,6 @@
 package co.yodo.launcher.helper;
 
-import co.yodo.launcher.net.RESTService;
+import co.yodo.launcher.service.RESTService;
 
 /**
  * Created by luis on 15/12/14.
@@ -95,6 +95,10 @@ public class AppConfig {
 	 * Default: position 0 (BarcodeScanner)
 	 */
     public static final Integer DEFAULT_SCANNER = 0;
+
+    /* Request Code (Activity Result) */
+    public static final int REGISTRATION_REQUEST = 1;
+    public static final int LAUNCHER_REQUEST     = 2;
 
     /* Encrypt Key AES */
     public static final String encryptionKey = "FEDCBA98765432100123456789ABCDEF";

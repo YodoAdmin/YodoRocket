@@ -50,7 +50,7 @@ public class YodoHandler extends Handler {
         else if( msg.what == SERVER_ERROR ) {
             String code     = msg.getData().getString( CODE );
             String response = msg.getData().getString( MESSAGE );
-            AlertDialogHelper.showAlertDialog( main, code, response );
+            AlertDialogHelper.showAlertDialog( main, code, response, null );
         }
     }
 }

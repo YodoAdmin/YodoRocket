@@ -15,6 +15,7 @@ import co.yodo.launcher.component.Encrypter;
 import co.yodo.launcher.component.TransparentProgressDialog;
 import co.yodo.launcher.data.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
+import co.yodo.launcher.service.RESTService;
 
 /**
  * Created by luis on 15/12/14.
@@ -81,10 +82,6 @@ public class YodoRequest extends ResultReceiver {
 
     /** User's data separator */
     private static final String	REQ_SEP = ",";
-
-    /** Merchant Data */
-    private static final String MOCK_GPS1 = "0,00";
-    private static final String MOCK_GPS2 = "0,00";
 
     /**
      * Create a new ResultReceive to receive results.  Your
@@ -268,7 +265,7 @@ public class YodoRequest extends ResultReceiver {
 
     public void requestExchange(Activity activity, String hardwareToken, String client,
                                 String totalPurchase, String cashTender, String cashBack,
-                                String currency) {
+                                double latitude, double longitude, String currency) {
         String sEncryptedMerchData, sEncryptedExchangeUsrData, pRequest;
         StringBuilder sEncryptedUsrData = new StringBuilder();
         StringBuilder sExchangeUsrData = new StringBuilder();
@@ -281,8 +278,8 @@ public class YodoRequest extends ResultReceiver {
         sEncryptedUsrData.append( sEncryptedMerchData ).append( REQ_SEP );
         sEncryptedUsrData.append( client ).append( REQ_SEP );
 
-        sExchangeUsrData.append( MOCK_GPS1 ).append( REQ_SEP );
-        sExchangeUsrData.append( MOCK_GPS2 ).append(REQ_SEP);
+        sExchangeUsrData.append( latitude ).append( REQ_SEP );
+        sExchangeUsrData.append( longitude ).append(REQ_SEP);
         sExchangeUsrData.append( totalPurchase ).append(REQ_SEP);
         sExchangeUsrData.append( cashTender ).append( REQ_SEP );
         sExchangeUsrData.append( cashBack ).append(REQ_SEP);
@@ -307,7 +304,7 @@ public class YodoRequest extends ResultReceiver {
 
     public void requestAlternate(Activity activity, String hardwareToken, String client,
                                 String totalPurchase, String cashTender, String cashBack,
-                                String currency) {
+                                double latitude, double longitude, String currency) {
         String sEncryptedMerchData, sEncryptedExchangeUsrData, pRequest;
         StringBuilder sEncryptedUsrData = new StringBuilder();
         StringBuilder sExchangeUsrData = new StringBuilder();
@@ -329,8 +326,8 @@ public class YodoRequest extends ResultReceiver {
         sEncryptedUsrData.append( sEncryptedMerchData ).append( REQ_SEP );
         sEncryptedUsrData.append( clientData ).append( REQ_SEP );
 
-        sExchangeUsrData.append( MOCK_GPS1 ).append( REQ_SEP );
-        sExchangeUsrData.append( MOCK_GPS2 ).append(REQ_SEP);
+        sExchangeUsrData.append( latitude ).append( REQ_SEP );
+        sExchangeUsrData.append( longitude ).append(REQ_SEP);
         sExchangeUsrData.append( totalPurchase ).append(REQ_SEP);
         sExchangeUsrData.append( cashTender ).append( REQ_SEP );
         sExchangeUsrData.append( cashBack ).append(REQ_SEP);

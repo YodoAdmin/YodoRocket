@@ -1,13 +1,19 @@
 package co.yodo.launcher.main;
 
 import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Message;
+import android.os.Parcelable;
+import android.provider.Settings;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
@@ -32,6 +38,7 @@ import java.util.Locale;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.adapter.CurrencyAdapter;
+import co.yodo.launcher.broadcastreceiver.BroadcastMessage;
 import co.yodo.launcher.component.ClearEditText;
 import co.yodo.launcher.component.ImageLoader;
 import co.yodo.launcher.component.ToastMaster;
@@ -41,6 +48,7 @@ import co.yodo.launcher.helper.AlertDialogHelper;
 import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.data.ServerResponse;
+import co.yodo.launcher.helper.Intents;
 import co.yodo.launcher.net.YodoRequest;
 import co.yodo.launcher.scanner.QRScanner;
 import co.yodo.launcher.scanner.QRScannerFactory;
@@ -80,8 +88,19 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
     private HashMap<String, String> historyData;
     private HashMap<String, String> todayData;
 
+    /** Location */
+    private Location location;
+
+    /** Mock data for location */
+    private static final String PROVIDER = "flp";
+    private static final double LAT = 0.00;
+    private static final double LNG = 0.00;
+
     /** Current Scanners */
     private QRScanner currentScanner;
+
+    /** External data */
+    private Bundle externBundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +117,14 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
         if( AppUtils.isAdvertisingServiceRunning(ac) )
             setupAdvertising( false );
+
+        registerBroadcasts();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterBroadcasts();
     }
 
     @Override
@@ -110,7 +137,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
     @Override
     public void onBackPressed() {
-        if(currentScanner != null && currentScanner.isScanning()) {
+        if( currentScanner != null && currentScanner.isScanning() ) {
             currentScanner.destroy();
             return;
         }
@@ -188,12 +215,37 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
         selectedView = mTotalView;
         selectedView.setBackgroundResource( R.drawable.selected_text_field );
+
+        LocationManager lm = (LocationManager) getSystemService( LOCATION_SERVICE );
+        if( !lm.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+            DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int item) {
+                    Intent intent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS );
+                    startActivity( intent );
+                }
+            };
+
+            AlertDialogHelper.showAlertDialog( ac, R.string.gps_enable, onClick );
+        }
     }
 
     /**
      * Set-up the basic information
      */
     private void updateData() {
+        /** Handle external Requests */
+        externBundle = getIntent().getExtras();
+        if( externBundle != null ) {
+            String total      = String.format(Locale.US, "%.2f", externBundle.getDouble(Intents.TOTAL, 0.00));
+            String cashTender = String.format(Locale.US, "%.2f", externBundle.getDouble(Intents.CASH_TENDER, 0.00));
+            String cashBack   = String.format(Locale.US, "%.2f", externBundle.getDouble(Intents.CASH_BACK, 0.00));
+
+            mTotalView.setText( total );
+            mCashTenderView.setText( cashTender );
+            mCashBackView.setText( cashBack );
+        }
+        /*****************************/
+
         hardwareToken = AppUtils.getHardwareToken( ac );
 
         YodoRequest.getInstance().requestLogo( LauncherActivity.this, hardwareToken );
@@ -204,6 +256,10 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         mCashTenderView.setCompoundDrawables(icon, null, null, null);
 
         mBalanceView.setText( getCurrentBalance() );
+
+        location = new Location( PROVIDER );
+        location.setLatitude( LAT );
+        location.setLongitude(LNG);
     }
 
     /**
@@ -295,8 +351,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                 ToastMaster.makeText( ac, languages[item], Toast.LENGTH_SHORT ).show();
                 AppUtils.saveLanguage( ac, item );
 
-                Intent intent = new Intent( LauncherActivity.this, MainActivity.class );
-                startActivity( intent );
+                setResult( RESULT_FIRST_USER );
                 finish();
             }
         };
@@ -453,7 +508,8 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         AlertDialogHelper.showAlertDialog(
                 ac,
                 title,
-                message
+                message,
+                null
         );
     }
 
@@ -622,12 +678,28 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
             case EXCH_MERCH_REQUEST:
             case ALT_MERCH_REQUEST:
                 code = response.getCode();
+                final String ex_authNumber = response.getAuthNumber();
+                final String ex_message    = response.getMessage();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    message = getString( R.string.exchange_auth ) + " " + response.getAuthNumber() + "\n" +
-                              getString( R.string.exchange_message ) + " " + response.getMessage();
+                    message = getString( R.string.exchange_auth ) + " " + ex_authNumber + "\n" +
+                              getString( R.string.exchange_message ) + " " + ex_message;
 
-                    AlertDialogHelper.showAlertDialog( ac, response.getCode(), message );
+                    DialogInterface.OnClickListener onClick = null;
+
+                    if( externBundle != null ) {
+                        onClick = new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int item) {
+                                Intent data = new Intent();
+                                data.putExtra( Intents.RESULT_AUTH, ex_authNumber );
+                                data.putExtra( Intents.RESULT_MSG, ex_message );
+                                setResult( RESULT_OK, data );
+                                finish();
+                            }
+                        };
+                    }
+
+                    AlertDialogHelper.showAlertDialog( ac, response.getCode(), message , onClick);
                 } else {
                     AppUtils.errorSound( ac );
 
@@ -668,6 +740,8 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                         totalPurchase,
                         cashTender,
                         cashBack,
+                        location.getLatitude(),
+                        location.getLongitude(),
                         currency[ AppUtils.getCurrency( ac ) ]
                 );
                 break;
@@ -685,6 +759,8 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                         totalPurchase,
                         cashTender,
                         cashBack,
+                        location.getLatitude(),
+                        location.getLongitude(),
                         currency[ AppUtils.getCurrency( ac ) ]
                 );
                 break;
@@ -694,4 +770,42 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                 break;
         }
     }
+
+    /**
+     * Register/Unregister the broadcast receiver.
+     */
+    private void registerBroadcasts() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction( BroadcastMessage.ACTION_NEW_LOCATION );
+
+        registerReceiver(mLauncherBroadcastReceiver, filter);
+        AppUtils.Logger(TAG, ">> Launcher >> Broadcast registered.");
+    }
+
+    private void unregisterBroadcasts() {
+        unregisterReceiver(mLauncherBroadcastReceiver);
+        AppUtils.Logger(TAG, ">> Launcher >> Broadcast unregistered.");
+    }
+
+    /**
+     * The broadcast receiver for the location service, it will receive all the
+     * updates from the location service and send it to the gateway.
+     */
+    private BroadcastReceiver mLauncherBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent i) {
+
+            String action = i.getAction();
+			/* Broadcast: ACTION_NEW_LOCATION */
+			/* ****************************** */
+            if( action.equals( BroadcastMessage.ACTION_NEW_LOCATION ) ) {
+                AppUtils.Logger(TAG, ">> LauncherActivity >> ACTION_NEW_LOCATION");
+
+                Parcelable p = i.getParcelableExtra( BroadcastMessage.EXTRA_NEW_LOCATION );
+                if( p != null && p instanceof Location ) {
+                    location = (Location) p;
+                }
+            }
+        }
+    };
 }

@@ -90,17 +90,38 @@ public class AlertDialogHelper {
     /**
      * Shows an alert dialog with an EditText
      * @param c The context of the application
+     * @param message The message of the dialog
+     * @param clickListener Action for the selection
+     */
+    public static void showAlertDialog(final Context c, final int message,
+                                       final DialogInterface.OnClickListener clickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder( c );
+        builder.setMessage( message );
+        builder.setCancelable( false );
+
+        builder.setPositiveButton( c.getString(R.string.ok ), clickListener );
+        builder.setNegativeButton( c.getString( R.string.cancel ), null );
+
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /**
+     * Shows an alert dialog with an EditText
+     * @param c The context of the application
      * @param title The title of the dialog
      * @param message A message to show
+     * @param clickListener click for the negative button
      */
-    public static void showAlertDialog(final Context c, final String title, final String message) {
+    public static void showAlertDialog(final Context c, final String title, final String message,
+                                       final DialogInterface.OnClickListener clickListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder( c );
         builder.setIcon( R.drawable.ic_launcher );
         builder.setTitle( title );
         builder.setMessage( message );
         builder.setCancelable( false );
 
-        builder.setNegativeButton( c.getString( R.string.cancel ), null );
+        builder.setNegativeButton( c.getString( R.string.cancel ), clickListener );
 
         final AlertDialog alertDialog = builder.create();
         alertDialog.show();

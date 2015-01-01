@@ -1,7 +1,6 @@
 package co.yodo.launcher.main;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Message;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -41,7 +40,7 @@ public class RegistrationActivity extends ActionBarActivity implements YodoReque
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
-        switch (itemId) {
+        switch( itemId ) {
             case android.R.id.home:
                 finish();
                 break;
@@ -59,9 +58,9 @@ public class RegistrationActivity extends ActionBarActivity implements YodoReque
         password = (EditText) findViewById( R.id.merchTokenText );
 
         // Only used at creation
-        Toolbar mActionBarToolbar = (Toolbar) findViewById(R.id.registrationBar);
+        Toolbar mActionBarToolbar = (Toolbar) findViewById( R.id.registrationBar );
 
-        setSupportActionBar(mActionBarToolbar);
+        setSupportActionBar( mActionBarToolbar );
         getSupportActionBar().setDisplayHomeAsUpEnabled( true );
     }
 
@@ -106,24 +105,22 @@ public class RegistrationActivity extends ActionBarActivity implements YodoReque
 
         switch( type ) {
             case ERROR_NO_INTERNET:
-                finish();
                 handlerMessages.sendEmptyMessage( YodoHandler.NO_INTERNET );
+                finish();
                 break;
 
             case ERROR_GENERAL:
-                finish();
                 handlerMessages.sendEmptyMessage( YodoHandler.GENERAL_ERROR );
+                finish();
                 break;
 
             case REG_MERCH_REQUEST:
                 String code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED_REGISTRATION ) ) {
-                    finish();
                     AppUtils.saveLoginStatus( ac, true );
-
-                    Intent intent = new Intent( RegistrationActivity.this, LauncherActivity.class );
-                    startActivity( intent );
+                    setResult( RESULT_OK );
+                    finish();
                 } else {
                     Message msg = new Message();
                     msg.what = YodoHandler.SERVER_ERROR;
@@ -135,7 +132,6 @@ public class RegistrationActivity extends ActionBarActivity implements YodoReque
 
                     handlerMessages.sendMessage( msg );
                 }
-
                 break;
         }
     }

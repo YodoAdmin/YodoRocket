@@ -4,7 +4,7 @@
     <!-- Main Strings -->
     <string name="app_name">YodoLauncher</string>
     <string name="action_settings">Configuración</string>
-    <string name="version">Versión: 0.0.1</string>
+    <string name="version">Versión: 0.0.3</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTRAR</string>
     <string name="loading">Cargando</string>
@@ -13,7 +13,7 @@
 
     <!-- Error Messages -->
     <string name="error">Esto es embarazoso! Ocurrio un error en el proceso</string>
-    <string name="no_internet">Lo sentimos, parece que no dispone de una una conexion a Internet</string>
+    <string name="no_internet">Lo sentimos, parece que no dispone de una conexion a Internet</string>
     <string name="no_hardware">Debe encender su bluetooth primero</string>
 
     <!-- General Messages -->
@@ -23,6 +23,7 @@
     <string name="input_token">Inserte el Token Password</string>
     <string name="merch_pip_hint">Código de Activación</string>
     <string name="barcode_scanner">Escanee el código</string>
+    <string name="gps_enable">El GPS no está habilitado. Desea ir a configuraciones?</string>
 
     <!-- Exchange Response -->
     <string name="exchange_code">Código:</string>

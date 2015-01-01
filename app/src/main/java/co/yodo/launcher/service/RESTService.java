@@ -1,4 +1,4 @@
-package co.yodo.launcher.net;
+package co.yodo.launcher.service;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -19,6 +19,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import co.yodo.launcher.helper.AppUtils;
+import co.yodo.launcher.net.XMLHandler;
 
 /**
  * Created by luis on 15/12/14.
