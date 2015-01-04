@@ -62,7 +62,7 @@
     <string name="logout">Logout</string>
 
     <!-- Preview Messages -->
-    <string name="place_qrcode">Place you SKS code entirely in this window</string>
+    <string name="place_qrcode">Place your SKS code entirely in this window</string>
 
     <!-- Values Labels -->
     <string name="total_purchase">Purchase: </string>

@@ -14,6 +14,7 @@ public class Intents {
     public static final String CASH_BACK   = "CASH_BACK";
 
     /* Return */
+    public static final String RESULT_CODE = "RESULT_CODE";
     public static final String RESULT_AUTH = "RESULT_AUTH";
     public static final String RESULT_MSG  = "RESULT_MSG";
 }

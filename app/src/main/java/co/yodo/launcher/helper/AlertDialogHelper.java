@@ -121,7 +121,7 @@ public class AlertDialogHelper {
         builder.setMessage( message );
         builder.setCancelable( false );
 
-        builder.setNegativeButton( c.getString( R.string.cancel ), clickListener );
+        builder.setPositiveButton( c.getString( R.string.ok ), clickListener );
 
         final AlertDialog alertDialog = builder.create();
         alertDialog.show();

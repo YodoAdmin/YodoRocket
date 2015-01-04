@@ -295,8 +295,9 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
      * Creates a dialog to show the balance information
      */
     private void balanceDialog() {
-        LayoutInflater inflater = this.getLayoutInflater();
-        View layout = inflater.inflate( R.layout.dialog_balance, new LinearLayout( this ), false );
+        LayoutInflater inflater = getLayoutInflater();
+        LinearLayout root = (LinearLayout) findViewById( R.id.layoutDialogRoot );
+        View layout = inflater.inflate( R.layout.dialog_balance, root, false );
 
         TextView todayCreditsText = ( (TextView) layout.findViewById( R.id.yodoTodayCashTextView ) );
         TextView todayDebitsText  = ( (TextView) layout.findViewById( R.id.yodoTodayDebitsTextView ) );
@@ -645,20 +646,6 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                     todayData = response.getParams();
                     if( historyData != null )
                         balanceDialog();
-                } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
-                    AppUtils.errorSound( ac );
-
-                    Message msg = new Message();
-                    msg.what = YodoHandler.SERVER_ERROR;
-                    message  = response.getMessage() + "\n" + response.getParam( ServerResponse.PARAMS );
-
-                    Bundle bundle = new Bundle();
-                    bundle.putString( YodoHandler.CODE, code );
-                    bundle.putString( YodoHandler.MESSAGE, message );
-                    msg.setData( bundle );
-
-                    handlerMessages.sendMessage( msg );
-                    todayData = historyData = null;
                 }
                 break;
 
@@ -678,6 +665,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
             case EXCH_MERCH_REQUEST:
             case ALT_MERCH_REQUEST:
                 code = response.getCode();
+                final String ex_code       = response.getCode();
                 final String ex_authNumber = response.getAuthNumber();
                 final String ex_message    = response.getMessage();
 
@@ -691,6 +679,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                         onClick = new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int item) {
                                 Intent data = new Intent();
+                                data.putExtra( Intents.RESULT_CODE, ex_code );
                                 data.putExtra( Intents.RESULT_AUTH, ex_authNumber );
                                 data.putExtra( Intents.RESULT_MSG, ex_message );
                                 setResult( RESULT_OK, data );
