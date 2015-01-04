@@ -28,9 +28,9 @@ The YodoLauncher, basically an android application that can be called from exter
   public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if( requestCode == 0 ) {
             if( resultCode == RESULT_OK ) {
-                String code            = intent.getStringExtra("RESULT_CODE");
+                String code       = intent.getStringExtra("RESULT_CODE");
                 String authNumber = intent.getStringExtra("RESULT_AUTH");
-                String message      = intent.getStringExtra("RESULT_MSG");
+                String message    = intent.getStringExtra("RESULT_MSG");
                 // Handle successful transaction
                 Toast.makeText( this, code + " - " + authNumber + " - " + message, Toast.LENGTH_LONG ).show();
             } else if (resultCode == RESULT_CANCELED) {
