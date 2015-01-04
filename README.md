@@ -33,7 +33,7 @@ The YodoLauncher, basically an android application that can be called from exter
                 String message    = intent.getStringExtra("RESULT_MSG");
                 // Handle successful transaction
                 Toast.makeText( this, code + " - " + authNumber + " - " + message, Toast.LENGTH_LONG ).show();
-            } else if (resultCode == RESULT_CANCELED) {
+            } else if ( resultCode == RESULT_CANCELED ) {
                 // Handle cancel
             }
         }
