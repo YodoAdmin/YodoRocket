@@ -4,7 +4,7 @@
     <!-- Main Strings -->
     <string name="app_name">YodoLauncher</string>
     <string name="action_settings">Configuración</string>
-    <string name="version">Versión: 0.0.3</string>
+    <string name="version">Versión: 0.0.5</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTRAR</string>
     <string name="loading">Cargando</string>

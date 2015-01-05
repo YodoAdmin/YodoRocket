@@ -78,13 +78,18 @@ public class HardwareScanner extends QRScanner {
 	public void startScan() {
         inputDialog.show();
 	}
+
+    @Override
+    public void close() {
+        inputDialog.dismiss();
+    }
 	
 	@Override
 	public boolean isScanning() {
 		return inputDialog.isShowing();
 	}
 
-	@Override
+    @Override
 	public void destroy() {
         inputDialog.dismiss();
         inputDialog = null;

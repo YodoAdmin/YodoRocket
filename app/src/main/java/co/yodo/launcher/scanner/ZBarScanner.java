@@ -2,13 +2,10 @@ package co.yodo.launcher.scanner;
 
 import android.app.Activity;
 import android.hardware.Camera;
-import android.os.Handler;
 import android.view.View;
 import android.hardware.Camera.PreviewCallback;
-import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.Size;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TableRow;
 
@@ -30,7 +27,6 @@ public class ZBarScanner extends QRScanner {
     /** Camera */
 	private Camera mCamera;
     private CameraPreview mPreview;
-    private Handler autoFocusHandler;
     
     /** GUI Controllers */
     private ImageScanner scanner;
@@ -49,16 +45,11 @@ public class ZBarScanner extends QRScanner {
 
 	private ZBarScanner(Activity activity) {
 		super( activity );
-		
-		autoFocusHandler = new Handler();
 
         // Instance barcode scanner 
         scanner = new ImageScanner();
         scanner.setConfig( 0, Config.X_DENSITY, 3 );
         scanner.setConfig( 0, Config.Y_DENSITY, 3 );
-        
-        //preview = (RelativeLayout) act.findViewById( R.id.previewPanel );
-        //opPanel = (TableRow) act.findViewById( R.id.operationsPanel );
 
         preview = (FrameLayout) act.findViewById(R.id.cameraPreview);
         opPanel = (TableRow) act.findViewById(R.id.operationsPanel);
@@ -81,7 +72,7 @@ public class ZBarScanner extends QRScanner {
 	public void startScan() {
 		if( !previewing ) {
 			mCamera = getCameraInstance();
-			mPreview = new CameraPreview( this.act, mCamera, previewCb, autoFocusCB );
+			mPreview = new CameraPreview( this.act, mCamera, previewCb );
 			preview.addView( mPreview );
 			
 			opPanel.setVisibility( View.GONE );
@@ -90,22 +81,21 @@ public class ZBarScanner extends QRScanner {
 			mCamera.setPreviewCallback( previewCb );
 			mCamera.startPreview();
 			
-			/*try {
-				mCamera.autoFocus(autoFocusCB);
-	        } catch(Exception e) {
-	        	Utils.logger(TAG, "Error starting camera preview: " + e.getMessage());
-	        }*/
-			
 			previewing = true;
 		}
 	}
+
+    @Override
+    public void close() {
+        releaseCamera();
+    }
 	
 	@Override
 	public boolean isScanning() {
 		return previewing;
 	}
 
-	@Override
+    @Override
 	public void destroy() {
 		releaseCamera();
 		instance = null;
@@ -141,14 +131,6 @@ public class ZBarScanner extends QRScanner {
         previewing = false;
     }
 
-    private Runnable doAutoFocus = new Runnable() {
-    	@Override
-    	public void run() {
-    		if( previewing )
-    			mCamera.autoFocus( autoFocusCB );
-    	}
-    };
-
     PreviewCallback previewCb = new PreviewCallback() {
     	@Override
     	public void onPreviewFrame(byte[] data, Camera camera) {
@@ -176,14 +158,6 @@ public class ZBarScanner extends QRScanner {
                 releaseCamera();
             }
     	}
-    };
-
-    // Mimic continuous auto-focusing
-    AutoFocusCallback autoFocusCB = new AutoFocusCallback() {
-    	@Override
-    	public void onAutoFocus(boolean success, Camera camera) {
-    		autoFocusHandler.postDelayed( doAutoFocus, 1000 );
-        }
     };
     
     /**

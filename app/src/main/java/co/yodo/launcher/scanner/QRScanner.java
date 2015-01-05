@@ -12,6 +12,8 @@ public abstract class QRScanner {
 	}
 	
 	public abstract void startScan();
+
+    public abstract void close();
 	
 	public abstract boolean isScanning();
 	

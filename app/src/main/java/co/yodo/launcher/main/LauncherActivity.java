@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -17,6 +18,8 @@ import android.provider.Settings;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
+import android.view.OrientationEventListener;
+import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -65,6 +68,10 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
     /** Bluetooth Admin */
     private BluetoothAdapter mBluetoothAdapter;
 
+    /** Orientation detector */
+    private OrientationEventListener mOrientationListener;
+    private int mLastRotation;
+
     /** Hardware Token */
     private String hardwareToken;
 
@@ -99,6 +106,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
     /** Current Scanners */
     private QRScanner currentScanner;
+    private boolean isScanning = false;
 
     /** External data */
     private Bundle externBundle;
@@ -116,23 +124,33 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
     @Override
     public void onResume() {
         super.onResume();
+        registerBroadcasts();
 
         if( AppUtils.isAdvertisingServiceRunning(ac) )
             setupAdvertising( false );
 
-        registerBroadcasts();
+        if( currentScanner != null && isScanning ) {
+            isScanning = false;
+            currentScanner.startScan();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterBroadcasts();
+
+        if( currentScanner != null && currentScanner.isScanning() ) {
+            isScanning = true;
+            currentScanner.close();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
+        mOrientationListener.disable();
         imageLoader.clearCache();
         QRScannerFactory.destroy();
     }
@@ -229,6 +247,29 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
             AlertDialogHelper.showAlertDialog( ac, R.string.gps_enable, onClick );
         }
+
+        mLastRotation = getWindowManager().getDefaultDisplay().getRotation();
+        mOrientationListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_NORMAL) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+                int rotation = getWindowManager().getDefaultDisplay().getRotation();
+
+                if( ( rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180 ) &&
+                      rotation != mLastRotation ) {
+
+                    if( currentScanner != null && currentScanner.isScanning() ) {
+                        currentScanner.close();
+                        currentScanner.startScan();
+                    }
+
+                    mLastRotation = rotation;
+                }
+            }
+        };
+
+        if(mOrientationListener.canDetectOrientation()) {
+            mOrientationListener.enable();
+        }
     }
 
     /**
@@ -238,13 +279,13 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         /** Handle external Requests */
         externBundle = getIntent().getExtras();
         if( externBundle != null ) {
-            String total      = String.format(Locale.US, "%.2f", externBundle.getDouble(Intents.TOTAL, 0.00));
-            String cashTender = String.format(Locale.US, "%.2f", externBundle.getDouble(Intents.CASH_TENDER, 0.00));
-            String cashBack   = String.format(Locale.US, "%.2f", externBundle.getDouble(Intents.CASH_BACK, 0.00));
+            String total      = String.format( Locale.US, "%.2f", externBundle.getDouble( Intents.TOTAL, 0.00 ) );
+            String cashTender = String.format( Locale.US, "%.2f", externBundle.getDouble( Intents.CASH_TENDER, 0.00 ) );
+            String cashBack   = String.format( Locale.US, "%.2f", externBundle.getDouble( Intents.CASH_BACK, 0.00 ) );
 
-            mTotalView.setText( total );
-            mCashTenderView.setText( cashTender );
-            mCashBackView.setText( cashBack );
+            if( Double.valueOf( total ) > 0.00 )      mTotalView.setText( total );
+            if( Double.valueOf( cashTender ) > 0.00 ) mCashTenderView.setText( cashTender );
+            if( Double.valueOf( cashBack ) > 0.00 )   mCashBackView.setText( cashBack );
         }
         /*****************************/
 
@@ -261,7 +302,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
         location = new Location( PROVIDER );
         location.setLatitude( LAT );
-        location.setLongitude(LNG);
+        location.setLongitude( LNG );
     }
 
     /**
@@ -591,7 +632,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
      */
     public void yodoPayClick(View v) {
         if( currentScanner != null && currentScanner.isScanning() ) {
-            currentScanner.destroy();
+            currentScanner.close();
             return;
         }
 
