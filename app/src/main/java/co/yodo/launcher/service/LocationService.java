@@ -1,8 +1,10 @@
 package co.yodo.launcher.service;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -49,7 +51,7 @@ public class LocationService extends Service implements LocationListener {
 		// get the context
         Context ac = LocationService.this;
 		// get local broadcast 
-		lbm = LocalBroadcastManager.getInstance(ac);
+		lbm = LocalBroadcastManager.getInstance( ac );
 		// get location manager
 		lm = (LocationManager) getSystemService( LOCATION_SERVICE );
 		// Configurations
@@ -68,6 +70,8 @@ public class LocationService extends Service implements LocationListener {
 		// remove the listener
         if( lm != null )
 		    lm.removeUpdates( this );
+
+        unregisterReceiver( mGpsChangeReceiver );
 	}
 	
 	/**
@@ -85,10 +89,17 @@ public class LocationService extends Service implements LocationListener {
 	
 	@Override
 	public void onProviderDisabled(String provider) {
+        AppUtils.Logger( TAG, " >> DISABLED " + provider );
+
+        if( lm != null )
+            lm.removeUpdates( this );
+
+        bootstrap();
     }
 
 	@Override
 	public void onProviderEnabled(String provider) {
+        AppUtils.Logger( TAG, " >> ENABLED " + provider );
 	}
 
 	@Override
@@ -104,6 +115,8 @@ public class LocationService extends Service implements LocationListener {
 	 * The bootstrap for the location service
 	 */
 	private void bootstrap() {
+        this.registerReceiver(mGpsChangeReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+
 		// create a criteria
 		Criteria c = new Criteria();
 		// force GPS 
@@ -111,9 +124,21 @@ public class LocationService extends Service implements LocationListener {
         String provider = lm.getBestProvider( c, true );
 
         // start receiving locations updates
-        if(provider != null)
+        if(provider != null) {
+            AppUtils.Logger( TAG, ">> Provider " + provider );
             lm.requestLocationUpdates( provider, LOCATION_INTERVAL, LOCATION_DISTANCE, this );
+        }
 		else
             AppUtils.Logger( TAG, ">> Provider NULL" );
 	}
+
+    private BroadcastReceiver mGpsChangeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if( lm != null )
+                lm.removeUpdates( LocationService.this );
+
+            bootstrap();
+        }
+    };
 }

@@ -19,7 +19,6 @@ import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.OrientationEventListener;
-import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;

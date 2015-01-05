@@ -43,6 +43,17 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
         updateData();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        boolean isRunning = AppUtils.isMyServiceRunning( ac, LocationService.class.getName() );
+        if( isRunning ) {
+            Intent iLoc = new Intent( ac, LocationService.class );
+            stopService( iLoc );
+        }
+    }
+
     private void setupGUI() {
         ac = MainActivity.this;
 
