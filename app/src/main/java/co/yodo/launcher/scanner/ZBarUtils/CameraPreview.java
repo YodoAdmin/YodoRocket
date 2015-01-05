@@ -76,8 +76,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
                 int rotation = windowManager.getDefaultDisplay().getRotation();
 
+                // For tablets ROTATION_180, and for cellphones ROTATION_270 (weird?)
                 switch( rotation ) {
                     case Surface.ROTATION_180:
+                    case Surface.ROTATION_270:
                         mCamera.setDisplayOrientation( 180 );
                         break;
                 }

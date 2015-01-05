@@ -126,7 +126,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         super.onResume();
         registerBroadcasts();
 
-        if( AppUtils.isAdvertisingServiceRunning(ac) )
+        if( AppUtils.isAdvertisingServiceRunning( ac ) )
             setupAdvertising( false );
 
         if( currentScanner != null && isScanning ) {
@@ -254,8 +254,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
             public void onOrientationChanged(int orientation) {
                 int rotation = getWindowManager().getDefaultDisplay().getRotation();
 
-                if( ( rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180 ) &&
-                      rotation != mLastRotation ) {
+                if( rotation != mLastRotation ) {
 
                     if( currentScanner != null && currentScanner.isScanning() ) {
                         currentScanner.close();
