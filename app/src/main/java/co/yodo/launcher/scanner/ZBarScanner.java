@@ -16,6 +16,8 @@ import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
 import net.sourceforge.zbar.Config;
 
+import java.util.List;
+
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.scanner.ZBarUtils.CameraPreview;
@@ -77,7 +79,7 @@ public class ZBarScanner extends QRScanner {
 			
 			opPanel.setVisibility( View.GONE );
             pvPanel.setVisibility( View.VISIBLE );
-			
+
 			mCamera.setPreviewCallback( previewCb );
 			mCamera.startPreview();
 			

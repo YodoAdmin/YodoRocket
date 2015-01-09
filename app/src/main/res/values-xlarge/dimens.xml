@@ -8,6 +8,7 @@
     <dimen name="data_vertical_margin">50dp</dimen>
     <dimen name="navigation_drawer_width">240dp</dimen>
 
+    <dimen name="registration_margin">8dp</dimen>
     <dimen name="data_margin">5dp</dimen>
     <dimen name="data_marginTop">8dp</dimen>
 

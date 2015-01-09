@@ -38,7 +38,7 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
+            android:layout_margin="@dimen/registration_margin"
             android:layout_gravity="center"
             android:textStyle="bold"
             android:text="@string/input_token" />
@@ -47,7 +47,7 @@
             android:id="@+id/merchTokenText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
+            android:layout_margin="@dimen/registration_margin"
             android:singleLine="true"
             android:inputType="textPassword"
             android:hint="@string/merch_pip_hint"
@@ -56,7 +56,7 @@
         <CheckBox
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
+            android:layout_margin="@dimen/registration_margin"
             android:text="@string/show_pass"
             android:onClick="showPasswordClick" />
 
@@ -64,12 +64,11 @@
             android:id="@+id/registrationButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
+            android:layout_margin="@dimen/registration_margin"
             android:textColor="@android:color/white"
             android:background="@drawable/material_button_gray"
             android:text="@string/register"
             android:onClick="registrationClick"/>
 
     </LinearLayout>
-
 </RelativeLayout>

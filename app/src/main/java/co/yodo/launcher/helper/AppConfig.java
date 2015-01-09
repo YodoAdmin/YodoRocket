@@ -8,7 +8,7 @@ import co.yodo.launcher.service.RESTService;
  */
 public class AppConfig {
     /** DEBUG flag */
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoLauncherSharedPref";

@@ -2,7 +2,9 @@ package co.yodo.launcher.scanner.ZBarUtils;
 
 import co.yodo.launcher.component.ToastMaster;
 import co.yodo.launcher.helper.AppUtils;
+import co.yodo.launcher.helper.DisplayUtils;
 
+import android.graphics.Point;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.Surface;
@@ -15,12 +17,14 @@ import android.hardware.Camera.AutoFocusCallback;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import java.util.List;
+
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 	/** DEBUG */
 	private static final String TAG = CameraPreview.class.getName();
-		
-	private SurfaceHolder mHolder;
+
     private Camera mCamera;
+	private SurfaceHolder mHolder;
     private PreviewCallback previewCallback;
 
     private Handler mAutoFocusHandler;
@@ -50,12 +54,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder) {
         mSurfaceCreated = true;
     }
-
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        // Camera preview released in activity
-        mSurfaceCreated = false;
-        stopCameraPreview();
-    }
     
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         if( mHolder.getSurface() == null ) {
@@ -68,10 +66,17 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         showCameraPreview();
     }
 
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        // Camera preview released in activity
+        mSurfaceCreated = false;
+        stopCameraPreview();
+    }
+
     public void showCameraPreview() {
         if( mCamera != null ) {
             try {
                 mPreviewing = true;
+                setupCameraParameters();
 
                 WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
                 int rotation = windowManager.getDefaultDisplay().getRotation();
@@ -100,6 +105,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
         }
     }
+
     public void stopCameraPreview() {
         if( mCamera != null ) {
             try {
@@ -112,22 +118,58 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    public void setupCameraParameters() {
+        Camera.Size optimalSize = getOptimalPreviewSize();
+        Camera.Parameters parameters = mCamera.getParameters();
+        parameters.setPreviewSize( optimalSize.width, optimalSize.height );
+        mCamera.setParameters( parameters );
+    }
+
+    private Camera.Size getOptimalPreviewSize() {
+        if(mCamera == null) {
+            return null;
+        }
+
+        List<Camera.Size> sizes = mCamera.getParameters().getSupportedPreviewSizes();
+        Point screenResolution = DisplayUtils.getScreenResolution( getContext() );
+        int w = screenResolution.x;
+        int h = screenResolution.y;
+
+        final double ASPECT_TOLERANCE = 0.1;
+        double targetRatio = (double) w / h;
+        if (sizes == null) return null;
+        Camera.Size optimalSize = null;
+        double minDiff = Double.MAX_VALUE;
+        // Try to find an size match aspect ratio and size
+        for( Camera.Size size : sizes ) {
+            double ratio = (double) size.width / size.height;
+            if( Math.abs( ratio - targetRatio ) > ASPECT_TOLERANCE ) continue;
+            if( Math.abs(size.height - h ) < minDiff ) {
+                optimalSize = size;
+                minDiff = Math.abs( size.height - h );
+            }
+        }
+        // Cannot find the one match the aspect ratio, ignore the requirement
+        if( optimalSize == null ) {
+            minDiff = Double.MAX_VALUE;
+            for( Camera.Size size : sizes ) {
+                if( Math.abs( size.height - h ) < minDiff ) {
+                    optimalSize = size;
+                    minDiff = Math.abs( size.height - h );
+                }
+            }
+        }
+        return optimalSize;
+    }
+
     public void setAutoFocus(boolean state) {
         if( mCamera != null && mPreviewing ) {
-            if( state == mAutoFocus ) {
+            if( state == mAutoFocus )
                 return;
-            }
-
             mAutoFocus = state;
             if( mAutoFocus ) {
-                if (mSurfaceCreated) { // check if surface created before using autofocus
-                    AppUtils.Logger( TAG, "Starting autofocus" );
-                    mCamera.autoFocus( autoFocusCB );
-                } else {
-                    scheduleAutoFocus(); // wait 1 sec and then do check again
-                }
+                mCamera.autoFocus( autoFocusCB );
             } else {
-                AppUtils.Logger( TAG, "Cancelling autofocus" );
                 mCamera.cancelAutoFocus();
             }
         }
