@@ -57,7 +57,7 @@
             <!-- Text Fields -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:orientation="vertical">
 
@@ -132,6 +132,7 @@
                 style="@style/ImageButton"
                 android:src="@drawable/yodo_gear"
                 android:contentDescription="@string/desc"
+                android:background="@null"
                 android:onClick="yodoPayClick"/>
 
         </LinearLayout>
@@ -186,6 +187,11 @@
 
             <Button
                 style="@style/StaticValueButton"
+                android:id="@+id/b20000"
+                android:text="@string/coins_0"/>
+
+            <Button
+                style="@style/StaticValueButton"
                 android:id="@+id/b500"
                 android:text="@string/coins_5"/>
 
@@ -208,11 +214,6 @@
                 style="@style/StaticValueButton"
                 android:id="@+id/b10000"
                 android:text="@string/coins_100"/>
-
-            <Button
-                style="@style/StaticValueButton"
-                android:id="@+id/b20000"
-                android:text="@string/coins_200"/>
 
         </LinearLayout>
 

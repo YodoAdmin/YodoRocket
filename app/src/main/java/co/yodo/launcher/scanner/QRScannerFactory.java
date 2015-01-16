@@ -5,7 +5,8 @@ import android.app.Activity;
 public class QRScannerFactory {
 	public enum SupportedScanners {
 		Hardware   ( "Barcode Scanner" ),
-		ZBarScanner( "Camera" );
+		ZBarScanner1( "Camera Front" ),
+        ZBarScanner2( "Camera Back" );
 		
 		private String value;
 		
@@ -27,9 +28,15 @@ public class QRScannerFactory {
 				qrscanner = HardwareScanner.getInstance( activity );
 			break;
 			
-			case ZBarScanner:
+			case ZBarScanner1:
 				qrscanner = ZBarScanner.getInstance( activity );
+                qrscanner.setFrontFaceCamera( true );
 			break;
+
+            case ZBarScanner2:
+                qrscanner = ZBarScanner.getInstance( activity );
+                qrscanner.setFrontFaceCamera( false );
+            break;
 		}
 
         if( qrscanner != null && activity instanceof QRScannerListener )

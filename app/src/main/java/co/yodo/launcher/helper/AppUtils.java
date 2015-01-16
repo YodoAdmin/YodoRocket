@@ -8,6 +8,8 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.location.Criteria;
+import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -16,6 +18,9 @@ import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -80,6 +85,30 @@ public class AppUtils {
     public static Boolean isLoggedIn(Context c) {
         SharedPreferences config = getSPrefConfig(c);
         return config.getBoolean( AppConfig.SPREF_LOGIN_STATE, false );
+    }
+
+    /**
+     * It saves the logo url to the preferences.
+     * @param c The Context of the Android system.
+     * @param s The logo url.
+     * @return true  If it was saved.
+     *         false If it was not saved.
+     */
+    public static Boolean saveLogoUrl(Context c, String s) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+        writer.putString( AppConfig.SPREF_CURRENT_LOGO, s );
+        return writer.commit();
+    }
+
+    /**
+     * It gets the logo url.
+     * @param c The Context of the Android system.
+     * @return int It returns the beacon name.
+     */
+    public static String getLogoUrl(Context c) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getString( AppConfig.SPREF_CURRENT_LOGO, "" );
     }
 
     /**
@@ -383,6 +412,32 @@ public class AppUtils {
                 return true;
         }
         return false;
+    }
+
+    /**
+     * Verify if the location services are enabled (any provider)
+     * @param c The Context of the Android system.
+     * @return Boolean true if is running otherwise false
+     */
+    public static boolean isLocationEnabled(Context c) {
+        LocationManager lm = (LocationManager) c.getSystemService(Context.LOCATION_SERVICE);
+        String provider    = lm.getBestProvider( new Criteria(), true );
+        return ( ( !provider.isEmpty() ) && !LocationManager.PASSIVE_PROVIDER.equals( provider ) );
+    }
+
+    /**
+     * Rotates an image by 360 in 1 second
+     * @param image The image to rotate
+     */
+    public static void rotateImage(View image) {
+        RotateAnimation rotateAnimation1 = new RotateAnimation( 0, 360,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f );
+        rotateAnimation1.setInterpolator( new LinearInterpolator() );
+        rotateAnimation1.setDuration( 1000 );
+        rotateAnimation1.setRepeatCount( 0 );
+
+        image.startAnimation( rotateAnimation1 );
     }
 
     /**

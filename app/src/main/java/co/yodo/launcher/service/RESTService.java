@@ -106,4 +106,10 @@ public class RESTService extends IntentService {
     public static String getRoot() {
         return IP;
     }
+
+    public static String getSwitch() {
+        if( IP.equals( "http://50.56.180.133" ) )
+            return "P";
+        return "D";
+    }
 }

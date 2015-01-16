@@ -4,7 +4,7 @@
     <!-- Main Strings -->
     <string name="app_name">YodoLauncher</string>
     <string name="action_settings">Configuración</string>
-    <string name="version">Versión: 0.0.5</string>
+    <string name="version">Versión: 0.1.0</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTRAR</string>
     <string name="loading">Cargando</string>
@@ -13,8 +13,10 @@
 
     <!-- Error Messages -->
     <string name="error">Esto es embarazoso! Ocurrio un error en el proceso</string>
+    <string name="no_balance">Lo sentimos, parece que no dispone de un balance</string>
     <string name="no_internet">Lo sentimos, parece que no dispone de una conexion a Internet</string>
     <string name="no_hardware">Debe encender su bluetooth primero</string>
+    <string name="no_camera">Esta cámara no existe</string>
 
     <!-- General Messages -->
     <string name="input_pip">Merch Identity Phrase (MIP)</string>
@@ -43,6 +45,7 @@
 
     <!-- Labels -->
     <string name="imei">IMEI:</string>
+    <string name="server_switch">Switch:</string>
 
     <!-- Activity titles -->
     <string name="title_activity_pos">Yodo Launcher</string>
@@ -74,6 +77,7 @@
 
     <!-- Input Labels -->
     <string name="clear">C</string>
+    <string name="coins_0">0.00</string>
     <string name="coins_5">5.00</string>
     <string name="coins_10">10.00</string>
     <string name="coins_20">20.00</string>

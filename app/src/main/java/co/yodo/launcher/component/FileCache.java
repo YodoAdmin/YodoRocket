@@ -31,5 +31,4 @@ public class FileCache {
         for( File f : files )
             f.delete();
     }
-
 }

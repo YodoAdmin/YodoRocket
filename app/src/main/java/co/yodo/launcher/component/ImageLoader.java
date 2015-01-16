@@ -55,7 +55,7 @@ public class ImageLoader {
     
     private Bitmap getBitmap(String url) {
         File f = fileCache.getFile( url );
-        
+
         //from SD cache
         Bitmap b = decodeFile( f );
         if( b != null )
@@ -69,9 +69,10 @@ public class ImageLoader {
             conn.setConnectTimeout( 30000 );
             conn.setReadTimeout( 30000 );
             conn.setInstanceFollowRedirects( true );
+            conn.connect();
             InputStream is = conn.getInputStream();
             OutputStream os = new FileOutputStream( f );
-            CopyStream(is, os);
+            CopyStream( is, os );
             os.close();
             bitmap = decodeFile( f );
             return bitmap;
@@ -131,7 +132,7 @@ public class ImageLoader {
         public void run() {
             if( imageViewReused( photoToLoad ) )
                 return;
-            
+
             Bitmap bmp = getBitmap( photoToLoad.url );
             memoryCache.put( photoToLoad.url, bmp );
             
@@ -179,10 +180,10 @@ public class ImageLoader {
         try {
             byte[] bytes = new byte[buffer_size];
             for(;;) {
-                int count = is.read(bytes, 0, buffer_size);
+                int count = is.read( bytes, 0, buffer_size );
                 if(count == -1)
                     break;
-                os.write(bytes, 0, count);
+                os.write( bytes, 0, count );
             }
         } catch(Exception ex) {
             AppUtils.Logger( TAG, ex.toString() );

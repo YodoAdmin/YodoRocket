@@ -94,6 +94,8 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
 
     @Override
     public void onResponse(YodoRequest.RequestType type, ServerResponse response) {
+        String code;
+
         switch( type ) {
             case ERROR_NO_INTERNET:
                 handlerMessages.sendEmptyMessage( YodoHandler.NO_INTERNET );
@@ -104,7 +106,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
                 break;
 
             case AUTH_REQUEST:
-                String code = response.getCode();
+                code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
                     AppUtils.saveLoginStatus( ac, true );

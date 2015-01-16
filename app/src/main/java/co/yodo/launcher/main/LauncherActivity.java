@@ -10,7 +10,6 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Message;
 import android.os.Parcelable;
@@ -56,6 +55,7 @@ import co.yodo.launcher.net.YodoRequest;
 import co.yodo.launcher.scanner.QRScanner;
 import co.yodo.launcher.scanner.QRScannerFactory;
 import co.yodo.launcher.scanner.QRScannerListener;
+import co.yodo.launcher.service.RESTService;
 
 public class LauncherActivity extends ActionBarActivity implements YodoRequest.RESTListener, QRScannerListener {
     /** DEBUG */
@@ -81,6 +81,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
     private TextView mTotalView;
     private TextView mCashTenderView;
     private TextView mCashBackView;
+    private ImageView mLogoImage;
 
     /** Selected Text View */
     private TextView selectedView;
@@ -150,7 +151,6 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         super.onDestroy();
 
         mOrientationListener.disable();
-        imageLoader.clearCache();
         QRScannerFactory.destroy();
     }
 
@@ -178,9 +178,13 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         mTotalView       = (TextView) findViewById( R.id.totalText );
         mCashTenderView  = (TextView) findViewById( R.id.cashTenderText );
         mCashBackView    = (TextView) findViewById( R.id.cashBackText );
+        mLogoImage       = (ImageView) findViewById( R.id.companyLogo );
 
         // Only used at creation
         CheckBox mAdvertisingCheckBox = (CheckBox) findViewById(R.id.advertisingCheckBox);
+
+        // Sliding Panel Configurations
+        mSlidingLayout.setParallaxDistance( 30 );
 
         mScannersSpinner.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
             @Override
@@ -203,6 +207,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                 android.R.layout.simple_list_item_1,
                 QRScannerFactory.SupportedScanners.values()
         );
+
         mScannersSpinner.setAdapter( adapter );
         mScannersSpinner.setSelection( AppUtils.getScanner( ac ) );
 
@@ -235,8 +240,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         selectedView = mTotalView;
         selectedView.setBackgroundResource( R.drawable.selected_text_field );
 
-        LocationManager lm = (LocationManager) getSystemService( LOCATION_SERVICE );
-        if( !lm.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+        if( !AppUtils.isLocationEnabled( ac ) ) {
             DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int item) {
                     Intent intent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS );
@@ -284,12 +288,19 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
             if( Double.valueOf( total ) > 0.00 )      mTotalView.setText( total );
             if( Double.valueOf( cashTender ) > 0.00 ) mCashTenderView.setText( cashTender );
             if( Double.valueOf( cashBack ) > 0.00 )   mCashBackView.setText( cashBack );
+
+            viewClick( mCashTenderView );
         }
         /*****************************/
 
         hardwareToken = AppUtils.getHardwareToken( ac );
+        String logo_url = AppUtils.getLogoUrl( ac );
 
-        YodoRequest.getInstance().requestLogo( LauncherActivity.this, hardwareToken );
+        if( logo_url.equals( "" ) ) {
+            YodoRequest.getInstance().requestLogo( LauncherActivity.this, hardwareToken );
+        } else {
+            imageLoader.DisplayImage( logo_url, mLogoImage );
+        }
 
         String[] icons = getResources().getStringArray( R.array.currency_icon_array );
         Drawable icon  = AppUtils.getDrawableByName( ac, icons[ AppUtils.getCurrency( ac ) ] );
@@ -336,6 +347,11 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
      * Creates a dialog to show the balance information
      */
     private void balanceDialog() {
+        if( historyData.size() == 1 || todayData.size() == 1 ) {
+            ToastMaster.makeText( ac, R.string.no_balance, Toast.LENGTH_SHORT ).show();
+            return;
+        }
+
         LayoutInflater inflater = getLayoutInflater();
         LinearLayout root = (LinearLayout) findViewById( R.id.layoutDialogRoot );
         View layout = inflater.inflate( R.layout.dialog_balance, root, false );
@@ -545,7 +561,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         final String title   = ((Button) v).getText().toString();
         final String message = getString( R.string.imei )       + " " +
                                AppUtils.getHardwareToken( ac ) + "\n" +
-                               getString( R.string.version );
+                               getString( R.string.version ) + "/" + RESTService.getSwitch();
 
         AlertDialogHelper.showAlertDialog(
                 ac,
@@ -560,8 +576,9 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
      * @param v View, not used
      */
     public void logoutClick(View v) {
-        finish();
+        imageLoader.clearCache();
         AppUtils.saveLoginStatus( ac, false );
+        finish();
     }
 
     /**
@@ -598,7 +615,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         final String current = selectedView.getText().toString();
 
         Double result = Double.valueOf( ( current + value ).replace( ".", "" ) ) / 100.00;
-        selectedView.setText( String.format( Locale.US, "%.2f", result ) );
+        selectedView.setText( String.format(Locale.US, "%.2f", result));
 
         mBalanceView.setText( getCurrentBalance() );
     }
@@ -610,9 +627,12 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         final String amount  = ((Button)v).getText().toString();
         final String current = selectedView.getText().toString();
 
-        double value = Double.valueOf( current ) + Double.valueOf( amount );
-        selectedView.setText( String.format( Locale.US, "%.2f", value ) );
-
+        if( amount.equals( getString( R.string.coins_0 ) ) ) {
+            selectedView.setText( getString( R.string.zero ) );
+        } else {
+            double value = Double.valueOf(current) + Double.valueOf(amount);
+            selectedView.setText(String.format(Locale.US, "%.2f", value));
+        }
         mBalanceView.setText( getCurrentBalance() );
     }
 
@@ -633,6 +653,8 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
             currentScanner.close();
             return;
         }
+
+        AppUtils.rotateImage( v );
 
         currentScanner = QRScannerFactory.getInstance(
                 this,
@@ -668,7 +690,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
                     Message msg = new Message();
                     msg.what = YodoHandler.SERVER_ERROR;
-                    message  = response.getMessage() + "\n" + response.getParam( ServerResponse.PARAMS );
+                    message  = response.getMessage();
 
                     Bundle bundle = new Bundle();
                     bundle.putString( YodoHandler.CODE, code );
@@ -697,8 +719,8 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                     String logoName = response.getParam( ServerResponse.LOGO );
 
                     if( logoName != null ) {
-                        ImageView logoImage = (ImageView) findViewById( R.id.companyLogo );
-                        imageLoader.DisplayImage( AppConfig.LOGO_PATH + logoName, logoImage );
+                        AppUtils.saveLogoUrl(ac, AppConfig.LOGO_PATH + logoName );
+                        imageLoader.DisplayImage( AppConfig.LOGO_PATH + logoName, mLogoImage );
                     }
                 }
                 break;

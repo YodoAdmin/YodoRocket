@@ -9,8 +9,8 @@
     <dimen name="navigation_drawer_width">240dp</dimen>
 
     <dimen name="registration_margin">4dp</dimen>
-    <dimen name="data_margin">2dp</dimen>
-    <dimen name="data_marginTop">6dp</dimen>
+    <dimen name="data_margin">5dp</dimen>
+    <dimen name="data_marginTop">7dp</dimen>
 
     <dimen name="margin_buttons">5dp</dimen>
     <dimen name="margin_buttons_calculator">2dp</dimen>
@@ -19,7 +19,7 @@
 
     <dimen name="text_size_numbers">16sp</dimen>
     <dimen name="text_size_numbers_00">15sp</dimen>
-    <dimen name="text_size_values">17sp</dimen>
+    <dimen name="text_size_values">19sp</dimen>
     <dimen name="text_size_buttons">15sp</dimen>
     <dimen name="text_size_input">20sp</dimen>
 

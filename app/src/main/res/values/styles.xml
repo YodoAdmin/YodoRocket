@@ -45,9 +45,9 @@
     <style name="LabelTextView">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginBottom">@dimen/data_margin</item>
         <item name="android:layout_marginLeft">@dimen/data_margin</item>
         <item name="android:layout_marginTop">@dimen/data_marginTop</item>
+        <item name="android:layout_marginBottom">@dimen/data_margin</item>
         <item name="android:textSize">@dimen/text_size_values</item>
     </style>
 
@@ -55,7 +55,9 @@
     <style name="EditTextView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_margin">@dimen/data_margin</item>
+        <item name="android:layout_marginLeft">@dimen/data_margin</item>
+        <item name="android:layout_marginTop">@dimen/data_margin</item>
+        <item name="android:layout_marginBottom">@dimen/data_margin</item>
         <item name="android:gravity">end</item>
         <item name="android:clickable">true</item>
         <item name="android:singleLine">true</item>

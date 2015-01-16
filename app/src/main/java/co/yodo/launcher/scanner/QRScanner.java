@@ -16,6 +16,8 @@ public abstract class QRScanner {
     public abstract void close();
 	
 	public abstract boolean isScanning();
+
+    public abstract void setFrontFaceCamera(boolean frontFacing);
 	
 	public abstract void destroy();
 	

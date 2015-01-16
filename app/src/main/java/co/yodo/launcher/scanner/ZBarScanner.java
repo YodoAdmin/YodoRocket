@@ -8,6 +8,7 @@ import android.hardware.Camera.Size;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TableRow;
+import android.widget.Toast;
 
 /** Import ZBar Class files */
 import net.sourceforge.zbar.ImageScanner;
@@ -16,9 +17,8 @@ import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
 import net.sourceforge.zbar.Config;
 
-import java.util.List;
-
 import co.yodo.launcher.R;
+import co.yodo.launcher.component.ToastMaster;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.scanner.ZBarUtils.CameraPreview;
 
@@ -36,7 +36,9 @@ public class ZBarScanner extends QRScanner {
 	private TableRow opPanel;
     private RelativeLayout pvPanel;
 
-    private boolean previewing = false;
+    /** Camera Flags */
+    private boolean previewing  = false;
+    private boolean frontFacing = true;
     
     static {
         System.loadLibrary( "iconv" );
@@ -73,7 +75,13 @@ public class ZBarScanner extends QRScanner {
 	@Override
 	public void startScan() {
 		if( !previewing ) {
-			mCamera = getCameraInstance();
+			mCamera = getCameraInstance( frontFacing );
+
+            if( mCamera == null ) {
+                ToastMaster.makeText( act, R.string.no_camera, Toast.LENGTH_SHORT ).show();
+                return;
+            }
+
 			mPreview = new CameraPreview( this.act, mCamera, previewCb );
 			preview.addView( mPreview );
 			
@@ -98,16 +106,24 @@ public class ZBarScanner extends QRScanner {
 	}
 
     @Override
+    public void setFrontFaceCamera(boolean frontFacing) {
+        this.frontFacing = frontFacing;
+    }
+
+    @Override
 	public void destroy() {
 		releaseCamera();
 		instance = null;
 	}
 	
 	/** A safe way to get an instance of the Camera object. */
-    public static Camera getCameraInstance() {
+    public static Camera getCameraInstance(boolean frontFacing) {
     	Camera c = null;
         try {
-            c = openFrontFacingCamera();
+            if( frontFacing )
+                c = openFrontFacingCamera();
+            else
+                c = openBackFacingCamera();
         } catch( Exception e ) {
             AppUtils.Logger( TAG, "Exception = " + e );
         }
@@ -185,6 +201,33 @@ public class ZBarScanner extends QRScanner {
         
         if( cam == null )
         	cam = Camera.open();
+
+        return cam;
+    }
+
+    /**
+     * tries to open the back camera
+     * @return Camera
+     */
+    private static Camera openBackFacingCamera() {
+        int cameraCount = 0;
+        Camera cam = null;
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        cameraCount = Camera.getNumberOfCameras();
+
+        for( int camIdx = 0; camIdx < cameraCount; camIdx++ ) {
+            Camera.getCameraInfo( camIdx, cameraInfo );
+            if( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK ) {
+                try {
+                    cam = Camera.open( camIdx );
+                } catch( RuntimeException e ) {
+                    AppUtils.Logger( TAG, "Camera failed to open: " + e.getLocalizedMessage() );
+                }
+            }
+        }
+
+        if( cam == null )
+            cam = Camera.open();
 
         return cam;
     }

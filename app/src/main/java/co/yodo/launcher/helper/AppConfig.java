@@ -8,7 +8,7 @@ import co.yodo.launcher.service.RESTService;
  */
 public class AppConfig {
     /** DEBUG flag */
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoLauncherSharedPref";
@@ -35,6 +35,11 @@ public class AppConfig {
 	 * false -- It was already logged in several times
 	 */
     public static final String SPREF_FIRST_LOGIN = "SPFirstLogin";
+
+    /* The current logo url.
+    * type -- String
+    */
+    public static final String SPREF_CURRENT_LOGO = "SPCurrentLogo";
 
     /* The current language.
 	 * type -- Integer

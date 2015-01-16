@@ -90,6 +90,9 @@ public class HardwareScanner extends QRScanner {
 	}
 
     @Override
+    public void setFrontFaceCamera(boolean frontFacing) {}
+
+    @Override
 	public void destroy() {
         inputDialog.dismiss();
         inputDialog = null;

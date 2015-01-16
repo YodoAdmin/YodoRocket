@@ -9,8 +9,8 @@
     <dimen name="navigation_drawer_width">240dp</dimen>
 
     <dimen name="registration_margin">6dp</dimen>
-    <dimen name="data_margin">4dp</dimen>
-    <dimen name="data_marginTop">7dp</dimen>
+    <dimen name="data_margin">6dp</dimen>
+    <dimen name="data_marginTop">8dp</dimen>
 
     <dimen name="margin_buttons">7dp</dimen>
     <dimen name="margin_buttons_calculator">4dp</dimen>
