@@ -1,6 +1,5 @@
 package co.yodo.launcher.scanner.ZBarUtils;
 
-import co.yodo.launcher.component.ToastMaster;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.helper.DisplayUtils;
 
@@ -15,7 +14,6 @@ import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.AutoFocusCallback;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import java.util.List;
 
@@ -126,7 +124,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     private Camera.Size getOptimalPreviewSize() {
-        if(mCamera == null) {
+        if( mCamera == null ) {
             return null;
         }
 

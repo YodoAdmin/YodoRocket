@@ -70,8 +70,8 @@
                 <TextView
                     style="@style/EditTextView"
                     android:id="@+id/cashTenderText"
-                    android:drawableLeft="@drawable/mexico"
-                    android:drawableStart="@drawable/mexico"/>
+                    android:drawableLeft="@drawable/canada"
+                    android:drawableStart="@drawable/canada"/>
 
                 <TextView
                     style="@style/EditTextView"

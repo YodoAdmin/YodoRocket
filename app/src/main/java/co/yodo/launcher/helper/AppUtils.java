@@ -28,6 +28,7 @@ import android.widget.EditText;
 import java.util.Locale;
 
 import co.yodo.launcher.R;
+import co.yodo.launcher.component.AES;
 
 /**
  * Created by luis on 15/12/14.
@@ -84,7 +85,7 @@ public class AppUtils {
      */
     public static Boolean isLoggedIn(Context c) {
         SharedPreferences config = getSPrefConfig(c);
-        return config.getBoolean( AppConfig.SPREF_LOGIN_STATE, false );
+        return config.getBoolean(AppConfig.SPREF_LOGIN_STATE, false);
     }
 
     /**
@@ -108,7 +109,7 @@ public class AppUtils {
      */
     public static String getLogoUrl(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getString( AppConfig.SPREF_CURRENT_LOGO, "" );
+        return config.getString(AppConfig.SPREF_CURRENT_LOGO, "");
     }
 
     /**
@@ -132,7 +133,7 @@ public class AppUtils {
      */
     public static int getLanguage(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt( AppConfig.SPREF_CURRENT_LANGUAGE, AppConfig.DEFAULT_LANGUAGE );
+        return config.getInt(AppConfig.SPREF_CURRENT_LANGUAGE, AppConfig.DEFAULT_LANGUAGE);
     }
 
     /**
@@ -156,7 +157,7 @@ public class AppUtils {
      */
     public static int getCurrency(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt( AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY );
+        return config.getInt(AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY);
     }
 
     /**
@@ -180,7 +181,7 @@ public class AppUtils {
      */
     public static int getScanner(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt( AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER );
+        return config.getInt(AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER);
     }
 
     /**
@@ -204,7 +205,7 @@ public class AppUtils {
      */
     public static String getBeaconName(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getString( AppConfig.SPREF_CURRENT_BEACON, "" );
+        return config.getString(AppConfig.SPREF_CURRENT_BEACON, "");
     }
 
     /**
@@ -218,10 +219,16 @@ public class AppUtils {
         SharedPreferences config = getSPrefConfig( c );
         SharedPreferences.Editor writer = config.edit();
 
-        if( s != null )
-            writer.putString( AppConfig.SPREF_CURRENT_PASSWORD, s );
-        else
-            writer.remove( AppConfig.SPREF_CURRENT_PASSWORD );
+        if( s != null ) {
+            try {
+                String encryptPip = AES.encrypt( s );
+                writer.putString( AppConfig.SPREF_CURRENT_PASSWORD, encryptPip );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            writer.remove(AppConfig.SPREF_CURRENT_PASSWORD);
+        }
 
         return writer.commit();
     }
@@ -233,7 +240,16 @@ public class AppUtils {
      */
     public static String getPassword(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getString( AppConfig.SPREF_CURRENT_PASSWORD, null );
+        String password = config.getString( AppConfig.SPREF_CURRENT_PASSWORD, null );
+
+        if( password != null ) {
+            try {
+                password = AES.decrypt( password );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return password;
     }
 
     /**
@@ -258,7 +274,7 @@ public class AppUtils {
      */
     public static Boolean isFirstLogin(Context c) {
         SharedPreferences config = getSPrefConfig(c);
-        return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
+        return config.getBoolean(AppConfig.SPREF_FIRST_LOGIN, true);
     }
 
     /**
@@ -283,7 +299,7 @@ public class AppUtils {
      */
     public static Boolean isAdvertisingServiceRunning(Context c) {
         SharedPreferences config = getSPrefConfig(c);
-        return config.getBoolean( AppConfig.SPREF_ADVERTISING_SERVICE_RUNNING, false );
+        return config.getBoolean(AppConfig.SPREF_ADVERTISING_SERVICE_RUNNING, false);
     }
 
     /**
@@ -366,7 +382,7 @@ public class AppUtils {
      * @param c The Context of the Android system.
      */
     public static void errorSound(Context c) {
-        MediaPlayer mp = MediaPlayer.create( c, R.raw.error );
+        MediaPlayer mp = MediaPlayer.create(c, R.raw.error);
         mp.setOnCompletionListener( new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -396,7 +412,7 @@ public class AppUtils {
         Configuration config = new Configuration( res.getConfiguration() );
         config.locale = appLoc;
 
-        res.updateConfiguration( config, dm );
+        res.updateConfiguration(config, dm);
     }
 
     /**
@@ -430,11 +446,11 @@ public class AppUtils {
      * @param image The image to rotate
      */
     public static void rotateImage(View image) {
-        RotateAnimation rotateAnimation1 = new RotateAnimation( 0, 360,
+        RotateAnimation rotateAnimation1 = new RotateAnimation( 0, 90,
                 Animation.RELATIVE_TO_SELF, 0.5f,
                 Animation.RELATIVE_TO_SELF, 0.5f );
         rotateAnimation1.setInterpolator( new LinearInterpolator() );
-        rotateAnimation1.setDuration( 1000 );
+        rotateAnimation1.setDuration( 500 );
         rotateAnimation1.setRepeatCount( 0 );
 
         image.startAnimation( rotateAnimation1 );

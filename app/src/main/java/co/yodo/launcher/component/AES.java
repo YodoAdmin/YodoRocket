@@ -6,16 +6,19 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 public class AES {	 
-	 // Public key instance
+	 /** Public key instance */
 	 private static String KEY_INSTANCE = "AES";
+
+    /** Encrypt Key AES */
+    public static final String seed = "FEDCBA98765432100123456789ABCDEF";
 	 
-	 public static String encrypt(String seed, String cleartext) throws Exception {
+	 public static String encrypt(String cleartext) throws Exception {
 		 byte[] rawKey = getRawKey( seed.getBytes() );
 		 byte[] result = encrypt( rawKey, cleartext.getBytes() );
 		 return bytesToHex( result );
 	 }
     
-	 public static String decrypt(String seed, String encrypted) throws Exception {
+	 public static String decrypt(String encrypted) throws Exception {
 		 byte[] rawKey = getRawKey( seed.getBytes() );
 		 byte[] enc = hexToBytes( encrypted );
 		 byte[] result = decrypt( rawKey, enc );

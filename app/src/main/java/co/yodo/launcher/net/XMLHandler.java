@@ -21,14 +21,17 @@ public class XMLHandler extends DefaultHandler {
     private static final String TIME_ELEM     = "rtime";
 
     /** Param elements */
-    private static final String PARAMS_ELEM      = "params";
-    private static final String LOGO_ELEM        = "logo_url";
-    private static final String DEBIT_ELEM       = "MerchantDebitWTCost";
-    private static final String CREDIT_ELEM      = "MerchantCreditWTCost";
-    private static final String SETTLEMENT_ELEM  = "Settlement";
-    private static final String EQUIPMENT_ELEM   = "Equipments";
-    private static final String LEASE_ELEM       = "Lease";
-    private static final String TOTAL_LEASE_ELEM = "TotalLease";
+    private static final String PARAMS_ELEM       = "params";
+    private static final String LOGO_ELEM         = "logo_url";
+    private static final String DEBIT_ELEM        = "MerchantDebitWTCost";
+    private static final String CREDIT_ELEM       = "MerchantCreditWTCost";
+    private static final String SETTLEMENT_ELEM   = "Settlement";
+    private static final String EQUIPMENT_ELEM    = "Equipments";
+    private static final String LEASE_ELEM        = "Lease";
+    private static final String TOTAL_LEASE_ELEM  = "TotalLease";
+    private static final String ACCOUNT_ELEM      = "account";
+    private static final String PURCHASE_ELEM     = "purchase_price";
+    private static final String AMOUNT_DELTA_ELEM = "amount_delta";
 
     /** Parser Elements */
     private Boolean currentElement = false;
@@ -91,6 +94,15 @@ public class XMLHandler extends DefaultHandler {
         }
         else if( localName.equalsIgnoreCase( TOTAL_LEASE_ELEM ) ) {
             response.addParam( ServerResponse.TOTAL_LEASE, currentValue );
+        }
+        else if( localName.equalsIgnoreCase( ACCOUNT_ELEM ) ) {
+            response.addParam( ServerResponse.ACCOUNT, currentValue );
+        }
+        else if( localName.equalsIgnoreCase( PURCHASE_ELEM ) ) {
+            response.addParam( ServerResponse.PURCHASE, currentValue );
+        }
+        else if( localName.equalsIgnoreCase( AMOUNT_DELTA_ELEM ) ) {
+            response.addParam( ServerResponse.AMOUNT_DELTA, currentValue );
         }
     }
 

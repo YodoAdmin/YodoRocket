@@ -90,9 +90,9 @@ public class AppConfig {
     /*
 	 * Default value position for the currency
 	 *
-	 * Default: position 0 (MexicanPeso)
+	 * Default: position 1 (Canada Dollar)
 	 */
-    public static final Integer DEFAULT_CURRENCY = 0;
+    public static final Integer DEFAULT_CURRENCY = 1;
 
     /*
 	 * Default value position for the scanner
@@ -104,9 +104,6 @@ public class AppConfig {
     /* Request Code (Activity Result) */
     public static final int REGISTRATION_REQUEST = 1;
     public static final int LAUNCHER_REQUEST     = 2;
-
-    /* Encrypt Key AES */
-    public static final String encryptionKey = "FEDCBA98765432100123456789ABCDEF";
 
     /* Bluetooth Yodo POS name */
     public static final String YODO_POS = "Yodo-Merch-";

@@ -11,6 +11,7 @@ import org.xml.sax.XMLReader;
 
 import java.io.Serializable;
 import java.net.ConnectException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -87,7 +88,7 @@ public class RESTService extends IntentService {
             // Create handler to handle XML Tags ( extends DefaultHandler )
             xr.setContentHandler( new XMLHandler() );
             xr.parse( new InputSource( sourceUrl.getInputStream() ) );
-        } catch(ConnectTimeoutException | SocketTimeoutException | ConnectException e) {
+        } catch(ConnectTimeoutException | SocketTimeoutException | SocketException e) {
             AppUtils.Logger( TAG, "Timeout Exception = " + e );
             receiver.send( STATUS_NO_INTERNET, null );
             return;

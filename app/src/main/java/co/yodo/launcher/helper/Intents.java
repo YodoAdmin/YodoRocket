@@ -17,4 +17,7 @@ public class Intents {
     public static final String RESULT_CODE = "RESULT_CODE";
     public static final String RESULT_AUTH = "RESULT_AUTH";
     public static final String RESULT_MSG  = "RESULT_MSG";
+    public static final String RESULT_ACC  = "RESULT_ACC";
+    public static final String RESULT_PUR  = "RESULT_PURCHASE";
+    public static final String RESULT_AMO  = "RESULT_AMOUNT";
 }

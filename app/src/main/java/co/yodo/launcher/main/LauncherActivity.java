@@ -304,8 +304,8 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
         String[] icons = getResources().getStringArray( R.array.currency_icon_array );
         Drawable icon  = AppUtils.getDrawableByName( ac, icons[ AppUtils.getCurrency( ac ) ] );
-        icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int)(mCashTenderView.getLineHeight() * 0.9 ) );
-        mCashTenderView.setCompoundDrawables(icon, null, null, null);
+        icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int)( mCashTenderView.getLineHeight() * 0.9 ) );
+        mCashTenderView.setCompoundDrawables( icon, null, null, null );
 
         mBalanceView.setText( getCurrentBalance() );
 
@@ -731,6 +731,9 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                 final String ex_code       = response.getCode();
                 final String ex_authNumber = response.getAuthNumber();
                 final String ex_message    = response.getMessage();
+                final String ex_account    = response.getParam( ServerResponse.ACCOUNT );
+                final String ex_purchase   = response.getParam( ServerResponse.PURCHASE );
+                final String ex_amount     = response.getParam( ServerResponse.AMOUNT_DELTA );
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
                     message = getString( R.string.exchange_auth ) + " " + ex_authNumber + "\n" +
@@ -745,6 +748,9 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                                 data.putExtra( Intents.RESULT_CODE, ex_code );
                                 data.putExtra( Intents.RESULT_AUTH, ex_authNumber );
                                 data.putExtra( Intents.RESULT_MSG, ex_message );
+                                data.putExtra( Intents.RESULT_ACC, ex_account );
+                                data.putExtra( Intents.RESULT_PUR, ex_purchase );
+                                data.putExtra( Intents.RESULT_AMO, ex_amount );
                                 setResult( RESULT_OK, data );
                                 finish();
                             }

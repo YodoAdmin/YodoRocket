@@ -104,7 +104,7 @@
 
     <!-- Currency -->
     <string-array name="currency_array">
-        <item>MexicanPeso</item>
+        <item>MXN</item>
         <item>CAD</item>
         <item>USD</item>
     </string-array>
