@@ -2,9 +2,9 @@
 <resources>
 
     <!-- Main Strings -->
-    <string name="app_name">YodoLauncher</string>
+    <string name="app_name">Y-Launcher</string>
     <string name="action_settings">Configuración</string>
-    <string name="version">Versión: 0.1.0</string>
+    <string name="version">Versión: 0.1.1</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTRAR</string>
     <string name="loading">Cargando</string>
@@ -15,7 +15,7 @@
     <string name="error">Esto es embarazoso! Ocurrio un error en el proceso</string>
     <string name="no_balance">Lo sentimos, parece que no dispone de un balance</string>
     <string name="no_internet">Lo sentimos, parece que no dispone de una conexion a Internet</string>
-    <string name="no_hardware">Debe encender su bluetooth primero</string>
+    <string name="no_hardware">Debe encender su wifi primero</string>
     <string name="no_camera">Esta cámara no existe</string>
 
     <!-- General Messages -->
@@ -108,6 +108,8 @@
         <item>MexicanPeso</item>
         <item>CAD</item>
         <item>USD</item>
+        <item>JPY</item>
+        <item>BRL</item>
     </string-array>
 
     <!-- Currency Icon -->
@@ -115,6 +117,8 @@
         <item>mexico</item>
         <item>canada</item>
         <item>usa</item>
+        <item>japan</item>
+        <item>brazil</item>
     </string-array>
 
     <!-- Tutorial Instructions -->

@@ -24,6 +24,7 @@ import android.view.animation.RotateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.Locale;
 
@@ -157,7 +158,7 @@ public class AppUtils {
      */
     public static int getCurrency(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt(AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY);
+        return config.getInt( AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY );
     }
 
     /**
@@ -454,6 +455,23 @@ public class AppUtils {
         rotateAnimation1.setRepeatCount( 0 );
 
         image.startAnimation( rotateAnimation1 );
+    }
+
+    /**
+     * Modify the size of the drawable for a TextView
+     * @param c The Context of the Android system.
+     * @param v The view to modify the drawable
+     * @param d if Default or not
+     */
+    public static void setCurrencyIcon(Context c, TextView v, boolean d) {
+        String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
+        Drawable icon;
+        if( !d )
+            icon  = AppUtils.getDrawableByName( c, icons[ AppUtils.getCurrency( c ) ] );
+        else
+            icon  = AppUtils.getDrawableByName( c, icons[ AppConfig.DEFAULT_CURRENCY ] );
+        icon.setBounds( 3, 0, v.getLineHeight(), (int)( v.getLineHeight() * 0.9 ) );
+        v.setCompoundDrawables( icon, null, null, null );
     }
 
     /**

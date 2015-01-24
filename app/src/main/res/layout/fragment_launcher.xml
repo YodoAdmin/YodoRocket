@@ -51,8 +51,8 @@
                     style="@style/LabelTextView"
                     android:text="@string/cash_back"/>
 
-                <!-- end Labels -->
             </LinearLayout>
+            <!-- end Labels -->
 
             <!-- Text Fields -->
             <LinearLayout
@@ -77,8 +77,8 @@
                     style="@style/EditTextView"
                     android:id="@+id/cashBackText"/>
 
-                <!-- end Text Fields -->
             </LinearLayout>
+            <!-- end Text Fields -->
 
         </LinearLayout>
 
