@@ -304,6 +304,30 @@ public class AppUtils {
     }
 
     /**
+     * It saves the currency timestamp for the latest update to the preferences.
+     * @param c The Context of the Android system.
+     * @param n The currency timestamp.
+     * @return true  If it was saved.
+     *         false If it was not saved.
+     */
+    public static Boolean saveCurrencyTimestamp(Context c, long n) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+        writer.putLong( AppConfig.SPREF_TIMESTAMP_CURRENCY, n );
+        return writer.commit();
+    }
+
+    /**
+     * It gets the currency timestamp of the latest update.
+     * @param c The Context of the Android system.
+     * @return long It returns the timestamp.
+     */
+    public static long getCurrencyTimestamp(Context c) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getLong( AppConfig.SPREF_TIMESTAMP_CURRENCY, 0 );
+    }
+
+    /**
      * Gets the mobile hardware identifier
      * @param c The Context of the Android system.
      */

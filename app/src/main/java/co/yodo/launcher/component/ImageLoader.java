@@ -70,7 +70,7 @@ public class ImageLoader {
             conn.setReadTimeout( 30000 );
             conn.setInstanceFollowRedirects( true );
             conn.connect();
-            InputStream is = conn.getInputStream();
+            InputStream is  = conn.getInputStream();
             OutputStream os = new FileOutputStream( f );
             CopyStream( is, os );
             os.close();

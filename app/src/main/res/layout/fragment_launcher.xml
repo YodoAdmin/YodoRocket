@@ -103,15 +103,24 @@
                 android:textSize="@dimen/text_size_values"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
+            <ProgressBar
+                style="?android:attr/progressBarStyleSmall"
+                android:id="@+id/progressBarBalance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
+                android:layout_gravity="center" />
+
             <TextView
                 android:id="@+id/balanceText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_marginStart="10dp"
-                android:text=""
                 android:textSize="@dimen/text_size_values"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:visibility="gone"/>
 
         </LinearLayout>
 

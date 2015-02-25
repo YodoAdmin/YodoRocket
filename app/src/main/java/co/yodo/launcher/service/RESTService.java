@@ -1,6 +1,7 @@
 package co.yodo.launcher.service;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
@@ -10,15 +11,17 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import java.io.Serializable;
-import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import co.yodo.launcher.component.JsonParser;
+import co.yodo.launcher.data.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.net.XMLHandler;
 
@@ -29,6 +32,9 @@ import co.yodo.launcher.net.XMLHandler;
 public class RESTService extends IntentService {
     /** DEBUG */
     private static final String TAG = RESTService.class.getSimpleName();
+
+    /** The context object */
+    private Context ac;
 
     /** Switch server IP address */
     //private static final String IP 	         = "http://50.56.180.133";  // Production
@@ -58,7 +64,9 @@ public class RESTService extends IntentService {
      * Creates an IntentService.  Invoked by your subclass's constructor.
      */
     public RESTService() {
-        super(TAG);
+        super( TAG );
+        // get the context
+        ac = RESTService.this;
     }
 
     @Override
@@ -98,9 +106,20 @@ public class RESTService extends IntentService {
             return;
         }
 
+        ServerResponse response = XMLHandler.response;
+
+        long currentTime    = response.getRTime() * 1000;
+        long lastUpdateTime = AppUtils.getCurrencyTimestamp( ac ) * 1000;
+
+        // Update four times a day
+        if( TimeUnit.MILLISECONDS.toHours( currentTime - lastUpdateTime ) > 6 ) {
+            JsonParser.deleteFile( ac );
+            AppUtils.saveCurrencyTimestamp( ac, response.getRTime() );
+        }
+
         Bundle resultData = new Bundle();
         resultData.putSerializable( ACTION_RESULT, action );
-        resultData.putSerializable( EXTRA_RESULT, XMLHandler.response );
+        resultData.putSerializable( EXTRA_RESULT, response );
         receiver.send( STATUS_SUCCESS, resultData );
     }
 

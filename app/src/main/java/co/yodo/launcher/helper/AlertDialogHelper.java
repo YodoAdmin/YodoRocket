@@ -54,7 +54,7 @@ public class AlertDialogHelper {
                                        final ListAdapter adapter, final int current,
                                        final DialogInterface.OnClickListener clickListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder( c );
-        builder.setIcon( R.drawable.ic_launcher );
+        builder.setIcon( R.drawable.icon );
         builder.setTitle( title );
         builder.setCancelable( false );
 
@@ -75,7 +75,7 @@ public class AlertDialogHelper {
     public static void showAlertDialog(final Context c, final String title, final EditText input,
                                        final DialogInterface.OnClickListener clickListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder( c );
-        builder.setIcon( R.drawable.ic_launcher );
+        builder.setIcon( R.drawable.icon );
         builder.setTitle( title );
         builder.setView( input );
         builder.setCancelable( false );
@@ -116,7 +116,7 @@ public class AlertDialogHelper {
     public static void showAlertDialog(final Context c, final String title, final String message,
                                        final DialogInterface.OnClickListener clickListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder( c );
-        builder.setIcon( R.drawable.ic_launcher );
+        builder.setIcon( R.drawable.icon );
         builder.setTitle( title );
         builder.setMessage( message );
         builder.setCancelable( false );
@@ -135,7 +135,7 @@ public class AlertDialogHelper {
      */
     public static void showAlertDialog(final Context c, final String title, final View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder( c );
-        builder.setIcon( R.drawable.ic_launcher );
+        builder.setIcon( R.drawable.icon );
         builder.setTitle( title );
         builder.setView( view );
         builder.setCancelable( false );
@@ -189,7 +189,7 @@ public class AlertDialogHelper {
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder( c );
-        builder.setIcon( R.drawable.ic_launcher );
+        builder.setIcon( R.drawable.icon );
         builder.setTitle( title );
         builder.setView(layout);
         builder.setCancelable( false );

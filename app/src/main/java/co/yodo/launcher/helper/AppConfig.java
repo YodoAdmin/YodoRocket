@@ -46,6 +46,11 @@ public class AppConfig {
 	 */
     public static final String SPREF_CURRENT_LANGUAGE = "SPCurrentLanguage";
 
+    /* The timestamp of the latest currency update.
+	 * type -- Integer
+	 */
+    public static final String SPREF_TIMESTAMP_CURRENCY = "SPTimestampCurrency";
+
     /* The current beacon.
     * type -- String
     */

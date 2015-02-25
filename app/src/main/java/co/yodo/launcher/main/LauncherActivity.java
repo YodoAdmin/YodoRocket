@@ -92,9 +92,11 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
     private TextView mCashTenderView;
     private TextView mCashBackView;
     private ImageView mLogoImage;
+    private ProgressBar mBalanceBar;
 
     /** Popup Window for Tips */
-    private PopupWindow popupMessage;
+    private PopupWindow mPopupMessage;
+    private Double equivalentTender;
 
     /** Selected Text View */
     private TextView selectedView;
@@ -192,9 +194,10 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         mCashTenderView  = (TextView) findViewById( R.id.cashTenderText );
         mCashBackView    = (TextView) findViewById( R.id.cashBackText );
         mLogoImage       = (ImageView) findViewById( R.id.companyLogo );
+        mBalanceBar      = (ProgressBar) findViewById( R.id.progressBarBalance );
 
         // Popup
-        popupMessage  = new PopupWindow( ac );
+        mPopupMessage  = new PopupWindow( ac );
 
         // Only used at creation
         CheckBox mAdvertisingCheckBox = (CheckBox) findViewById(R.id.advertisingCheckBox);
@@ -334,15 +337,15 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
-                        if( popupMessage != null )
-                            popupMessage.dismiss();
+                        if( mPopupMessage != null )
+                            mPopupMessage.dismiss();
                         break;
                 }
                 return false;
             }
         });
 
-        mBalanceView.setText( getCurrentBalance() );
+        new getCurrentBalance().execute();
 
         location = new Location( PROVIDER );
         location.setLatitude( LAT );
@@ -357,14 +360,21 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         LinearLayout viewGroup = (LinearLayout) findViewById( R.id.popup_window );
         LayoutInflater layoutInflater = (LayoutInflater) getSystemService( Context.LAYOUT_INFLATER_SERVICE );
         View layout = layoutInflater.inflate( R.layout.popup_window, viewGroup );
-        AppUtils.setCurrencyIcon( ac, (TextView) layout.findViewById( R.id.cashTenderText ), true );
 
-        new AsyncTaskParseJson( layout ).execute();
+        TextView cashTender     = (TextView) layout.findViewById( R.id.cashTenderText );
+        ProgressBar progressBar = (ProgressBar) layout.findViewById( R.id.progressBarPopUp );
+        cashTender.setText( String.format( Locale.US, "%.2f", equivalentTender ) );
+        AppUtils.setCurrencyIcon( ac, cashTender, true );
 
-        popupMessage.setWidth( mCashTenderView.getWidth() );
-        popupMessage.setHeight( LinearLayout.LayoutParams.WRAP_CONTENT );
-        popupMessage.setContentView( layout );
-        popupMessage.showAtLocation( v, Gravity.CENTER, 0, 0 );
+        if( equivalentTender == null ) {
+            cashTender.setVisibility( View.GONE );
+            progressBar.setVisibility( View.VISIBLE );
+        }
+
+        mPopupMessage.setWidth( mCashTenderView.getWidth() );
+        mPopupMessage.setHeight( LinearLayout.LayoutParams.WRAP_CONTENT );
+        mPopupMessage.setContentView( layout );
+        mPopupMessage.showAtLocation( v, Gravity.CENTER, 0, 0 );
     }
 
     /**
@@ -384,19 +394,9 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
     }
 
     /**
-     * Gets the current balance
-     * @return String The current balance with two decimals format
+     * Sets the current balance to the
      */
-    private String getCurrentBalance() {
-        String totalPurchase = mTotalView.getText().toString();
-        String cashTender    = mCashTenderView.getText().toString();
-        String cashBack      = mCashBackView.getText().toString();
 
-        //new AsyncTaskParseJson( layout ).execute();
-
-        double total = Double.valueOf( cashTender ) - Double.valueOf( totalPurchase ) - Double.valueOf( cashBack );
-        return String.format( Locale.US, "%.2f", total );
-    }
 
     /**
      * Creates a dialog to show the balance information
@@ -503,6 +503,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                 Drawable icon = AppUtils.getDrawableByName( ac, icons[ item ] );
                 icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int)( mCashTenderView.getLineHeight() * 0.9 ) );
                 mCashTenderView.setCompoundDrawables(icon, null, null, null);
+                new getCurrentBalance().execute();
 
                 dialog.dismiss();
             }
@@ -672,8 +673,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         Double result = Double.valueOf( ( current + value ).replace( ".", "" ) ) / 100.00;
         selectedView.setText( String.format(Locale.US, "%.2f", result));
 
-        //mBalanceView.setText( getCurrentBalance() );
-        getCurrentBalance();
+        new getCurrentBalance().execute();
     }
 
     /** Handle numeric add clicked
@@ -689,8 +689,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
             double value = Double.valueOf(current) + Double.valueOf(amount);
             selectedView.setText(String.format(Locale.US, "%.2f", value));
         }
-        //mBalanceView.setText( getCurrentBalance() );
-        getCurrentBalance();
+        new getCurrentBalance().execute();
     }
 
     /**
@@ -924,35 +923,33 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         }
     };
 
-    public class AsyncTaskParseJson extends AsyncTask<String, String, JSONArray> {
-        // set your json string url here
+    public class getCurrentBalance extends AsyncTask<String, String, JSONArray> {
+        /** JSON Url */
         private String url = RESTService.getRoot() + "/yodo/currency/index.json";
+
+        /** JSON Tags */
         private String TAG = "YodoCurrency";
         private String CURRENCY_TAG = "currency";
         private String RATE_TAG     = "rate";
+
+        /** Currencies */
         private String[] currencies = ac.getResources().getStringArray( R.array.currency_array );
-
-        /** GUI Componenets */
-        private View layout;
-        private TextView mCashTenderText;
-        private ProgressBar mProgressBar;
-
-        public AsyncTaskParseJson(View layout) {
-            this.layout = layout;
-        }
+        private String URL_CURRENCY  = "EUR";
+        //private String BASE_CURRENCY = "CAD";
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
 
-            mCashTenderText = (TextView) layout.findViewById( R.id.cashTenderText );
-            mProgressBar    = (ProgressBar) layout.findViewById( R.id.progressBarPopUp );
+            equivalentTender = null;
+            mBalanceView.setVisibility( View.GONE );
+            mBalanceBar.setVisibility( View.VISIBLE );
         }
 
         @Override
         protected JSONArray doInBackground(String... arg0) {
             // instantiate our json parser
-            JsonParser jParser = new JsonParser();
+            JsonParser jParser = new JsonParser( ac );
             // get json string from url
             return jParser.getJSONFromUrl( url );
         }
@@ -961,28 +958,46 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         protected void onPostExecute(JSONArray json) {
             if( json != null ) {
                 Double cad_currency = null, current_currency = null;
-                for (int i = 0; i < json.length(); i++) {
+                for( int i = 0; i < json.length(); i++ ) {
                     try {
                         JSONObject temp = json.getJSONObject( i );
                         JSONObject c    = (JSONObject) temp.get( TAG );
                         String currency = (String) c.get( CURRENCY_TAG );
-                        String rate     = (String) c.get( RATE_TAG );
+                        Double rate     = (Double) c.get( RATE_TAG );
 
                         if( currency.equals( currencies[ AppConfig.DEFAULT_CURRENCY ] ) )
-                            cad_currency = 1.0 / Double.parseDouble( rate );
+                            cad_currency = 1.0 / rate ;
 
                         if( currency.equals( currencies[ AppUtils.getCurrency( ac ) ]) )
-                            current_currency = Double.parseDouble( rate );
+                            current_currency = rate ;
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
+
+                String totalPurchase = mTotalView.getText().toString();
+                String cashBack      = mCashBackView.getText().toString();
                 double temp_tender = Double.parseDouble( mCashTenderView.getText().toString() );
-                if( cad_currency != null && current_currency != null ) {
-                    Double equivalent = temp_tender / ( cad_currency * current_currency );
-                    mProgressBar.setVisibility(View.GONE);
-                    mCashTenderText.setVisibility( View.VISIBLE );
-                    mCashTenderText.setText( String.format( Locale.US, "%.2f", equivalent ) );
+
+                if( cad_currency != null ) {
+                    if( URL_CURRENCY.equals( currencies[ AppUtils.getCurrency( ac ) ] ) ) {
+                        equivalentTender = temp_tender / cad_currency;
+                    } else if( current_currency != null ) {
+                        equivalentTender = temp_tender / ( cad_currency * current_currency );
+                    }
+
+                    equivalentTender = Math.floor( equivalentTender * 100 ) / 100;
+                    double total = equivalentTender - Double.valueOf( totalPurchase ) - Double.valueOf( cashBack );
+                    //total = Math.floor( total * 100 ) / 100;
+
+                    mBalanceView.setText( String.format( Locale.US, "%.2f", total ) );
+                    mBalanceView.setVisibility( View.VISIBLE );
+                    mBalanceBar.setVisibility( View.GONE );
+
+                    if( mPopupMessage.isShowing() ) {
+                        mPopupMessage.getContentView().findViewById( R.id.progressBarPopUp ).setVisibility( View.GONE );
+                        mPopupMessage.getContentView().findViewById( R.id.cashTenderText ).setVisibility( View.VISIBLE );
+                    }
                 }
             }
         }

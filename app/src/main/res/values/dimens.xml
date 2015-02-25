@@ -19,7 +19,7 @@
 
     <dimen name="text_size_numbers">16sp</dimen>
     <dimen name="text_size_numbers_00">15sp</dimen>
-    <dimen name="text_size_values">19sp</dimen>
+    <dimen name="text_size_values">21sp</dimen>
     <dimen name="text_size_buttons">15sp</dimen>
     <dimen name="text_size_input">20sp</dimen>
 

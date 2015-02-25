@@ -12,13 +12,13 @@
         android:id="@+id/progressBarPopUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:visibility="gone"/>
 
     <TextView
         style="@style/EditTextView"
         android:id="@+id/cashTenderText"
         android:drawableLeft="@drawable/canada"
-        android:drawableStart="@drawable/canada"
-        android:visibility="gone"/>
+        android:drawableStart="@drawable/canada"/>
 
 </LinearLayout>

@@ -4,7 +4,7 @@
     <!-- Main Strings -->
     <string name="app_name">Y-Launcher</string>
     <string name="action_settings">Settings</string>
-    <string name="version">Version: 0.1.1</string>
+    <string name="version">Version: 0.1.2</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTER</string>
     <string name="loading">Loading</string>
@@ -109,6 +109,9 @@
         <item>USD</item>
         <item>JPY</item>
         <item>BRL</item>
+        <item>CNY</item>
+        <item>INR</item>
+        <item>EUR</item>
     </string-array>
 
     <!-- Currency Icon -->
@@ -118,6 +121,9 @@
         <item>usa</item>
         <item>japan</item>
         <item>brazil</item>
+        <item>china</item>
+        <item>india</item>
+        <item>euro</item>
     </string-array>
 
     <!-- Tutorial Instructions -->
