@@ -47,8 +47,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
     protected void onDestroy() {
         super.onDestroy();
 
-        boolean isRunning = AppUtils.isMyServiceRunning( ac, LocationService.class.getName() );
-        if( isRunning ) {
+        if( AppUtils.isMyServiceRunning( ac, LocationService.class.getName() ) ) {
             Intent iLoc = new Intent( ac, LocationService.class );
             stopService( iLoc );
         }
@@ -60,11 +59,10 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
         handlerMessages = new YodoHandler( MainActivity.this );
         YodoRequest.getInstance().setListener( this );
 
-        boolean isRunning = AppUtils.isMyServiceRunning( ac, LocationService.class.getName() );
-        if( !isRunning ) {
-            Intent iLoc = new Intent( ac, LocationService.class );
-            startService( iLoc );
-        }
+        Intent iLoc = new Intent( ac, LocationService.class );
+        if( AppUtils.isMyServiceRunning( ac, LocationService.class.getName() ) )
+            stopService( iLoc );
+        startService( iLoc );
     }
 
     private void updateData() {

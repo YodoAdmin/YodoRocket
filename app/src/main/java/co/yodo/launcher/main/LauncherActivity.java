@@ -966,10 +966,10 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                         Double rate     = (Double) c.get( RATE_TAG );
 
                         if( currency.equals( currencies[ AppConfig.DEFAULT_CURRENCY ] ) )
-                            cad_currency = 1.0 / rate ;
+                            cad_currency = 1.0 /  rate;
 
                         if( currency.equals( currencies[ AppUtils.getCurrency( ac ) ]) )
-                            current_currency = rate ;
+                            current_currency =  rate;
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

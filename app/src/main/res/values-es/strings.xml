@@ -2,9 +2,9 @@
 <resources>
 
     <!-- Main Strings -->
-    <string name="app_name">Y-Launcher</string>
+    <string name="app_name">YodoRocket</string>
     <string name="action_settings">Configuración</string>
-    <string name="version">Versión: 0.1.2</string>
+    <string name="version">Versión: 0.1.4</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTRAR</string>
     <string name="loading">Cargando</string>

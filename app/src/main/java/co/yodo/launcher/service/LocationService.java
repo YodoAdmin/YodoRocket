@@ -34,8 +34,8 @@ public class LocationService extends Service implements LocationListener {
 	private LocalBroadcastManager lbm;
 
     /** Intervals for the updates */
-    private static final int LOCATION_INTERVAL   = 5000;
-    private static final float LOCATION_DISTANCE = 10f;
+    private static final long LOCATION_INTERVAL = 5000;
+    private static final long LOCATION_DISTANCE = 10;
 	
 	/**
 	 * It gets called when the service is started.
@@ -80,7 +80,7 @@ public class LocationService extends Service implements LocationListener {
 	 */
 	@Override
 	public void onLocationChanged(Location location) {
-		AppUtils.Logger( TAG, " >> NEW LOCATION SENT" );
+		AppUtils.Logger( TAG, " >> NEW LOCATION SENT: " + location.toString() );
 
 		Intent i = new Intent( BroadcastMessage.ACTION_NEW_LOCATION );
 		i.putExtra( BroadcastMessage.EXTRA_NEW_LOCATION, location );
@@ -115,8 +115,8 @@ public class LocationService extends Service implements LocationListener {
 	 * The bootstrap for the location service
 	 */
 	private void bootstrap() {
-        this.registerReceiver(mGpsChangeReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
-
+        registerReceiver( mGpsChangeReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION ) );
+        Location lastKnownLocation = lm.getLastKnownLocation( LocationManager.NETWORK_PROVIDER );
 		// create a criteria
 		Criteria c = new Criteria();
 		// force GPS 
@@ -124,12 +124,18 @@ public class LocationService extends Service implements LocationListener {
         String provider = lm.getBestProvider( c, true );
 
         // start receiving locations updates
-        if(provider != null) {
+        if( provider != null ) {
             AppUtils.Logger( TAG, ">> Provider " + provider );
             lm.requestLocationUpdates( provider, LOCATION_INTERVAL, LOCATION_DISTANCE, this );
         }
 		else
             AppUtils.Logger( TAG, ">> Provider NULL" );
+
+        if( lastKnownLocation != null ) {
+            Intent i = new Intent( BroadcastMessage.ACTION_NEW_LOCATION );
+            i.putExtra( BroadcastMessage.EXTRA_NEW_LOCATION, lastKnownLocation );
+            lbm.sendBroadcast( i );
+        }
 	}
 
     private BroadcastReceiver mGpsChangeReceiver = new BroadcastReceiver() {
