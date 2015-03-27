@@ -25,4 +25,5 @@ dependencies {
     compile 'com.github.amlcurran.showcaseview:library:5.0.0'
     compile files('libs/zbar.jar')
     compile files('libs/joda-time-2.7.jar')
+    compile files('libs/acra-4.5.0.jar')
 }

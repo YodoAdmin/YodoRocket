@@ -107,7 +107,7 @@ public class ImageLoader {
             o2.inSampleSize = scale;
             return BitmapFactory.decodeStream( new FileInputStream( f ), null, o2 );
         } catch( FileNotFoundException e ) {
-            AppUtils.Logger( TAG, e.toString() );
+            AppUtils.Logger( TAG, e.getMessage() );
         }
         return null;
     }

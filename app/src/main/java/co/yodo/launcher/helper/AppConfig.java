@@ -7,8 +7,14 @@ import co.yodo.launcher.service.RESTService;
  * Keys and defaults
  */
 public class AppConfig {
-    /** DEBUG flag */
+    /** DEBUG flag: to print the logs in console */
     public static final boolean DEBUG = true;
+
+    /** FILE flag: to print the logs in a file */
+    public static final boolean FDEBUG = false;
+
+    /** Name of the log file */
+    public static final String LOG_FILE = "log.file";
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoLauncherSharedPref";

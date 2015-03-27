@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 
+import org.acra.ACRA;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;

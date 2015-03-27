@@ -13,6 +13,7 @@ import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Environment;
 import android.telephony.TelephonyManager;
 import android.text.InputType;
 import android.util.DisplayMetrics;
@@ -26,6 +27,12 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 import co.yodo.launcher.R;
@@ -498,6 +505,23 @@ public class AppUtils {
         v.setCompoundDrawables( icon, null, null, null );
     }
 
+    private static void appendLog(String text) {
+        File logFile = new File( Environment.getExternalStorageDirectory() + "/output.log" );
+
+        try {
+            if( !logFile.exists() )
+                logFile.createNewFile();
+
+            BufferedWriter buf = new BufferedWriter( new FileWriter( logFile, true ) );
+            buf.append( text );
+            buf.newLine();
+            buf.close();
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Logger for Android
      * @param TAG The String of the TAG for the log
@@ -509,6 +533,16 @@ public class AppUtils {
                 Log.e( TAG, "Null Text" );
             else
                 Log.e( TAG, text );
+        }
+
+        if( AppConfig.FDEBUG ) {
+            SimpleDateFormat sdf = new SimpleDateFormat( "yyyyMMdd_HHmmss" );
+            String currentDate   = sdf.format( new Date() );
+
+            if( text == null )
+                appendLog( currentDate + "\t/D" + TAG + ": Null Text" );
+            else
+                appendLog( currentDate + "\t/D" + TAG + ": " + text );
         }
     }
 }

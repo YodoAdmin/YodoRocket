@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.os.Parcelable;
 import android.provider.Settings;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Gravity;
@@ -73,6 +74,9 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
     /** The context object */
     private Context ac;
+
+    /** The Local Broadcast Manager */
+    private LocalBroadcastManager lbm;
 
     /** Bluetooth Admin */
     private BluetoothAdapter mBluetoothAdapter;
@@ -183,7 +187,11 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
      * Initialized all the GUI main components
      */
     private void setupGUI() {
+        // get the context
         ac = LauncherActivity.this;
+        // get local broadcast
+        lbm = LocalBroadcastManager.getInstance( ac );
+        // Loads images from urls
         imageLoader = new ImageLoader( ac );
 
         // Globals
@@ -634,6 +642,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
     public void logoutClick(View v) {
         imageLoader.clearCache();
         AppUtils.saveLoginStatus( ac, false );
+        AppUtils.saveLogoUrl( ac, "" );
         finish();
     }
 
@@ -892,13 +901,11 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         IntentFilter filter = new IntentFilter();
         filter.addAction( BroadcastMessage.ACTION_NEW_LOCATION );
 
-        registerReceiver(mLauncherBroadcastReceiver, filter);
-        AppUtils.Logger(TAG, ">> Launcher >> Broadcast registered.");
+        lbm.registerReceiver(mLauncherBroadcastReceiver, filter);
     }
 
     private void unregisterBroadcasts() {
-        unregisterReceiver(mLauncherBroadcastReceiver);
-        AppUtils.Logger(TAG, ">> Launcher >> Broadcast unregistered.");
+        lbm.unregisterReceiver(mLauncherBroadcastReceiver);
     }
 
     /**
@@ -963,7 +970,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                         JSONObject temp = json.getJSONObject( i );
                         JSONObject c    = (JSONObject) temp.get( TAG );
                         String currency = (String) c.get( CURRENCY_TAG );
-                        Double rate     = (Double) c.get( RATE_TAG );
+                        Double rate     = Double.parseDouble( (String) c.get( RATE_TAG ) );
 
                         if( currency.equals( currencies[ AppConfig.DEFAULT_CURRENCY ] ) )
                             cad_currency = 1.0 /  rate;

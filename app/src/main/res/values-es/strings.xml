@@ -4,7 +4,7 @@
     <!-- Main Strings -->
     <string name="app_name">YodoRocket</string>
     <string name="action_settings">Configuración</string>
-    <string name="version">Versión: 0.1.4</string>
+    <string name="version">Versión: 0.1.6</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTRAR</string>
     <string name="loading">Cargando</string>
@@ -83,7 +83,6 @@
     <string name="coins_20">20.00</string>
     <string name="coins_50">50.00</string>
     <string name="coins_100">100.00</string>
-    <string name="coins_200">200.00</string>
     <string name="value_7">7</string>
     <string name="value_8">8</string>
     <string name="value_9">9</string>
@@ -101,6 +100,7 @@
     <string-array name="languages_array">
         <item>Inglés</item>
         <item>Español</item>
+        <item>Chino</item>
     </string-array>
 
     <!-- Currency -->
