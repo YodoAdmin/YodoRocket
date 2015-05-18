@@ -15,6 +15,7 @@ The YodoLauncher, basically an android application that can be called from exter
  test.putExtra( "TOTAL", 25.00 );
  test.putExtra( "CASH_TENDER", 43.25 );
  test.putExtra( "CASH_BACK", 10.50 );
+ test.putExtra( "PROMPT_RESPONSE", false );
  startActivityForResult( test, 0 );
 
 ```
