@@ -373,7 +373,7 @@ public class AppUtils {
      * @param name The name of the drawable
      * @return The drawable
      */
-    public static Drawable getDrawableByName(Context c, String name) {
+    public static Drawable getDrawableByName(Context c, String name) throws Resources.NotFoundException {
         Resources resources = c.getResources();
         final int resourceId = resources.getIdentifier(name, "drawable", c.getPackageName());
         Drawable image = resources.getDrawable(resourceId);
@@ -431,6 +431,10 @@ public class AppUtils {
         switch( language ) {
             case 1: // Spanish
                 appLoc = new Locale( "es" );
+                break;
+
+            case 2: // Chinese
+                appLoc = new Locale( "zh" );
                 break;
 
             default: // English

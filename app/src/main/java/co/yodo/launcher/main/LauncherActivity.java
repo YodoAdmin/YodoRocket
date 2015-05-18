@@ -129,6 +129,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
     /** External data */
     private Bundle externBundle;
+    private boolean prompt_response = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -317,6 +318,9 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
             if( Double.valueOf( cashBack ) > 0.00 ) mCashBackView.setText( cashBack );
 
             viewClick( mCashTenderView );
+
+            // Handle the prompt of the response message from the server
+            prompt_response = externBundle.getBoolean( Intents.PROMPT_RESPONSE, true );
         }
         /*****************************/
 
@@ -379,7 +383,8 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
             progressBar.setVisibility( View.VISIBLE );
         }
 
-        mPopupMessage.setWidth( mCashTenderView.getWidth() );
+        //mPopupMessage.setWidth( mCashTenderView.getWidth() );
+        mPopupMessage.setWidth( LinearLayout.LayoutParams.WRAP_CONTENT );
         mPopupMessage.setHeight( LinearLayout.LayoutParams.WRAP_CONTENT );
         mPopupMessage.setContentView( layout );
         mPopupMessage.showAtLocation( v, Gravity.CENTER, 0, 0 );
@@ -400,11 +405,6 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
         mBluetoothAdapter.setName( AppConfig.YODO_POS + AppUtils.getBeaconName( ac ) );
     }
-
-    /**
-     * Sets the current balance to the
-     */
-
 
     /**
      * Creates a dialog to show the balance information
@@ -680,7 +680,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         final String current = selectedView.getText().toString();
 
         Double result = Double.valueOf( ( current + value ).replace( ".", "" ) ) / 100.00;
-        selectedView.setText( String.format(Locale.US, "%.2f", result));
+        selectedView.setText( String.format(Locale.US, "%.2f", result) );
 
         new getCurrentBalance().execute();
     }
@@ -695,8 +695,8 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         if( amount.equals( getString( R.string.coins_0 ) ) ) {
             selectedView.setText( getString( R.string.zero ) );
         } else {
-            double value = Double.valueOf(current) + Double.valueOf(amount);
-            selectedView.setText(String.format(Locale.US, "%.2f", value));
+            double value = Double.valueOf( current ) + Double.valueOf( amount );
+            selectedView.setText( String.format( Locale.US, "%.2f", value ) );
         }
         new getCurrentBalance().execute();
     }
@@ -807,22 +807,25 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
                     DialogInterface.OnClickListener onClick = null;
 
                     if( externBundle != null ) {
+                        final Intent data = new Intent();
+                        data.putExtra( Intents.RESULT_CODE, ex_code );
+                        data.putExtra( Intents.RESULT_AUTH, ex_authNumber );
+                        data.putExtra( Intents.RESULT_MSG, ex_message );
+                        data.putExtra( Intents.RESULT_ACC, ex_account );
+                        data.putExtra( Intents.RESULT_PUR, ex_purchase );
+                        data.putExtra( Intents.RESULT_AMO, ex_amount );
+                        setResult( RESULT_OK, data );
+
                         onClick = new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int item) {
-                                Intent data = new Intent();
-                                data.putExtra( Intents.RESULT_CODE, ex_code );
-                                data.putExtra( Intents.RESULT_AUTH, ex_authNumber );
-                                data.putExtra( Intents.RESULT_MSG, ex_message );
-                                data.putExtra( Intents.RESULT_ACC, ex_account );
-                                data.putExtra( Intents.RESULT_PUR, ex_purchase );
-                                data.putExtra( Intents.RESULT_AMO, ex_amount );
-                                setResult( RESULT_OK, data );
                                 finish();
                             }
                         };
                     }
 
-                    AlertDialogHelper.showAlertDialog( ac, response.getCode(), message , onClick);
+                    if( prompt_response )
+                        AlertDialogHelper.showAlertDialog( ac, response.getCode(), message , onClick );
+                    else finish();
                 } else {
                     AppUtils.errorSound( ac );
 
@@ -995,7 +998,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
                     equivalentTender = Math.floor( equivalentTender * 100 ) / 100;
                     double total = equivalentTender - Double.valueOf( totalPurchase ) - Double.valueOf( cashBack );
-                    //total = Math.floor( total * 100 ) / 100;
+                    total = Math.floor( total * 100 ) / 100;
 
                     mBalanceView.setText( String.format( Locale.US, "%.2f", total ) );
                     mBalanceView.setVisibility( View.VISIBLE );
