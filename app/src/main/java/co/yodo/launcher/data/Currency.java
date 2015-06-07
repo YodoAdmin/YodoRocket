@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable;
 
 /**
  * Created by luis on 16/12/14.
+ * POJO for the currency
  */
 public class Currency {
     private String   name;

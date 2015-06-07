@@ -21,6 +21,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	/** DEBUG */
 	private static final String TAG = CameraPreview.class.getName();
 
+    private int mCameraId;
     private Camera mCamera;
 	private SurfaceHolder mHolder;
     private PreviewCallback previewCallback;
@@ -37,8 +38,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         super( context, attrs );
     }
 
-	public CameraPreview(Context context, Camera camera, PreviewCallback previewCb) {
+	public CameraPreview(Context context, Camera camera, int cameraId, PreviewCallback previewCb) {
 		super( context );
+        mCameraId = cameraId;
 		mCamera = camera;
 		previewCallback = previewCb;
         mAutoFocusHandler = new Handler();
@@ -48,11 +50,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		mHolder = getHolder();
 		mHolder.addCallback( this );
 	}
-    
+
     public void surfaceCreated(SurfaceHolder holder) {
         mSurfaceCreated = true;
     }
-    
+
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         if( mHolder.getSurface() == null ) {
           // preview surface does not exist
@@ -76,16 +78,29 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 mPreviewing = true;
                 setupCameraParameters();
 
+                Camera.CameraInfo info = new Camera.CameraInfo();
+                Camera.getCameraInfo( mCameraId, info );
+
                 WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
                 int rotation = windowManager.getDefaultDisplay().getRotation();
 
-                // For tablets ROTATION_180, and for cellphones ROTATION_270 (weird?)
+                int degrees = 0;
+
                 switch( rotation ) {
-                    case Surface.ROTATION_180:
-                    case Surface.ROTATION_270:
-                        mCamera.setDisplayOrientation( 180 );
-                        break;
+                    case Surface.ROTATION_0: degrees = 0; break;
+                    case Surface.ROTATION_90: degrees = 90; break;
+                    case Surface.ROTATION_180: degrees = 180; break;
+                    case Surface.ROTATION_270: degrees = 270; break;
                 }
+
+                int result;
+                if( info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT ) {
+                    result = ( info.orientation + degrees ) % 360;
+                    result = ( 360 - result ) % 360;  // compensate the mirror
+                } else {  // back-facing
+                    result = ( info.orientation - degrees + 360 ) % 360;
+                }
+                mCamera.setDisplayOrientation( result );
 
                 mCamera.setPreviewDisplay( mHolder );
                 mCamera.setPreviewCallback( previewCallback );

@@ -27,9 +27,10 @@ public class ZBarScanner extends QRScanner {
 	private static final String TAG = ZBarScanner.class.getName();
 
     /** Camera */
-	private Camera mCamera;
+    private static int mCameraId;
+    private static Camera mCamera;
     private CameraPreview mPreview;
-    
+
     /** GUI Controllers */
     private ImageScanner scanner;
     private FrameLayout preview;
@@ -39,18 +40,18 @@ public class ZBarScanner extends QRScanner {
     /** Camera Flags */
     private boolean previewing  = false;
     private boolean frontFacing = true;
-    
+
     static {
         System.loadLibrary( "iconv" );
-    } 
-    
+    }
+
     /** Instance */
     private static volatile ZBarScanner instance = null;
 
 	private ZBarScanner(Activity activity) {
 		super( activity );
 
-        // Instance barcode scanner 
+        // Instance barcode scanner
         scanner = new ImageScanner();
         scanner.setConfig( 0, Config.X_DENSITY, 3 );
         scanner.setConfig( 0, Config.Y_DENSITY, 3 );
@@ -59,7 +60,7 @@ public class ZBarScanner extends QRScanner {
         opPanel = (TableRow) act.findViewById(R.id.operationsPanel);
         pvPanel = (RelativeLayout) act.findViewById(R.id.previewPanel);
 	}
-	
+
 	public static ZBarScanner getInstance(Activity activity) {
 		synchronized( ZBarScanner.class ) {
 			if( instance == null )
@@ -67,7 +68,7 @@ public class ZBarScanner extends QRScanner {
 		}
 		return instance;
 	}
-	
+
 	public static ZBarScanner getInstance() {
 		return instance;
 	}
@@ -82,15 +83,15 @@ public class ZBarScanner extends QRScanner {
                 return;
             }
 
-			mPreview = new CameraPreview( this.act, mCamera, previewCb );
+			mPreview = new CameraPreview( this.act, mCamera, mCameraId, previewCb );
 			preview.addView( mPreview );
-			
+
 			opPanel.setVisibility( View.GONE );
             pvPanel.setVisibility( View.VISIBLE );
 
 			mCamera.setPreviewCallback( previewCb );
 			mCamera.startPreview();
-			
+
 			previewing = true;
 		}
 	}
@@ -99,7 +100,7 @@ public class ZBarScanner extends QRScanner {
     public void close() {
         releaseCamera();
     }
-	
+
 	@Override
 	public boolean isScanning() {
 		return previewing;
@@ -115,15 +116,15 @@ public class ZBarScanner extends QRScanner {
 		releaseCamera();
 		instance = null;
 	}
-	
+
 	/** A safe way to get an instance of the Camera object. */
     public static Camera getCameraInstance(boolean frontFacing) {
-    	Camera c = null;
+        Camera c = null;
         try {
+            int facing = Camera.CameraInfo.CAMERA_FACING_BACK;
             if( frontFacing )
-                c = openFrontFacingCamera();
-            else
-                c = openBackFacingCamera();
+                facing = Camera.CameraInfo.CAMERA_FACING_FRONT;
+            c = openCamera( facing );
         } catch( Exception e ) {
             AppUtils.Logger( TAG, "Exception = " + e );
         }
@@ -133,14 +134,14 @@ public class ZBarScanner extends QRScanner {
     private void releaseCamera() {
     	opPanel.setVisibility( View.VISIBLE );
         pvPanel.setVisibility( View.GONE );
-    	
+
         if( mCamera != null ) {
         	mCamera.cancelAutoFocus();
             mCamera.setPreviewCallback( null );
             mCamera.release();
             mCamera = null;
         }
-        
+
         if( mPreview != null ) {
         	preview.removeView( mPreview );
         	mPreview = null;
@@ -159,17 +160,17 @@ public class ZBarScanner extends QRScanner {
             barcode.setData( data );
 
             int result = scanner.scanImage( barcode );
-                
+
             if( result != 0 ) {
             	previewing = false;
                 mCamera.setPreviewCallback( null );
                 mCamera.stopPreview();
-                    
+
                 SymbolSet syms = scanner.getResults();
                 for( Symbol sym : syms ) {
                     String scanData = sym.getData();
                     AppUtils.Logger( TAG, scanData );
-        			
+
         			if( listener != null )
         				listener.onNewData( scanData );
                 }
@@ -177,52 +178,27 @@ public class ZBarScanner extends QRScanner {
             }
     	}
     };
-    
-    /**
-     * tries to open the front camera
-     * @return Camera
-     */
-    private static Camera openFrontFacingCamera() {
-        int cameraCount = 0;
-        Camera cam = null;
-        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        cameraCount = Camera.getNumberOfCameras();
-        
-        for( int camIdx = 0; camIdx < cameraCount; camIdx++ ) {
-            Camera.getCameraInfo( camIdx, cameraInfo );
-            if( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT ) {
-                try {
-                    cam = Camera.open( camIdx );
-                } catch( RuntimeException e ) {
-                	AppUtils.Logger( TAG, "Camera failed to open: " + e.getLocalizedMessage() );
-                }
-            }
-        }
-        
-        if( cam == null )
-        	cam = Camera.open();
-
-        return cam;
-    }
 
     /**
-     * tries to open the back camera
+     * tries to open the camera
+     * @param facing Front or Back camera
      * @return Camera
      */
-    private static Camera openBackFacingCamera() {
-        int cameraCount = 0;
+    private static Camera openCamera(int facing) {
+        int cameraCount;
         Camera cam = null;
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         cameraCount = Camera.getNumberOfCameras();
 
         for( int camIdx = 0; camIdx < cameraCount; camIdx++ ) {
             Camera.getCameraInfo( camIdx, cameraInfo );
-            if( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK ) {
-                try {
+            try {
+                if( cameraInfo.facing == facing ) {
+                    mCameraId = camIdx;
                     cam = Camera.open( camIdx );
-                } catch( RuntimeException e ) {
-                    AppUtils.Logger( TAG, "Camera failed to open: " + e.getLocalizedMessage() );
                 }
+            } catch( RuntimeException e ) {
+                AppUtils.Logger( TAG, "Camera failed to open: " + e.getLocalizedMessage() );
             }
         }
 

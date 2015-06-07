@@ -45,6 +45,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -100,7 +102,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
     /** Popup Window for Tips */
     private PopupWindow mPopupMessage;
-    private Double equivalentTender;
+    private BigDecimal equivalentTender;
 
     /** Selected Text View */
     private TextView selectedView;
@@ -109,7 +111,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
     private static YodoHandler handlerMessages;
 
     /** ImageLoader */
-    ImageLoader imageLoader;
+    private ImageLoader imageLoader;
 
     /** Balance Temp */
     private HashMap<String, String> historyData;
@@ -375,7 +377,7 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
 
         TextView cashTender     = (TextView) layout.findViewById( R.id.cashTenderText );
         ProgressBar progressBar = (ProgressBar) layout.findViewById( R.id.progressBarPopUp );
-        cashTender.setText( String.format( Locale.US, "%.2f", equivalentTender ) );
+        cashTender.setText( equivalentTender.setScale( 2, RoundingMode.DOWN ).toString() );
         AppUtils.setCurrencyIcon( ac, cashTender, true );
 
         if( equivalentTender == null ) {
@@ -427,28 +429,32 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         TextView debitsText  = ( (TextView) layout.findViewById( R.id.yodoDebitsTextView ) );
         TextView balanceText = ( (TextView) layout.findViewById( R.id.yodoBalanceTextView ) );
 
-        Double total = 0.0, result;
+        BigDecimal total = BigDecimal.ZERO;
 
-        result = Double.valueOf( historyData.get( ServerResponse.DEBIT ) );
-        debitsText.setText( String.format( "%.2f", result ) );
-        total -= result;
+        BigDecimal result = new BigDecimal( historyData.get( ServerResponse.DEBIT ) );
+        debitsText.setText( result.setScale( 2, RoundingMode.DOWN ).toString() );
+        total = total.subtract( result );
 
-        result = Double.valueOf( historyData.get( ServerResponse.CREDIT ) );
-        creditsText.setText( String.format( "%.2f", result ) );
-        total += result;
+        result = new BigDecimal( historyData.get( ServerResponse.CREDIT ) );
+        creditsText.setText( result.setScale( 2, RoundingMode.DOWN ).toString() );
+        total = total.add( result );
 
-        balanceText.setText( String.format( "%.2f", total * -1 ) );
-        total = 0.0;
+        balanceText.setText(
+                total.negate().setScale( 2, RoundingMode.DOWN ).toString()
+        );
+        total = BigDecimal.ZERO;
 
-        result = Double.valueOf( todayData.get( ServerResponse.DEBIT ) );
-        todayDebitsText.setText( String.format( "%.2f", result ) );
-        total -= result;
+        result = new BigDecimal( todayData.get( ServerResponse.DEBIT ) );
+        todayDebitsText.setText( result.setScale( 2, RoundingMode.DOWN ).toString() );
+        total = total.subtract( result );
 
-        result = Double.valueOf( todayData.get( ServerResponse.CREDIT ) );
-        todayCreditsText.setText( String.format( "%.2f", result ) );
-        total += result;
+        result = new BigDecimal( todayData.get( ServerResponse.CREDIT ) );
+        todayCreditsText.setText( result.setScale( 2, RoundingMode.DOWN ).toString() );
+        total = total.add( result );
 
-        todayBalanceText.setText( String.format( "%.2f", total * -1 ) );
+        todayBalanceText.setText(
+                total.negate().setScale( 2, RoundingMode.DOWN ).toString()
+        );
 
         AlertDialogHelper.showAlertDialog( ac, getString( R.string.yodo_title ), layout );
         todayData = historyData = null;
@@ -679,8 +685,10 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         final String value   = ((Button)v).getText().toString();
         final String current = selectedView.getText().toString();
 
-        Double result = Double.valueOf( ( current + value ).replace( ".", "" ) ) / 100.00;
-        selectedView.setText( String.format(Locale.US, "%.2f", result) );
+        BigDecimal temp = new BigDecimal( current + value );
+        selectedView.setText(
+                temp.multiply( BigDecimal.TEN ).setScale( 2, RoundingMode.DOWN ).toString()
+        );
 
         new getCurrentBalance().execute();
     }
@@ -695,8 +703,8 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         if( amount.equals( getString( R.string.coins_0 ) ) ) {
             selectedView.setText( getString( R.string.zero ) );
         } else {
-            double value = Double.valueOf( current ) + Double.valueOf( amount );
-            selectedView.setText( String.format( Locale.US, "%.2f", value ) );
+            BigDecimal value = new BigDecimal( current ).add( new BigDecimal( amount ) );
+            selectedView.setText( value.setScale( 2, RoundingMode.DOWN ).toString() );
         }
         new getCurrentBalance().execute();
     }
@@ -967,40 +975,42 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
         @Override
         protected void onPostExecute(JSONArray json) {
             if( json != null ) {
-                Double cad_currency = null, current_currency = null;
+                BigDecimal cad_currency = null, current_currency = null;
                 for( int i = 0; i < json.length(); i++ ) {
                     try {
                         JSONObject temp = json.getJSONObject( i );
                         JSONObject c    = (JSONObject) temp.get( TAG );
                         String currency = (String) c.get( CURRENCY_TAG );
-                        Double rate     = Double.parseDouble( (String) c.get( RATE_TAG ) );
+                        String rate     = (String) c.get( RATE_TAG );
 
+                        // Gets the CAD Currency
                         if( currency.equals( currencies[ AppConfig.DEFAULT_CURRENCY ] ) )
-                            cad_currency = 1.0 /  rate;
+                            cad_currency = new BigDecimal( rate );
 
                         if( currency.equals( currencies[ AppUtils.getCurrency( ac ) ]) )
-                            current_currency =  rate;
+                            current_currency = new BigDecimal( rate );
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
 
-                String totalPurchase = mTotalView.getText().toString();
-                String cashBack      = mCashBackView.getText().toString();
-                double temp_tender = Double.parseDouble( mCashTenderView.getText().toString() );
+                String totalPurchase   = mTotalView.getText().toString();
+                String cashBack        = mCashBackView.getText().toString();
+                BigDecimal temp_tender = new BigDecimal( mCashTenderView.getText().toString() );
 
                 if( cad_currency != null ) {
                     if( URL_CURRENCY.equals( currencies[ AppUtils.getCurrency( ac ) ] ) ) {
-                        equivalentTender = temp_tender / cad_currency;
+                        equivalentTender = temp_tender.multiply( cad_currency );
                     } else if( current_currency != null ) {
-                        equivalentTender = temp_tender / ( cad_currency * current_currency );
+                        BigDecimal currency_rate = cad_currency.divide( current_currency, 2 );
+                        equivalentTender = temp_tender.multiply( currency_rate );
                     }
 
-                    equivalentTender = Math.floor( equivalentTender * 100 ) / 100;
-                    double total = equivalentTender - Double.valueOf( totalPurchase ) - Double.valueOf( cashBack );
-                    total = Math.floor( total * 100 ) / 100;
+                    BigDecimal total = equivalentTender.subtract(
+                            new BigDecimal( totalPurchase ).add( new BigDecimal( cashBack ) )
+                    );
 
-                    mBalanceView.setText( String.format( Locale.US, "%.2f", total ) );
+                    mBalanceView.setText( total.setScale( 2, RoundingMode.DOWN ).toString() );
                     mBalanceView.setVisibility( View.VISIBLE );
                     mBalanceBar.setVisibility( View.GONE );
 

@@ -12,6 +12,7 @@ import co.yodo.launcher.data.Currency;
 
 /**
  * Created by luis on 16/12/14.
+ * Adapter for the currency values
  */
 public class CurrencyAdapter extends ArrayAdapter<Currency> {
     private static final int RESOURCE = R.layout.currency_row;
