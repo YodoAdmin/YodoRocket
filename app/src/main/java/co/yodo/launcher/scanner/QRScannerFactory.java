@@ -29,12 +29,14 @@ public class QRScannerFactory {
 			break;
 			
 			case ZBarScanner1:
-				qrscanner = ZBarScanner.getInstance( activity );
+				//qrscanner = ZBarScanner.getInstance( activity );
+                qrscanner = ZxingScanner.getInstance( activity );
                 qrscanner.setFrontFaceCamera( true );
 			break;
 
             case ZBarScanner2:
-                qrscanner = ZBarScanner.getInstance( activity );
+                //qrscanner = ZBarScanner.getInstance( activity );
+                qrscanner = ZxingScanner.getInstance( activity );
                 qrscanner.setFrontFaceCamera( false );
             break;
 		}

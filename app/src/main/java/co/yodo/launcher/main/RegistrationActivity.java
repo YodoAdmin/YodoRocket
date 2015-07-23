@@ -1,9 +1,9 @@
 package co.yodo.launcher.main;
 
 import android.content.Context;
-import android.os.Message;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,7 +18,7 @@ import co.yodo.launcher.data.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.net.YodoRequest;
 
-public class RegistrationActivity extends ActionBarActivity implements YodoRequest.RESTListener {
+public class RegistrationActivity extends AppCompatActivity implements YodoRequest.RESTListener {
     /** The context object */
     private Context ac;
 
@@ -61,7 +61,8 @@ public class RegistrationActivity extends ActionBarActivity implements YodoReque
         Toolbar mActionBarToolbar = (Toolbar) findViewById( R.id.registrationBar );
 
         setSupportActionBar( mActionBarToolbar );
-        getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        if( getSupportActionBar() != null )
+            getSupportActionBar().setDisplayHomeAsUpEnabled( true );
     }
 
     private void updateData() {

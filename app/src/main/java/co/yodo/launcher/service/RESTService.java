@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 
-import org.acra.ACRA;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -38,8 +37,8 @@ public class RESTService extends IntentService {
     private Context ac;
 
     /** Switch server IP address */
-    //private static final String IP 	         = "http://50.56.180.133";  // Production
-    private static final String IP 			 = "http://198.101.209.120";  // Development
+    private static final String IP 	         = "http://50.56.180.133";  // Production
+    //private static final String IP 			 = "http://198.101.209.120";  // Development
     //private static final String IP 			 = "http://139.82.100.71";  // Local
     private static final String YODO_ADDRESS = "/yodo/yodoswitchrequest/getRequest/";
     //private static final String YODO_ADDRESS = "/YodoSwitch/yodoswitchrequest/getRequest/";

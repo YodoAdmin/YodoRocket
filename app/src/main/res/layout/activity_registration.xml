@@ -65,8 +65,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/registration_margin"
-            android:textColor="@android:color/white"
-            android:background="@drawable/material_button_gray"
+            android:textStyle="bold"
             android:text="@string/register"
             android:onClick="registrationClick"/>
 

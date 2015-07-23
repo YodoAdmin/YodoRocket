@@ -1,9 +1,10 @@
 package co.yodo.launcher;
 
-import org.acra.*;
-import org.acra.annotation.*;
-
 import android.app.Application;
+
+import org.acra.ACRA;
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
 
 @ReportsCrashes(formKey = "", 
                 formUri = "http://198.101.209.120/MAB-LAB/report/report.php",

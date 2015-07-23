@@ -8,7 +8,7 @@ import co.yodo.launcher.service.RESTService;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     /** FILE flag: to print the logs in a file */
     public static final boolean FDEBUG = false;

@@ -17,7 +17,7 @@ import android.os.Parcelable;
 import android.provider.Settings;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SlidingPaneLayout;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -70,7 +70,7 @@ import co.yodo.launcher.scanner.QRScannerFactory;
 import co.yodo.launcher.scanner.QRScannerListener;
 import co.yodo.launcher.service.RESTService;
 
-public class LauncherActivity extends ActionBarActivity implements YodoRequest.RESTListener, QRScannerListener {
+public class LauncherActivity extends AppCompatActivity implements YodoRequest.RESTListener, QRScannerListener {
     /** DEBUG */
     private static final String TAG = LauncherActivity.class.getSimpleName();
 
@@ -683,12 +683,19 @@ public class LauncherActivity extends ActionBarActivity implements YodoRequest.R
      */
     public void valueClick(View v) {
         final String value   = ((Button)v).getText().toString();
-        final String current = selectedView.getText().toString();
 
-        BigDecimal temp = new BigDecimal( current + value );
-        selectedView.setText(
-                temp.multiply( BigDecimal.TEN ).setScale( 2, RoundingMode.DOWN ).toString()
-        );
+        // This button is not working
+        if( value.equals( getString( R.string.value__ ) ) )
+            return;
+
+        for( int i = 0; i < value.length(); i++ ) {
+            final String current = selectedView.getText().toString();
+
+            BigDecimal temp = new BigDecimal( current + value );
+            selectedView.setText(
+                    temp.multiply( BigDecimal.TEN ).setScale( 2, RoundingMode.DOWN ).toString()
+            );
+        }
 
         new getCurrentBalance().execute();
     }

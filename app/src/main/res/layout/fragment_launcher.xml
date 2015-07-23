@@ -163,6 +163,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <com.journeyapps.barcodescanner.CompoundBarcodeView
+            android:id="@+id/barcode_scanner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </com.journeyapps.barcodescanner.CompoundBarcodeView>
+
         <TextView
             android:id="@+id/textViewOverlayText"
             android:layout_width="match_parent"
