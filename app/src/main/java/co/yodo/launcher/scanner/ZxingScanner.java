@@ -15,6 +15,7 @@ import com.journeyapps.barcodescanner.CompoundBarcodeView;
 import java.util.List;
 
 import co.yodo.launcher.R;
+import co.yodo.launcher.helper.AppUtils;
 
 /**
  * Created by luis on 10/07/15.
@@ -55,8 +56,6 @@ public class ZxingScanner extends QRScanner {
             public void barcodeResult( BarcodeResult result ) {
                 if( result.getText() != null ) {
                     String trimmed = result.getText().replaceAll( "\\s+", "" );
-                    //AppUtils.Logger( "QRCODE", result.getText() + " - " + result.getText().length() );
-                    //AppUtils.Logger( "QRCODE", trimmed + " - " + trimmed.length() );
                     releaseCamera();
                     listener.onNewData( trimmed );
                 }
@@ -69,6 +68,7 @@ public class ZxingScanner extends QRScanner {
     }
 
     public static ZxingScanner getInstance(Activity activity) {
+        AppUtils.Logger( TAG, ( instance == null ) + "" );
         synchronized( ZxingScanner.class ) {
             if( instance == null )
                 instance = new ZxingScanner( activity );
@@ -76,8 +76,9 @@ public class ZxingScanner extends QRScanner {
         return instance;
     }
 
-    public static ZxingScanner getInstance() {
-        return instance;
+    public static void deleteInstance() {
+        if( instance != null )
+            instance.destroy();
     }
 
     @Override
@@ -125,5 +126,4 @@ public class ZxingScanner extends QRScanner {
 
         previewing = false;
     }
-
 }

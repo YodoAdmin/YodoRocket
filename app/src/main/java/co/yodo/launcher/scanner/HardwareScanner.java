@@ -62,7 +62,7 @@ public class HardwareScanner extends QRScanner {
         inputDialog.getWindow().setSoftInputMode( WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN );
 	}
 	
-	public static HardwareScanner getInstance(Activity activity) {
+	public static HardwareScanner getInstance( Activity activity ) {
 		synchronized( HardwareScanner.class ) {
 			if(instance == null)
 				instance = new HardwareScanner( activity );
@@ -70,8 +70,9 @@ public class HardwareScanner extends QRScanner {
 		return instance;
 	}
 	
-	public static HardwareScanner getInstance() {
-		return instance;
+	public static void deleteInstance() {
+		if( instance != null )
+            instance.destroy();
 	}
 	
 	@Override
@@ -90,7 +91,7 @@ public class HardwareScanner extends QRScanner {
 	}
 
     @Override
-    public void setFrontFaceCamera(boolean frontFacing) {}
+    public void setFrontFaceCamera( boolean frontFacing ) {}
 
     @Override
 	public void destroy() {

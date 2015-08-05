@@ -12,6 +12,7 @@ public class Intents {
     public static final String TOTAL           = "TOTAL";
     public static final String CASH_TENDER     = "CASH_TENDER";
     public static final String CASH_BACK       = "CASH_BACK";
+    public static final String CURRENCY        = "CURRENCY";
     public static final String PROMPT_RESPONSE = "PROMPT_RESPONSE";
 
     /* Return */

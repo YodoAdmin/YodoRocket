@@ -5,8 +5,8 @@ import android.app.Activity;
 public class QRScannerFactory {
 	public enum SupportedScanners {
 		Hardware   ( "Barcode Scanner" ),
-		ZBarScanner1( "Camera Front" ),
-        ZBarScanner2( "Camera Back" );
+		CameraFront( "Camera Front" ),
+        CameraBack ( "Camera Back" );
 		
 		private String value;
 		
@@ -28,13 +28,13 @@ public class QRScannerFactory {
 				qrscanner = HardwareScanner.getInstance( activity );
 			break;
 			
-			case ZBarScanner1:
+			case CameraFront:
 				//qrscanner = ZBarScanner.getInstance( activity );
                 qrscanner = ZxingScanner.getInstance( activity );
                 qrscanner.setFrontFaceCamera( true );
 			break;
 
-            case ZBarScanner2:
+            case CameraBack:
                 //qrscanner = ZBarScanner.getInstance( activity );
                 qrscanner = ZxingScanner.getInstance( activity );
                 qrscanner.setFrontFaceCamera( false );
@@ -48,14 +48,7 @@ public class QRScannerFactory {
 	}
 	
 	public static void destroy() {
-        QRScanner qrscanner = HardwareScanner.getInstance();
-		
-		if( qrscanner != null )
-			qrscanner.destroy();
-		
-		qrscanner = ZBarScanner.getInstance();
-		
-		if( qrscanner != null )
-			qrscanner.destroy();
+        HardwareScanner.deleteInstance();
+		ZxingScanner.deleteInstance();
 	}
 }

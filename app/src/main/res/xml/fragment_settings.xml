@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:title="@string/config_pref_username"
+        android:key="SPCurrentBeacon"
+        android:inputType="text"/>
+
+    <CheckBoxPreference
+        android:key="SPAdvertisingService"
+        android:title="@string/config_pref_advertising"
+        android:summary="@string/config_pref_advertising_summary" />
+
+    <PreferenceCategory android:title="@string/config_pref_category_gui" >
+
+        <yuku.ambilwarna.widget.AmbilWarnaPreference
+            android:key="SPBackgroundColor"
+            android:defaultValue="-0x1"
+            android:title="@string/config_pref_background"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

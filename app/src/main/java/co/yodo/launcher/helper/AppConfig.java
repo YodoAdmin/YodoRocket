@@ -84,7 +84,12 @@ public class AppConfig {
 	 * true  -- Service is running
 	 * false -- Service not running
 	 */
-    public static final String SPREF_ADVERTISING_SERVICE_RUNNING = "SPAdvertisingServiceRunning";
+    public static final String SPREF_ADVERTISING_SERVICE = "SPAdvertisingService";
+
+    /* The current background of the Rocket.
+    * type -- Integer
+    */
+    public static final String SPREF_CURRENT_BACKGROUND = "SPBackgroundColor";
 
     /**
      * Default values

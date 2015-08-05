@@ -2,7 +2,9 @@ package co.yodo.launcher.helper;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -13,6 +15,7 @@ import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
 import android.text.InputType;
@@ -282,7 +285,7 @@ public class AppUtils {
      */
     public static Boolean isFirstLogin(Context c) {
         SharedPreferences config = getSPrefConfig(c);
-        return config.getBoolean(AppConfig.SPREF_FIRST_LOGIN, true);
+        return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
     }
 
     /**
@@ -295,7 +298,7 @@ public class AppUtils {
     public static Boolean saveAdvertisingServiceRunning(Context c, Boolean flag) {
         SharedPreferences config = getSPrefConfig( c );
         SharedPreferences.Editor writer = config.edit();
-        writer.putBoolean( AppConfig.SPREF_ADVERTISING_SERVICE_RUNNING, flag );
+        writer.putBoolean( AppConfig.SPREF_ADVERTISING_SERVICE, flag );
         return writer.commit();
     }
 
@@ -307,7 +310,7 @@ public class AppUtils {
      */
     public static Boolean isAdvertisingServiceRunning(Context c) {
         SharedPreferences config = getSPrefConfig(c);
-        return config.getBoolean(AppConfig.SPREF_ADVERTISING_SERVICE_RUNNING, false);
+        return config.getBoolean( AppConfig.SPREF_ADVERTISING_SERVICE, false );
     }
 
     /**
@@ -332,6 +335,11 @@ public class AppUtils {
     public static long getCurrencyTimestamp(Context c) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getLong( AppConfig.SPREF_TIMESTAMP_CURRENCY, 0 );
+    }
+
+    public static int getCurrentBackground( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getInt( AppConfig.SPREF_CURRENT_BACKGROUND, -0x1 );
     }
 
     /**
@@ -365,6 +373,47 @@ public class AppUtils {
 		}
 
         return HARDWARE_TOKEN;
+    }
+
+    /**
+     * Gets the bluetooth adapter
+     * @return The bluetooth adapter
+     */
+    private static BluetoothAdapter getBluetoothAdapter() {
+        return BluetoothAdapter.getDefaultAdapter();
+    }
+
+    /**
+     * Check if the device possess bluetooth
+     * @return true if it possess bluetooth otherwise false
+     */
+    public static boolean hasBluetooth() {
+        return getBluetoothAdapter() != null;
+    }
+
+    /**
+     * Set-up bluetooth for advertising
+     * @param start To start or stop
+     * @param force To force the require for being discoverable
+     */
+    public static void setupAdvertising( Context ac, boolean start, boolean force ) {
+        if( !hasBluetooth() )
+            return;
+
+        BluetoothAdapter mBluetoothAdapter = getBluetoothAdapter();
+        if( start ) {
+            if( !mBluetoothAdapter.isEnabled() || force ) {
+                mBluetoothAdapter.enable();
+
+                Intent discoverableIntent = new Intent( BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE );
+                discoverableIntent.putExtra( BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0 );
+                ac.startActivity( discoverableIntent );
+            }
+
+            mBluetoothAdapter.setName( AppConfig.YODO_POS + AppUtils.getBeaconName( ac ) );
+        } else {
+            mBluetoothAdapter.setName( Build.MODEL );
+        }
     }
 
     /**

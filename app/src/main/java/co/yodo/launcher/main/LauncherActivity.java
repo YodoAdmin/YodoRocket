@@ -1,6 +1,5 @@
 package co.yodo.launcher.main;
 
-import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -38,9 +37,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.amlcurran.showcaseview.ShowcaseView;
-import com.github.amlcurran.showcaseview.targets.ViewTarget;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,7 +44,6 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
-import java.util.Locale;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.adapter.CurrencyAdapter;
@@ -80,9 +75,6 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     /** The Local Broadcast Manager */
     private LocalBroadcastManager lbm;
 
-    /** Bluetooth Admin */
-    private BluetoothAdapter mBluetoothAdapter;
-
     /** Orientation detector */
     private OrientationEventListener mOrientationListener;
     private int mLastRotation;
@@ -91,6 +83,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     private String hardwareToken;
 
     /** Gui controllers */
+    private LinearLayout mRootLayout;
     private SlidingPaneLayout mSlidingLayout;
     private TextView mBalanceView;
     private Spinner mScannersSpinner;
@@ -148,13 +141,15 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         super.onResume();
         registerBroadcasts();
 
-        if( AppUtils.isAdvertisingServiceRunning( ac ) )
-            setupAdvertising( false );
+        AppUtils.setupAdvertising( ac, AppUtils.isAdvertisingServiceRunning( ac ), false );
 
         if( currentScanner != null && isScanning ) {
             isScanning = false;
             currentScanner.startScan();
         }
+
+        // Sets Background
+        mRootLayout.setBackgroundColor( AppUtils.getCurrentBackground( ac ) );
     }
 
     @Override
@@ -162,10 +157,10 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         super.onPause();
         unregisterBroadcasts();
 
-        if( currentScanner != null && currentScanner.isScanning() ) {
+        if( currentScanner != null && currentScanner.isScanning() )
             isScanning = true;
-            currentScanner.close();
-        }
+
+        QRScannerFactory.destroy();
     }
 
     @Override
@@ -198,6 +193,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         imageLoader = new ImageLoader( ac );
 
         // Globals
+        mRootLayout      = (LinearLayout) findViewById( R.id.screenRootView );
         mSlidingLayout   = (SlidingPaneLayout) findViewById( R.id.sliding_panel_layout );
         mBalanceView     = (TextView) findViewById( R.id.balanceText );
         mScannersSpinner = (Spinner) findViewById(R.id.scannerSpinner);
@@ -209,9 +205,6 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
 
         // Popup
         mPopupMessage  = new PopupWindow( ac );
-
-        // Only used at creation
-        CheckBox mAdvertisingCheckBox = (CheckBox) findViewById(R.id.advertisingCheckBox);
 
         // Sliding Panel Configurations
         mSlidingLayout.setParallaxDistance( 30 );
@@ -241,31 +234,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         mScannersSpinner.setAdapter( adapter );
         mScannersSpinner.setSelection( AppUtils.getScanner( ac ) );
 
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         handlerMessages   = new YodoHandler( LauncherActivity.this );
         YodoRequest.getInstance().setListener( this );
-
-        if( AppUtils.isFirstLogin( ac ) ) {
-            mSlidingLayout.openPane();
-
-            new ShowcaseView.Builder( this )
-                    .setTarget( new ViewTarget( R.id.optionsView, this ) )
-                    .setContentTitle( R.string.tutorial_title )
-                    .setContentText( R.string.tutorial_message )
-                    .build();
-
-            AppUtils.saveFirstLogin(ac, false);
-        }
-
-        if( mBluetoothAdapter == null )
-            mAdvertisingCheckBox.setEnabled(false);
-        else {
-            final boolean isAdvertisingRunning =  AppUtils.isAdvertisingServiceRunning( ac );
-            mAdvertisingCheckBox.setChecked( isAdvertisingRunning );
-
-            if( isAdvertisingRunning )
-                setupAdvertising( false );
-        }
 
         selectedView = mTotalView;
         selectedView.setBackgroundResource( R.drawable.selected_text_field );
@@ -302,6 +272,16 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         if( mOrientationListener.canDetectOrientation() ) {
             mOrientationListener.enable();
         }
+
+        if( AppUtils.isFirstLogin( ac ) ) {
+            /*new ShowcaseView.Builder( this )
+                    .setTarget( new ViewTarget( R.id.optionsView, this ) )
+                    .setContentTitle( R.string.tutorial_title )
+                    .setContentText( R.string.tutorial_message )
+                    .build();*/
+
+            AppUtils.saveFirstLogin( ac, false );
+        }
     }
 
     /**
@@ -311,13 +291,22 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         /** Handle external Requests */
         externBundle = getIntent().getExtras();
         if( externBundle != null ) {
-            String total = String.format( Locale.US, "%.2f", externBundle.getDouble( Intents.TOTAL, 0.00 ) );
+            /*String total = String.format( Locale.US, "%.2f", externBundle.getDouble( Intents.TOTAL, 0.00 ) );
             String cashTender = String.format( Locale.US, "%.2f", externBundle.getDouble( Intents.CASH_TENDER, 0.00 ) );
             String cashBack = String.format( Locale.US, "%.2f", externBundle.getDouble( Intents.CASH_BACK, 0.00 ) );
 
             if( Double.valueOf( total ) > 0.00 ) mTotalView.setText( total );
             if( Double.valueOf( cashTender ) > 0.00 ) mCashTenderView.setText( cashTender );
-            if( Double.valueOf( cashBack ) > 0.00 ) mCashBackView.setText( cashBack );
+            if( Double.valueOf( cashBack ) > 0.00 ) mCashBackView.setText( cashBack );*/
+
+            BigDecimal total = new BigDecimal( externBundle.getString( Intents.TOTAL, "0.00" ) );
+            BigDecimal cashTender = new BigDecimal( externBundle.getString( Intents.CASH_TENDER, "0.00" ) );
+            BigDecimal cashBack = new BigDecimal( externBundle.getString( Intents.CASH_BACK, "0.00" ) );
+            String currency = externBundle.getString( Intents.CURRENCY );
+
+            if( total.signum() > 0 ) mTotalView.setText( total.setScale( 2, RoundingMode.DOWN ).toString() );
+            if( cashTender.signum() > 0 ) mCashTenderView.setText( cashTender.setScale( 2, RoundingMode.DOWN ).toString() );
+            if( cashBack.signum() > 0 ) mCashBackView.setText( cashBack.setScale( 2, RoundingMode.DOWN ).toString() );
 
             viewClick( mCashTenderView );
 
@@ -390,22 +379,6 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         mPopupMessage.setHeight( LinearLayout.LayoutParams.WRAP_CONTENT );
         mPopupMessage.setContentView( layout );
         mPopupMessage.showAtLocation( v, Gravity.CENTER, 0, 0 );
-    }
-
-    /**
-     * Set-up bluetooth for advertising
-     * @param force To force the require for being discoverable
-     */
-    private void setupAdvertising(boolean force) {
-        if( !mBluetoothAdapter.isEnabled() || force ) {
-            mBluetoothAdapter.enable();
-
-            Intent discoverableIntent = new Intent( BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE );
-            discoverableIntent.putExtra( BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0 );
-            startActivity( discoverableIntent );
-        }
-
-        mBluetoothAdapter.setName( AppConfig.YODO_POS + AppUtils.getBeaconName( ac ) );
     }
 
     /**
@@ -516,7 +489,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
 
                 Drawable icon = AppUtils.getDrawableByName( ac, icons[ item ] );
                 icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int)( mCashTenderView.getLineHeight() * 0.9 ) );
-                mCashTenderView.setCompoundDrawables(icon, null, null, null);
+                mCashTenderView.setCompoundDrawables( icon, null, null, null );
                 new getCurrentBalance().execute();
 
                 dialog.dismiss();
@@ -533,44 +506,14 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     }
 
     /**
-     * Changes the current username for bluetooth
+     * Opens the settings activity
      * @param v View, not used
      */
-    public void setUsernameClick(View v) {
+    public void settingsClick(View v) {
         mSlidingLayout.closePane();
 
-        final String title  = ((Button) v).getText().toString();
-        final String beacon = AppUtils.getBeaconName( ac );
-
-        final EditText inputBox = new ClearEditText( ac );
-        inputBox.setText( beacon );
-
-        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int item) {
-                AppUtils.saveBeaconName( ac, inputBox.getText().toString() );
-            }
-        };
-
-        AlertDialogHelper.showAlertDialog(
-                ac,
-                title,
-                inputBox,
-                onClick
-        );
-    }
-
-    /**
-     * Enables or disables advertising
-     * @param v View, checkbox for enable or disable
-     */
-    public void setAdvertisingClick(View v) {
-        mSlidingLayout.closePane();
-
-        final boolean isAdvertisingRunning = ((CheckBox) v).isChecked();
-        AppUtils.saveAdvertisingServiceRunning( ac , isAdvertisingRunning );
-
-        if( isAdvertisingRunning )
-            setupAdvertising( true );
+        Intent intent = new Intent( ac, SettingsActivity.class );
+        startActivity( intent );
     }
 
     /**
@@ -955,7 +898,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         /** JSON Tags */
         private String TAG = "YodoCurrency";
         private String CURRENCY_TAG = "currency";
-        private String RATE_TAG     = "rate";
+        private String RATE_TAG = "rate";
 
         /** Currencies */
         private String[] currencies = ac.getResources().getStringArray( R.array.currency_array );
