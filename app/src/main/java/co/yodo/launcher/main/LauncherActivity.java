@@ -240,7 +240,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         selectedView = mTotalView;
         selectedView.setBackgroundResource( R.drawable.selected_text_field );
 
-        if( !AppUtils.isLocationEnabled( ac ) ) {
+        if( AppUtils.hasLocationService( ac ) && !AppUtils.isLocationEnabled( ac ) ) {
             DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int item) {
                     Intent intent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS );

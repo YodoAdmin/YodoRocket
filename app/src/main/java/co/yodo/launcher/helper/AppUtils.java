@@ -516,12 +516,22 @@ public class AppUtils {
     }
 
     /**
+     * Verify if the device has GPS
+     * @param c The Context of the Android system.
+     * @return Boolean true if it has GPS
+     */
+    public static boolean hasLocationService( Context c ) {
+        LocationManager locManager = (LocationManager) c.getSystemService( Context.LOCATION_SERVICE );
+        return locManager.getProvider( LocationManager.GPS_PROVIDER ) != null;
+    }
+
+    /**
      * Verify if the location services are enabled (any provider)
      * @param c The Context of the Android system.
      * @return Boolean true if is running otherwise false
      */
-    public static boolean isLocationEnabled(Context c) {
-        LocationManager lm = (LocationManager) c.getSystemService(Context.LOCATION_SERVICE);
+    public static boolean isLocationEnabled( Context c ) {
+        LocationManager lm = (LocationManager) c.getSystemService( Context.LOCATION_SERVICE );
         String provider    = lm.getBestProvider( new Criteria(), true );
         return ( ( !provider.isEmpty() ) && !LocationManager.PASSIVE_PROVIDER.equals( provider ) );
     }
