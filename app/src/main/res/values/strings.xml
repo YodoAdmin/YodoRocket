@@ -26,6 +26,7 @@
     <string name="merch_pip_hint">Activation Code</string>
     <string name="barcode_scanner">Scan the code</string>
     <string name="gps_enable">GPS is not enabled. Do you want to go to settings menu?</string>
+    <string name="register_hint">Enter your activation code. You must be registered as a merchant prior to activation.\nContact: support@yodo.co</string>
 
     <!-- Exchange Response -->
     <string name="exchange_code">Code:</string>

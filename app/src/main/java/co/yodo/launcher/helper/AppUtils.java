@@ -599,7 +599,7 @@ public class AppUtils {
         }
 
         if( AppConfig.FDEBUG ) {
-            SimpleDateFormat sdf = new SimpleDateFormat( "yyyyMMdd_HHmmss" );
+            SimpleDateFormat sdf = new SimpleDateFormat( "yyyyMMdd_HHmmss", Locale.US );
             String currentDate   = sdf.format( new Date() );
 
             if( text == null )
