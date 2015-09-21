@@ -25,6 +25,7 @@ public class XMLHandler extends DefaultHandler {
     private static final String LOGO_ELEM         = "logo_url";
     private static final String DEBIT_ELEM        = "MerchantDebitWTCost";
     private static final String CREDIT_ELEM       = "MerchantCreditWTCost";
+    private static final String CURRENCY_ELEM     = "DefaultCurrency";
     private static final String SETTLEMENT_ELEM   = "Settlement";
     private static final String EQUIPMENT_ELEM    = "Equipments";
     private static final String LEASE_ELEM        = "Lease";
@@ -41,7 +42,7 @@ public class XMLHandler extends DefaultHandler {
     public static ServerResponse response = null;
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement( String uri, String localName, String qName, Attributes attributes ) throws SAXException {
         currentElement = true;
 
         if(localName.equalsIgnoreCase(ROOT_ELEMENT)) {
@@ -53,7 +54,7 @@ public class XMLHandler extends DefaultHandler {
     /** Called when tag closing ( ex:- <name>AndroidPeople</name>
      * -- </name> )*/
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement( String uri, String localName, String qName ) throws SAXException {
         currentElement = false;
 
         /** set value */
@@ -85,6 +86,9 @@ public class XMLHandler extends DefaultHandler {
         }
         else if( localName.equalsIgnoreCase( SETTLEMENT_ELEM ) ) {
             response.addParam( ServerResponse.SETTLEMENT, currentValue );
+        }
+        else if( localName.equalsIgnoreCase( CURRENCY_ELEM ) ) {
+            response.addParam( ServerResponse.CURRENCY, currentValue );
         }
         else if( localName.equalsIgnoreCase( EQUIPMENT_ELEM ) ) {
             response.addParam( ServerResponse.EQUIPMENT, currentValue );

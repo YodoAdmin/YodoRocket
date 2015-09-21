@@ -39,16 +39,17 @@ public class YodoRequest extends ResultReceiver {
         ERROR_NO_INTERNET ( "-1" ), // ERROR NO INTERNET
         ERROR_GENERAL     ( "00" ), // ERROR GENERAL
         AUTH_REQUEST      ( "01" ), // RT=0, ST=4
-        QUERY_BAL_REQUEST ( "02" ), // RT=5, ST=3
-        QUERY_DAY_REQUEST ( "03" ), // RT=5, ST=3
-        QUERY_LOGO_REQUEST( "04" ), // RT=5, ST=3
-        REG_MERCH_REQUEST ( "05 "), // RT=9, ST=1
-        EXCH_MERCH_REQUEST( "06" ),	// RT=1, ST=1
-        ALT_MERCH_REQUEST ( "07" );	// RT=7
+        QUERY_BAL_REQUEST ( "02" ), // RT=4, ST=3
+        QUERY_CUR_REQUEST ( "03" ), // RT=4, ST=3
+        QUERY_DAY_REQUEST ( "04" ), // RT=4, ST=3
+        QUERY_LOGO_REQUEST( "05" ), // RT=4, ST=3
+        REG_MERCH_REQUEST ( "06 "), // RT=9, ST=1
+        EXCH_MERCH_REQUEST( "07" ),	// RT=1, ST=1
+        ALT_MERCH_REQUEST ( "08" );	// RT=7
 
         private final String name;
 
-        private RequestType(String s) {
+        RequestType(String s) {
             name = s;
         }
 
@@ -206,6 +207,30 @@ public class YodoRequest extends ResultReceiver {
 
         Intent intent = new Intent( activity, RESTService.class );
         intent.putExtra( RESTService.ACTION_RESULT, RequestType.QUERY_DAY_REQUEST );
+        intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
+        intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
+        activity.startService( intent );
+    }
+
+    public void requestCurrency( Activity activity, String hardwareToken ) {
+        String sEncryptedMerchData, pRequest;
+        StringBuilder sCurrencyData = new StringBuilder();
+
+        sCurrencyData.append( hardwareToken ).append( REQ_SEP );
+        sCurrencyData.append( ServerRequest.QUERY_MERCHANT_CURRENCY );
+
+        // Encrypting to create request
+        oEncrypter.setsUnEncryptedString( sCurrencyData.toString() );
+        oEncrypter.rsaEncrypt( activity );
+        sEncryptedMerchData = oEncrypter.bytesToHex();
+
+        pRequest = ServerRequest.createQueryRequest(
+                sEncryptedMerchData,
+                Integer.parseInt( ServerRequest.QUERY_ACC_SUBREQ )
+        );
+
+        Intent intent = new Intent( activity, RESTService.class );
+        intent.putExtra( RESTService.ACTION_RESULT, RequestType.QUERY_CUR_REQUEST );
         intent.putExtra( RESTService.EXTRA_PARAMS, pRequest );
         intent.putExtra( RESTService.EXTRA_RESULT_RECEIVER, instance );
         activity.startService( intent );

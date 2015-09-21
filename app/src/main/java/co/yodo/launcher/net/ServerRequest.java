@@ -35,9 +35,10 @@ public class ServerRequest {
     public static final String REG_MERCH_SUBREQ = "1";
 
     /** Query Records */
-    public static final int QUERY_HISTORY_BALANCE = 10;
-    public static final int QUERY_TODAY_BALANCE   = 12;
-    public static final int QUERY_MERCHANT_LOGO   = 14;
+    public static final int QUERY_HISTORY_BALANCE   = 10;
+    public static final int QUERY_TODAY_BALANCE     = 12;
+    public static final int QUERY_MERCHANT_CURRENCY = 13;
+    public static final int QUERY_MERCHANT_LOGO     = 14;
 	
 	/** Variable that holds request string separator */
 	private static final String	REQ_SEP = ",";

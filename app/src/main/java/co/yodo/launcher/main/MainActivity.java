@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Message;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -24,6 +25,9 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
 
     /** The context object */
     private Context ac;
+
+    /** Hardware Token */
+    private String hardwareToken;
 
     /** Messages Handler */
     private static YodoHandler handlerMessages;
@@ -77,11 +81,11 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
         }
         /*****************************/
 
-        String hardwareToken = AppUtils.getHardwareToken( ac );
+        hardwareToken = AppUtils.getHardwareToken( ac );
         if( hardwareToken == null ) {
             ToastMaster.makeText( ac, R.string.no_hardware, Toast.LENGTH_LONG ).show();
             finish();
-        } else if( !AppUtils.isLoggedIn( ac ) ) {
+        } else if( AppUtils.getMerchantCurrency( ac ) == null ||  !AppUtils.isLoggedIn( ac ) ) {
             YodoRequest.getInstance().requestAuthentication( MainActivity.this, hardwareToken );
         } else {
             intent = new Intent( MainActivity.this, LauncherActivity.class );
@@ -92,7 +96,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
 
     @Override
     public void onResponse(YodoRequest.RequestType type, ServerResponse response) {
-        String code;
+        String code, message;
 
         switch( type ) {
             case ERROR_NO_INTERNET:
@@ -109,14 +113,39 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
                 code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                    // Get the merchant currency
+                    YodoRequest.getInstance().requestCurrency( MainActivity.this, hardwareToken );
+                } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
+                    AppUtils.saveLoginStatus( ac, false );
+                    Intent intent = new Intent( MainActivity.this, RegistrationActivity.class);
+                    startActivityForResult( intent, AppConfig.REGISTRATION_REQUEST );
+                }
+
+                break;
+
+            case QUERY_CUR_REQUEST:
+                code = response.getCode();
+
+                if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                    String currency = response.getParam( ServerResponse.CURRENCY );
+                    AppUtils.saveMerchantCurrency( ac, currency );
+                    // Start the app
                     AppUtils.saveLoginStatus( ac, true );
                     Intent intent = new Intent( MainActivity.this, LauncherActivity.class );
                     if( bundle != null ) intent.putExtras( bundle );
                     startActivityForResult( intent , AppConfig.LAUNCHER_REQUEST );
                 } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
-                    AppUtils.saveLoginStatus( ac, false );
-                    Intent intent = new Intent( MainActivity.this, RegistrationActivity.class);
-                    startActivityForResult( intent, AppConfig.REGISTRATION_REQUEST );
+                    Message msg = new Message();
+                    msg.what = YodoHandler.SERVER_ERROR;
+                    message  = response.getMessage();
+
+                    Bundle bundle = new Bundle();
+                    bundle.putString( YodoHandler.CODE, code );
+                    bundle.putString( YodoHandler.MESSAGE, message );
+                    msg.setData( bundle );
+
+                    handlerMessages.sendMessage( msg );
+                    finish();
                 }
 
                 break;
@@ -133,9 +162,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
         if( resultCode == RESULT_OK ) {
             switch( requestCode ) {
                 case AppConfig.REGISTRATION_REQUEST:
-                    Intent intent = new Intent( MainActivity.this, LauncherActivity.class );
-                    if( bundle != null ) intent.putExtras( bundle );
-                    startActivityForResult( intent, AppConfig.LAUNCHER_REQUEST );
+                    YodoRequest.getInstance().requestCurrency( MainActivity.this, hardwareToken );
                     break;
 
                 case AppConfig.LAUNCHER_REQUEST:

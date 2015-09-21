@@ -95,8 +95,8 @@ public class AppUtils {
      *         false It is not logged in.
      */
     public static Boolean isLoggedIn(Context c) {
-        SharedPreferences config = getSPrefConfig(c);
-        return config.getBoolean(AppConfig.SPREF_LOGIN_STATE, false);
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getBoolean( AppConfig.SPREF_LOGIN_STATE, false );
     }
 
     /**
@@ -120,7 +120,7 @@ public class AppUtils {
      */
     public static String getLogoUrl(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getString(AppConfig.SPREF_CURRENT_LOGO, "");
+        return config.getString( AppConfig.SPREF_CURRENT_LOGO, "" );
     }
 
     /**
@@ -144,7 +144,7 @@ public class AppUtils {
      */
     public static int getLanguage(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt(AppConfig.SPREF_CURRENT_LANGUAGE, AppConfig.DEFAULT_LANGUAGE);
+        return config.getInt( AppConfig.SPREF_CURRENT_LANGUAGE, AppConfig.DEFAULT_LANGUAGE );
     }
 
     /**
@@ -154,7 +154,7 @@ public class AppUtils {
      * @return true  If it was saved.
      *         false If it was not saved.
      */
-    public static Boolean saveCurrency(Context c, int n) {
+    public static Boolean saveCurrency( Context c, int n ) {
         SharedPreferences config = getSPrefConfig( c );
         SharedPreferences.Editor writer = config.edit();
         writer.putInt( AppConfig.SPREF_CURRENT_CURRENCY, n );
@@ -169,6 +169,30 @@ public class AppUtils {
     public static int getCurrency(Context c) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getInt( AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY );
+    }
+
+    /**
+     * It saves the merchant currency to the preferences.
+     * @param c The Context of the Android system.
+     * @param n The currency of the merchant.
+     * @return true  If it was saved.
+     *         false If it was not saved.
+     */
+    public static Boolean saveMerchantCurrency( Context c, String n ) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+        writer.putString( AppConfig.SPREF_MERCHANT_CURRENCY, n );
+        return writer.commit();
+    }
+
+    /**
+     * It gets the merchant currency.
+     * @param c The Context of the Android system.
+     * @return int It returns the currency.
+     */
+    public static String getMerchantCurrency( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getString( AppConfig.SPREF_MERCHANT_CURRENCY, null );
     }
 
     /**

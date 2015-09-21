@@ -23,6 +23,7 @@ public class ServerResponse implements Serializable {
     public static final String LOGO         = "logo";
     public static final String CREDIT       = "credit";
     public static final String DEBIT        = "debit";
+    public static final String CURRENCY     = "currency";
     public static final String SETTLEMENT   = "settlement";
     public static final String EQUIPMENT    = "equipments";
     public static final String LEASE        = "lease";

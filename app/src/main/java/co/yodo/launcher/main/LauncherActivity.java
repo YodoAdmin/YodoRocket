@@ -128,9 +128,9 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate( savedInstanceState );
         getWindow().setFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN );
-        setContentView(R.layout.activity_launcher);
+        setContentView( R.layout.activity_launcher );
 
         setupGUI();
         updateData();
@@ -328,16 +328,16 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
 
         mCashTenderView.setOnLongClickListener( new View.OnLongClickListener() {
             @Override
-            public boolean onLongClick(View v) {
+            public boolean onLongClick( View v ) {
                 setupPopup( v );
                 return false;
             }
-        });
+        } );
 
-        mCashTenderView.setOnTouchListener(new View.OnTouchListener() {
+        mCashTenderView.setOnTouchListener( new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
+            public boolean onTouch( View v, MotionEvent event ) {
+                switch( event.getAction() ) {
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
                         if( mPopupMessage != null )
@@ -346,7 +346,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                 }
                 return false;
             }
-        });
+        } );
 
         new getCurrentBalance().execute();
 
@@ -902,8 +902,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
 
         /** Currencies */
         private String[] currencies = ac.getResources().getStringArray( R.array.currency_array );
-        private String URL_CURRENCY  = "EUR";
-        //private String BASE_CURRENCY = "CAD";
+        private String URL_CURRENCY = "EUR";
+        private String MERCHANT_CURRENCY = AppUtils.getMerchantCurrency( ac );
 
         @Override
         protected void onPreExecute() {
@@ -923,9 +923,9 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         }
 
         @Override
-        protected void onPostExecute(JSONArray json) {
+        protected void onPostExecute( JSONArray json ) {
             if( json != null ) {
-                BigDecimal cad_currency = null, current_currency = null;
+                BigDecimal merch_currency = null, current_currency = null;
                 for( int i = 0; i < json.length(); i++ ) {
                     try {
                         JSONObject temp = json.getJSONObject( i );
@@ -933,9 +933,9 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                         String currency = (String) c.get( CURRENCY_TAG );
                         String rate     = (String) c.get( RATE_TAG );
 
-                        // Gets the CAD Currency
-                        if( currency.equals( currencies[ AppConfig.DEFAULT_CURRENCY ] ) )
-                            cad_currency = new BigDecimal( rate );
+                        // Gets the Merchant Currency
+                        if( currency.equals( MERCHANT_CURRENCY ) )
+                            merch_currency = new BigDecimal( rate );
 
                         if( currency.equals( currencies[ AppUtils.getCurrency( ac ) ]) )
                             current_currency = new BigDecimal( rate );
@@ -948,11 +948,11 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                 String cashBack        = mCashBackView.getText().toString();
                 BigDecimal temp_tender = new BigDecimal( mCashTenderView.getText().toString() );
 
-                if( cad_currency != null ) {
+                if( merch_currency != null ) {
                     if( URL_CURRENCY.equals( currencies[ AppUtils.getCurrency( ac ) ] ) ) {
-                        equivalentTender = temp_tender.multiply( cad_currency );
+                        equivalentTender = temp_tender.multiply( merch_currency );
                     } else if( current_currency != null ) {
-                        BigDecimal currency_rate = cad_currency.divide( current_currency, 2 );
+                        BigDecimal currency_rate = merch_currency.divide( current_currency, 2 );
                         equivalentTender = temp_tender.multiply( currency_rate );
                     }
 

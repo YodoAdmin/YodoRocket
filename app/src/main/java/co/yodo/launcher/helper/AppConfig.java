@@ -8,7 +8,7 @@ import co.yodo.launcher.service.RESTService;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
 
     /** FILE flag: to print the logs in a file */
     public static final boolean FDEBUG = false;
@@ -71,6 +71,11 @@ public class AppConfig {
     * type -- Integer
     */
     public static final String SPREF_CURRENT_CURRENCY = "SPCurrentCurrency";
+
+    /* The current currency.
+    * type -- Integer
+    */
+    public static final String SPREF_MERCHANT_CURRENCY = "SPMerchantCurrency";
 
     /* The current scanner position.
     * type -- Integer
