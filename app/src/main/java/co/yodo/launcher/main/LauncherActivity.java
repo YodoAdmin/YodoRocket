@@ -572,8 +572,10 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         mSlidingLayout.closePane();
 
         final String title   = ((Button) v).getText().toString();
-        final String message = getString( R.string.imei )       + " " +
+        final String message = getString( R.string.imei )    + " " +
                                AppUtils.getHardwareToken( ac ) + "\n" +
+                               getString( R.string.label_currency )    + " " +
+                               AppUtils.getMerchantCurrency( ac ) + "\n" +
                                getString( R.string.version ) + "/" + RESTService.getSwitch();
 
         AlertDialogHelper.showAlertDialog(
