@@ -30,13 +30,15 @@ public class QRScannerFactory {
 			
 			case CameraFront:
 				//qrscanner = ZBarScanner.getInstance( activity );
-                qrscanner = ZxingScanner.getInstance( activity );
+                //qrscanner = ZxingScanner.getInstance( activity );
+				qrscanner = ScanditScanner.getInstance( activity );
                 qrscanner.setFrontFaceCamera( true );
 			break;
 
             case CameraBack:
                 //qrscanner = ZBarScanner.getInstance( activity );
-                qrscanner = ZxingScanner.getInstance( activity );
+                //qrscanner = ZxingScanner.getInstance( activity );
+				qrscanner = ScanditScanner.getInstance( activity );
                 qrscanner.setFrontFaceCamera( false );
             break;
 		}
@@ -49,6 +51,7 @@ public class QRScannerFactory {
 	
 	public static void destroy() {
         HardwareScanner.deleteInstance();
-		ZxingScanner.deleteInstance();
+		//ZxingScanner.deleteInstance();
+		ScanditScanner.deleteInstance();
 	}
 }

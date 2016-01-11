@@ -11,10 +11,10 @@ public class AppConfig {
     public static final boolean DEBUG = true;
 
     /** FILE flag: to print the logs in a file */
-    public static final boolean FDEBUG = false;
+    public static final boolean FDEBUG = true;
 
     /** Name of the log file */
-    public static final String LOG_FILE = "log.file";
+    public static final String LOG_FILE = "output.log";
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoLauncherSharedPref";

@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
@@ -216,7 +217,7 @@ public class AppUtils {
      */
     public static int getScanner(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt(AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER);
+        return config.getInt( AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER );
     }
 
     /**
@@ -240,7 +241,7 @@ public class AppUtils {
      */
     public static String getBeaconName(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getString(AppConfig.SPREF_CURRENT_BEACON, "");
+        return config.getString( AppConfig.SPREF_CURRENT_BEACON, "" );
     }
 
     /**
@@ -308,7 +309,7 @@ public class AppUtils {
      *         false It is not logged in.
      */
     public static Boolean isFirstLogin(Context c) {
-        SharedPreferences config = getSPrefConfig(c);
+        SharedPreferences config = getSPrefConfig( c );
         return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
     }
 
@@ -333,7 +334,7 @@ public class AppUtils {
      *         false Advertising service is off.
      */
     public static Boolean isAdvertisingServiceRunning(Context c) {
-        SharedPreferences config = getSPrefConfig(c);
+        SharedPreferences config = getSPrefConfig( c );
         return config.getBoolean( AppConfig.SPREF_ADVERTISING_SERVICE, false );
     }
 
@@ -487,7 +488,7 @@ public class AppUtils {
      * @param c The Context of the Android system.
      */
     public static void errorSound(Context c) {
-        MediaPlayer mp = MediaPlayer.create(c, R.raw.error);
+        MediaPlayer mp = MediaPlayer.create( c, R.raw.error );
         mp.setOnCompletionListener( new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -521,7 +522,7 @@ public class AppUtils {
         Configuration config = new Configuration( res.getConfiguration() );
         config.locale = appLoc;
 
-        res.updateConfiguration(config, dm);
+        res.updateConfiguration( config, dm );
     }
 
     /**
@@ -588,12 +589,28 @@ public class AppUtils {
             icon  = AppUtils.getDrawableByName( c, icons[ AppUtils.getCurrency( c ) ] );
         else
             icon  = AppUtils.getDrawableByName( c, icons[ AppConfig.DEFAULT_CURRENCY ] );
+        icon.setBounds( 3, 0, v.getLineHeight(), (int) ( v.getLineHeight() * 0.9 ) );
+        v.setCompoundDrawables( icon, null, null, null );
+    }
+
+    /**
+     * Modify the size of the drawable for a TextView
+     * @param c The Context of the Android system.
+     * @param v The view to modify the drawable
+     */
+    public static void setMerchantCurrencyIcon( Context c, TextView v ) {
+        final String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
+        final String[] currencies = c.getResources().getStringArray( R.array.currency_array );
+        final String cur = AppUtils.getMerchantCurrency( c );
+        final int position = Arrays.asList( currencies ).indexOf( cur );
+
+        Drawable icon  = AppUtils.getDrawableByName( c, icons[ position ] );
         icon.setBounds( 3, 0, v.getLineHeight(), (int)( v.getLineHeight() * 0.9 ) );
         v.setCompoundDrawables( icon, null, null, null );
     }
 
     private static void appendLog(String text) {
-        File logFile = new File( Environment.getExternalStorageDirectory() + "/output.log" );
+        File logFile = new File( Environment.getExternalStorageDirectory() + "/" + AppConfig.LOG_FILE );
 
         try {
             if( !logFile.exists() )

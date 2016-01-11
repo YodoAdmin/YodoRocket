@@ -39,10 +39,10 @@ public class ZxingScanner extends QRScanner {
     /** Instance */
     private static volatile ZxingScanner instance = null;
 
-    private ZxingScanner(Activity activity) {
+    private ZxingScanner( Activity activity ) {
         super( activity );
 
-        preview = (CompoundBarcodeView) act.findViewById( R.id.barcode_scanner );
+        //preview = (CompoundBarcodeView) act.findViewById( R.id.barcode_scanner );
         opPanel = (TableRow) act.findViewById( R.id.operationsPanel );
         pvPanel = (RelativeLayout) act.findViewById( R.id.previewPanel );
 

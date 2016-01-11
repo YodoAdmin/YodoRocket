@@ -56,7 +56,7 @@ public class ZBarScanner extends QRScanner {
         scanner.setConfig( 0, Config.X_DENSITY, 3 );
         scanner.setConfig( 0, Config.Y_DENSITY, 3 );
 
-        preview = (FrameLayout) act.findViewById(R.id.cameraPreview);
+        //preview = (FrameLayout) act.findViewById(R.id.cameraPreview);
         opPanel = (TableRow) act.findViewById(R.id.operationsPanel);
         pvPanel = (RelativeLayout) act.findViewById(R.id.previewPanel);
 	}

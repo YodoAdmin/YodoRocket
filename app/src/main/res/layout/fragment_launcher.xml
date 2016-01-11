@@ -159,12 +159,12 @@
         android:layout_weight="1"
         android:visibility="gone" >
 
-        <FrameLayout
+        <!--<FrameLayout
             android:id="@+id/cameraPreview"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <com.journeyapps.barcodescanner.CompoundBarcodeView
+        <<com.journeyapps.barcodescanner.CompoundBarcodeView
             android:id="@+id/barcode_scanner"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -179,7 +179,7 @@
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:text="@string/place_qrcode" />
-
+-->
     </RelativeLayout>
     <!-- End Preview Camera Layout -->
 
@@ -203,14 +203,14 @@
 
             <Button
                 style="@style/StaticValueButton"
-                android:id="@+id/b20000"
+                android:id="@+id/b0000"
                 android:text="@string/coins_0"/>
-
+            <!--
             <Button
                 style="@style/StaticValueButton"
                 android:id="@+id/b500"
                 android:text="@string/coins_5"/>
-
+            -->
             <Button
                 style="@style/StaticValueButton"
                 android:id="@+id/b1000"
@@ -230,6 +230,11 @@
                 style="@style/StaticValueButton"
                 android:id="@+id/b10000"
                 android:text="@string/coins_100"/>
+
+            <Button
+                style="@style/StaticValueButton"
+                android:id="@+id/b20000"
+                android:text="@string/coins_200"/>
 
         </LinearLayout>
 

@@ -367,7 +367,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         TextView cashTender     = (TextView) layout.findViewById( R.id.cashTenderText );
         ProgressBar progressBar = (ProgressBar) layout.findViewById( R.id.progressBarPopUp );
         cashTender.setText( equivalentTender.setScale( 2, RoundingMode.DOWN ).toString() );
-        AppUtils.setCurrencyIcon( ac, cashTender, true );
+        AppUtils.setMerchantCurrencyIcon( ac, cashTender );
 
         if( equivalentTender == null ) {
             cashTender.setVisibility( View.GONE );
@@ -626,7 +626,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     /** Handle numeric button clicked
      *  @param v View, used to get the number
      */
-    public void valueClick(View v) {
+    public void valueClick( View v ) {
         final String value   = ((Button)v).getText().toString();
 
         // This button is not working
@@ -648,7 +648,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     /** Handle numeric add clicked
      *  @param v The View, used to get the amount
      */
-    public void addClick(View v) {
+    public void addClick( View v ) {
         final String amount  = ((Button)v).getText().toString();
         final String current = selectedView.getText().toString();
 
@@ -773,7 +773,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                         data.putExtra( Intents.RESULT_MSG, ex_message );
                         data.putExtra( Intents.RESULT_ACC, ex_account );
                         data.putExtra( Intents.RESULT_PUR, ex_purchase );
-                        data.putExtra( Intents.RESULT_AMO, ex_amount );
+                        data.putExtra( Intents.RESULT_DEL, ex_amount );
                         setResult( RESULT_OK, data );
 
                         onClick = new DialogInterface.OnClickListener() {

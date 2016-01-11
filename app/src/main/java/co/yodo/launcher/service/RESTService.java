@@ -76,13 +76,18 @@ public class RESTService extends IntentService {
         Bundle extras = intent.getExtras();
 
         if( extras == null || !extras.containsKey( EXTRA_RESULT_RECEIVER ) ) {
-            AppUtils.Logger(TAG, "You did not pass extras or data with the Intent.");
+            AppUtils.Logger( TAG, "You did not pass extras or data with the Intent." );
             return;
         }
 
         Serializable action     = extras.getSerializable( ACTION_RESULT );
         String pRequest         = extras.getString( EXTRA_PARAMS );
         ResultReceiver receiver = extras.getParcelable( EXTRA_RESULT_RECEIVER );
+
+        if( receiver == null ) {
+            AppUtils.Logger( TAG, "Null ResultReceiver." );
+            return;
+        }
 
         try {
             // Handling XML
@@ -98,7 +103,7 @@ public class RESTService extends IntentService {
             // Create handler to handle XML Tags ( extends DefaultHandler )
             xr.setContentHandler( new XMLHandler() );
             xr.parse( new InputSource( sourceUrl.getInputStream() ) );
-        } catch(ConnectTimeoutException | SocketTimeoutException | SocketException e) {
+        } catch( ConnectTimeoutException | SocketTimeoutException | SocketException e) {
             AppUtils.Logger( TAG, "Timeout Exception = " + e );
             receiver.send( STATUS_NO_INTERNET, null );
             return;

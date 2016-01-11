@@ -267,8 +267,8 @@ public class YodoRequest extends ResultReceiver {
         SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd'T'hh:mm:ssZZZZ", Locale.US );
         String timeStamp = dateFormat.format( System.currentTimeMillis() );
         
-        sMerchData.append( hardwareToken ).append(REQ_SEP);
-        sMerchData.append( token ).append(REQ_SEP);
+        sMerchData.append( hardwareToken ).append( REQ_SEP );
+        sMerchData.append( token ).append( REQ_SEP );
         sMerchData.append( timeStamp );
 
         // Encrypting to create request

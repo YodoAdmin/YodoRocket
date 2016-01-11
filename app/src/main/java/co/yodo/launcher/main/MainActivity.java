@@ -9,6 +9,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import java.util.Arrays;
+
 import co.yodo.launcher.R;
 import co.yodo.launcher.component.ToastMaster;
 import co.yodo.launcher.component.YodoHandler;
@@ -48,6 +50,12 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        YodoRequest.getInstance().setListener( this );
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
 
@@ -61,7 +69,6 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
         ac = MainActivity.this;
 
         handlerMessages = new YodoHandler( MainActivity.this );
-        YodoRequest.getInstance().setListener( this );
 
         Intent iLoc = new Intent( ac, LocationService.class );
         if( AppUtils.isMyServiceRunning( ac, LocationService.class.getName() ) )
@@ -127,8 +134,13 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
                 code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                    // Merchant Currency
                     String currency = response.getParam( ServerResponse.CURRENCY );
                     AppUtils.saveMerchantCurrency( ac, currency );
+                    // POS Currency
+                    final String[] currencies = getResources().getStringArray( R.array.currency_array );
+                    int position = Arrays.asList( currencies ).indexOf( currency );
+                    AppUtils.saveCurrency( ac, position );
                     // Start the app
                     AppUtils.saveLoginStatus( ac, true );
                     Intent intent = new Intent( MainActivity.this, LauncherActivity.class );

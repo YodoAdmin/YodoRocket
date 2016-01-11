@@ -119,7 +119,6 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
                 String code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED_REGISTRATION ) ) {
-                    AppUtils.saveLoginStatus( ac, true );
                     setResult( RESULT_OK );
                     finish();
                 } else {
