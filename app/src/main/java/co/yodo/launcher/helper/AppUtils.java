@@ -13,8 +13,6 @@ import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
@@ -29,8 +27,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import org.acra.ACRA;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -357,28 +353,30 @@ public class AppUtils {
         String HARDWARE_TOKEN = null;
 
         TelephonyManager telephonyManager  = (TelephonyManager) c.getSystemService( Context.TELEPHONY_SERVICE );
-        //BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        WifiManager wifiManager            = (WifiManager) c.getSystemService( Context.WIFI_SERVICE );
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        //WifiManager wifiManager            = (WifiManager) c.getSystemService( Context.WIFI_SERVICE );
 
         if( telephonyManager != null ) {
             String tempMAC = telephonyManager.getDeviceId();
-            HARDWARE_TOKEN = tempMAC.replace( "/", "" );
+            if( tempMAC != null )
+                HARDWARE_TOKEN = tempMAC.replace( "/", "" );
         }
 
-        /*if(HARDWARE_TOKEN == null && mBluetoothAdapter != null) {
+        if(HARDWARE_TOKEN == null && mBluetoothAdapter != null) {
             if(mBluetoothAdapter.isEnabled()) {
                 String tempMAC = mBluetoothAdapter.getAddress();
-                HARDWARE_TOKEN = tempMAC.replaceAll(":", "");
+                if( tempMAC != null )
+                    HARDWARE_TOKEN = tempMAC.replaceAll( ":", "" );
             }
-        }*/
+        }
 
-		if( HARDWARE_TOKEN == null && wifiManager != null ) {
+		/*if( HARDWARE_TOKEN == null && wifiManager != null ) {
 			if( wifiManager.isWifiEnabled() ) {
 				WifiInfo wifiInf = wifiManager.getConnectionInfo();
 				String tempMAC = wifiInf.getMacAddress();
 				HARDWARE_TOKEN = tempMAC.replaceAll( ":", "" );
 			}
-		}
+		}*/
 
         return HARDWARE_TOKEN;
     }
@@ -568,9 +566,6 @@ public class AppUtils {
     public static void setCurrencyIcon( Context c, TextView v, boolean d ) {
         String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
         Drawable icon;
-
-        AppUtils.Logger( TAG, AppUtils.getCurrency( c ) + " - " + icons.length );
-        ACRA.getErrorReporter().handleSilentException( new Exception( "Currency:Error" ) );
 
         if( !d )
             icon  = AppUtils.getDrawableByName( c, icons[ AppUtils.getCurrency( c ) ] );
