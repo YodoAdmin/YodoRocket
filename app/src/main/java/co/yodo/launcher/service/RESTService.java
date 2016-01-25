@@ -84,6 +84,11 @@ public class RESTService extends IntentService {
         String pRequest         = extras.getString( EXTRA_PARAMS );
         ResultReceiver receiver = extras.getParcelable( EXTRA_RESULT_RECEIVER );
 
+        if( receiver == null ) {
+            AppUtils.Logger( TAG, "You did not pass the receiver with the Intent." );
+            return;
+        }
+
         try {
             // Handling XML
             SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -102,7 +107,7 @@ public class RESTService extends IntentService {
             AppUtils.Logger( TAG, "Timeout Exception = " + e );
             receiver.send( STATUS_NO_INTERNET, null );
             return;
-        } catch(Exception e) {
+        } catch( Exception e ) {
             AppUtils.Logger( TAG, "XML Parsing Exception = " + e );
             receiver.send( STATUS_FAILED, null );
             return;

@@ -12,6 +12,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
+import org.acra.ACRA;
+
 import co.yodo.launcher.R;
 import co.yodo.launcher.component.YodoHandler;
 import co.yodo.launcher.data.ServerResponse;
@@ -19,6 +21,10 @@ import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.net.YodoRequest;
 
 public class RegistrationActivity extends AppCompatActivity implements YodoRequest.RESTListener {
+    /** DEBUG */
+    @SuppressWarnings( "unused" )
+    private static final String TAG = RegistrationActivity.class.getSimpleName();
+
     /** The context object */
     private Context ac;
 
@@ -82,6 +88,9 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
         } else {
             String hardwareToken = AppUtils.getHardwareToken( ac );
             AppUtils.hideSoftKeyboard( this );
+
+            AppUtils.Logger( TAG, hardwareToken );
+            ACRA.getErrorReporter().handleSilentException( new Exception( "HardwareToken:Error" ) );
 
             YodoRequest.getInstance().createProgressDialog(
                     RegistrationActivity.this ,

@@ -291,18 +291,10 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         /** Handle external Requests */
         externBundle = getIntent().getExtras();
         if( externBundle != null ) {
-            /*String total = String.format( Locale.US, "%.2f", externBundle.getDouble( Intents.TOTAL, 0.00 ) );
-            String cashTender = String.format( Locale.US, "%.2f", externBundle.getDouble( Intents.CASH_TENDER, 0.00 ) );
-            String cashBack = String.format( Locale.US, "%.2f", externBundle.getDouble( Intents.CASH_BACK, 0.00 ) );
-
-            if( Double.valueOf( total ) > 0.00 ) mTotalView.setText( total );
-            if( Double.valueOf( cashTender ) > 0.00 ) mCashTenderView.setText( cashTender );
-            if( Double.valueOf( cashBack ) > 0.00 ) mCashBackView.setText( cashBack );*/
-
             BigDecimal total = new BigDecimal( externBundle.getString( Intents.TOTAL, "0.00" ) );
             BigDecimal cashTender = new BigDecimal( externBundle.getString( Intents.CASH_TENDER, "0.00" ) );
             BigDecimal cashBack = new BigDecimal( externBundle.getString( Intents.CASH_BACK, "0.00" ) );
-            String currency = externBundle.getString( Intents.CURRENCY );
+            //String currency = externBundle.getString( Intents.CURRENCY );
 
             if( total.signum() > 0 ) mTotalView.setText( total.setScale( 2, RoundingMode.DOWN ).toString() );
             if( cashTender.signum() > 0 ) mCashTenderView.setText( cashTender.setScale( 2, RoundingMode.DOWN ).toString() );

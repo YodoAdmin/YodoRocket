@@ -30,6 +30,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.acra.ACRA;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -46,6 +48,10 @@ import co.yodo.launcher.component.AES;
  * Utilities for the App, Mainly shared preferences
  */
 public class AppUtils {
+    /** DEBUG */
+    @SuppressWarnings( "unused" )
+    private static final String TAG = AppUtils.class.getSimpleName();
+
     /**
      * A simple check to see if a string is a valid number before inserting
      * into the shared preferences.
@@ -166,9 +172,14 @@ public class AppUtils {
      * @param c The Context of the Android system.
      * @return int It returns the currency position.
      */
-    public static int getCurrency(Context c) {
+    public static int getCurrency( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt( AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY );
+        int position = config.getInt( AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY );
+        if( position < 0 ) {
+            position = AppConfig.DEFAULT_CURRENCY;
+            saveCurrency( c, position );
+        }
+        return position;
     }
 
     /**
@@ -216,21 +227,7 @@ public class AppUtils {
      */
     public static int getScanner(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt(AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER);
-    }
-
-    /**
-     * It saves the beacon name to the preferences.
-     * @param c The Context of the Android system.
-     * @param s The beacon name.
-     * @return true  If it was saved.
-     *         false If it was not saved.
-     */
-    public static Boolean saveBeaconName(Context c, String s) {
-        SharedPreferences config = getSPrefConfig( c );
-        SharedPreferences.Editor writer = config.edit();
-        writer.putString( AppConfig.SPREF_CURRENT_BEACON, s );
-        return writer.commit();
+        return config.getInt( AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER );
     }
 
     /**
@@ -240,7 +237,7 @@ public class AppUtils {
      */
     public static String getBeaconName(Context c) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getString(AppConfig.SPREF_CURRENT_BEACON, "");
+        return config.getString( AppConfig.SPREF_CURRENT_BEACON, "" );
     }
 
     /**
@@ -308,22 +305,8 @@ public class AppUtils {
      *         false It is not logged in.
      */
     public static Boolean isFirstLogin(Context c) {
-        SharedPreferences config = getSPrefConfig(c);
-        return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
-    }
-
-    /**
-     * It saves the state of the advertising service.
-     * @param c The Context of the Android system.
-     * @param flag If it is running or not.
-     * @return true  The flag was saved successfully.
-     *         false The flag was not saved successfully.
-     */
-    public static Boolean saveAdvertisingServiceRunning(Context c, Boolean flag) {
         SharedPreferences config = getSPrefConfig( c );
-        SharedPreferences.Editor writer = config.edit();
-        writer.putBoolean( AppConfig.SPREF_ADVERTISING_SERVICE, flag );
-        return writer.commit();
+        return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
     }
 
     /**
@@ -378,7 +361,8 @@ public class AppUtils {
         WifiManager wifiManager            = (WifiManager) c.getSystemService( Context.WIFI_SERVICE );
 
         if( telephonyManager != null ) {
-            HARDWARE_TOKEN = telephonyManager.getDeviceId();
+            String tempMAC = telephonyManager.getDeviceId();
+            HARDWARE_TOKEN = tempMAC.replace( "/", "" );
         }
 
         /*if(HARDWARE_TOKEN == null && mBluetoothAdapter != null) {
@@ -581,9 +565,13 @@ public class AppUtils {
      * @param v The view to modify the drawable
      * @param d if Default or not
      */
-    public static void setCurrencyIcon(Context c, TextView v, boolean d) {
+    public static void setCurrencyIcon( Context c, TextView v, boolean d ) {
         String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
         Drawable icon;
+
+        AppUtils.Logger( TAG, AppUtils.getCurrency( c ) + " - " + icons.length );
+        ACRA.getErrorReporter().handleSilentException( new Exception( "Currency:Error" ) );
+
         if( !d )
             icon  = AppUtils.getDrawableByName( c, icons[ AppUtils.getCurrency( c ) ] );
         else

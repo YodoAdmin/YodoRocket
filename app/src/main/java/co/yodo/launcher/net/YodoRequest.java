@@ -376,7 +376,7 @@ public class YodoRequest extends ResultReceiver {
     }
 
     @Override
-    protected void onReceiveResult(int resultCode, Bundle resultData) {
+    protected void onReceiveResult( int resultCode, Bundle resultData ) {
         if( resultCode == RESTService.STATUS_FAILED ) {
             externalListener.onResponse(RequestType.ERROR_GENERAL, null);
         }
@@ -387,8 +387,6 @@ public class YodoRequest extends ResultReceiver {
             RequestType action      = (RequestType) resultData.getSerializable( RESTService.ACTION_RESULT );
             ServerResponse response = (ServerResponse) resultData.getSerializable( RESTService.EXTRA_RESULT );
             externalListener.onResponse( action , response );
-
-            AppUtils.Logger( TAG, response.toString() );
         }
     }
 }
