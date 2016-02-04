@@ -85,7 +85,11 @@ public class RESTService extends IntentService {
         ResultReceiver receiver = extras.getParcelable( EXTRA_RESULT_RECEIVER );
 
         if( receiver == null ) {
+<<<<<<< HEAD
             AppUtils.Logger( TAG, "Null ResultReceiver." );
+=======
+            AppUtils.Logger( TAG, "You did not pass the receiver with the Intent." );
+>>>>>>> hotfix
             return;
         }
 
@@ -107,7 +111,7 @@ public class RESTService extends IntentService {
             AppUtils.Logger( TAG, "Timeout Exception = " + e );
             receiver.send( STATUS_NO_INTERNET, null );
             return;
-        } catch(Exception e) {
+        } catch( Exception e ) {
             AppUtils.Logger( TAG, "XML Parsing Exception = " + e );
             receiver.send( STATUS_FAILED, null );
             return;

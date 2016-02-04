@@ -4,7 +4,11 @@
     <!-- Main Strings -->
     <string name="app_name">YodoRocket</string>
     <string name="action_settings">Configuración</string>
+<<<<<<< HEAD
     <string name="version">Versión: 0.2.6</string>
+=======
+    <string name="version">Versión: 0.2.3</string>
+>>>>>>> hotfix
     <string name="desc">Desc</string>
     <string name="register">REGISTRAR</string>
     <string name="loading">Cargando</string>
@@ -15,7 +19,7 @@
     <string name="error">Esto es embarazoso! Ocurrio un error en el proceso</string>
     <string name="no_balance">Lo sentimos, parece que no dispone de un balance</string>
     <string name="no_internet">Lo sentimos, parece que no dispone de una conexion a Internet</string>
-    <string name="no_hardware">Debe encender su wifi primero</string>
+    <string name="no_hardware">Debe encender su bluetooth primero</string>
     <string name="no_camera">Esta cámara no existe</string>
 
     <!-- General Messages -->

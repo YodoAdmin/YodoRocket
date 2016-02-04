@@ -22,13 +22,14 @@ import co.yodo.launcher.R;
  */
 public class ScanditScanner extends QRScanner implements OnScanListener {
     /** DEBUG */
+    @SuppressWarnings( "unused" )
     private static final String TAG = ScanditScanner.class.getSimpleName();
 
     /** The main object for recognizing a displaying barcodes. */
     private BarcodePicker mBarcodePicker;
 
     /** Your Scandit SDK App key is available via your Scandit SDK web account. */
-    public static final String sScanditSdkAppKey = "G4F/1bI6tE+202AsN11AY9vYyZOB7C7tsIu8/xET6FA-";
+    public static final String sScanditSdkAppKey = "fKiwAnaUTbGsN9Us2fDIIyGYwxHaS3gwbOs21jWzSfU";
 
     /** GUI Controllers */
     private TableRow opPanel;

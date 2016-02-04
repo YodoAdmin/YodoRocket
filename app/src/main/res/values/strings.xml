@@ -15,7 +15,7 @@
     <string name="error">This is embarrassing! An error occurred in the process</string>
     <string name="no_balance">Sorry, seems that you don\'t have a balance</string>
     <string name="no_internet">Sorry, seems that you don\'t have an Internet connection right now</string>
-    <string name="no_hardware">You must turn on your wifi first</string>
+    <string name="no_hardware">You must turn on your bluetooth first</string>
     <string name="no_camera">This camera doesn\'t exist</string>
 
     <!-- General Messages -->

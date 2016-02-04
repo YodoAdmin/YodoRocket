@@ -19,6 +19,10 @@ import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.net.YodoRequest;
 
 public class RegistrationActivity extends AppCompatActivity implements YodoRequest.RESTListener {
+    /** DEBUG */
+    @SuppressWarnings( "unused" )
+    private static final String TAG = RegistrationActivity.class.getSimpleName();
+
     /** The context object */
     private Context ac;
 

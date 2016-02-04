@@ -13,8 +13,6 @@ import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
@@ -47,6 +45,10 @@ import co.yodo.launcher.component.AES;
  * Utilities for the App, Mainly shared preferences
  */
 public class AppUtils {
+    /** DEBUG */
+    @SuppressWarnings( "unused" )
+    private static final String TAG = AppUtils.class.getSimpleName();
+
     /**
      * A simple check to see if a string is a valid number before inserting
      * into the shared preferences.
@@ -167,9 +169,14 @@ public class AppUtils {
      * @param c The Context of the Android system.
      * @return int It returns the currency position.
      */
-    public static int getCurrency(Context c) {
+    public static int getCurrency( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt( AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY );
+        int position = config.getInt( AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY );
+        if( position < 0 ) {
+            position = AppConfig.DEFAULT_CURRENCY;
+            saveCurrency( c, position );
+        }
+        return position;
     }
 
     /**
@@ -218,6 +225,7 @@ public class AppUtils {
     public static int getScanner(Context c) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getInt( AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER );
+<<<<<<< HEAD
     }
 
     /**
@@ -232,6 +240,8 @@ public class AppUtils {
         SharedPreferences.Editor writer = config.edit();
         writer.putString( AppConfig.SPREF_CURRENT_BEACON, s );
         return writer.commit();
+=======
+>>>>>>> hotfix
     }
 
     /**
@@ -309,6 +319,7 @@ public class AppUtils {
      *         false It is not logged in.
      */
     public static Boolean isFirstLogin(Context c) {
+<<<<<<< HEAD
         SharedPreferences config = getSPrefConfig( c );
         return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
     }
@@ -321,10 +332,10 @@ public class AppUtils {
      *         false The flag was not saved successfully.
      */
     public static Boolean saveAdvertisingServiceRunning(Context c, Boolean flag) {
+=======
+>>>>>>> hotfix
         SharedPreferences config = getSPrefConfig( c );
-        SharedPreferences.Editor writer = config.edit();
-        writer.putBoolean( AppConfig.SPREF_ADVERTISING_SERVICE, flag );
-        return writer.commit();
+        return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
     }
 
     /**
@@ -375,27 +386,30 @@ public class AppUtils {
         String HARDWARE_TOKEN = null;
 
         TelephonyManager telephonyManager  = (TelephonyManager) c.getSystemService( Context.TELEPHONY_SERVICE );
-        //BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        WifiManager wifiManager            = (WifiManager) c.getSystemService( Context.WIFI_SERVICE );
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        //WifiManager wifiManager            = (WifiManager) c.getSystemService( Context.WIFI_SERVICE );
 
         if( telephonyManager != null ) {
-            HARDWARE_TOKEN = telephonyManager.getDeviceId();
+            String tempMAC = telephonyManager.getDeviceId();
+            if( tempMAC != null )
+                HARDWARE_TOKEN = tempMAC.replace( "/", "" );
         }
 
-        /*if(HARDWARE_TOKEN == null && mBluetoothAdapter != null) {
+        if(HARDWARE_TOKEN == null && mBluetoothAdapter != null) {
             if(mBluetoothAdapter.isEnabled()) {
                 String tempMAC = mBluetoothAdapter.getAddress();
-                HARDWARE_TOKEN = tempMAC.replaceAll(":", "");
+                if( tempMAC != null )
+                    HARDWARE_TOKEN = tempMAC.replaceAll( ":", "" );
             }
-        }*/
+        }
 
-		if( HARDWARE_TOKEN == null && wifiManager != null ) {
+		/*if( HARDWARE_TOKEN == null && wifiManager != null ) {
 			if( wifiManager.isWifiEnabled() ) {
 				WifiInfo wifiInf = wifiManager.getConnectionInfo();
 				String tempMAC = wifiInf.getMacAddress();
 				HARDWARE_TOKEN = tempMAC.replaceAll( ":", "" );
 			}
-		}
+		}*/
 
         return HARDWARE_TOKEN;
     }
@@ -582,9 +596,10 @@ public class AppUtils {
      * @param v The view to modify the drawable
      * @param d if Default or not
      */
-    public static void setCurrencyIcon(Context c, TextView v, boolean d) {
+    public static void setCurrencyIcon( Context c, TextView v, boolean d ) {
         String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
         Drawable icon;
+
         if( !d )
             icon  = AppUtils.getDrawableByName( c, icons[ AppUtils.getCurrency( c ) ] );
         else

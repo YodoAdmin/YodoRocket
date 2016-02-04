@@ -14,16 +14,17 @@ import java.util.Arrays;
 import co.yodo.launcher.R;
 import co.yodo.launcher.component.ToastMaster;
 import co.yodo.launcher.component.YodoHandler;
+import co.yodo.launcher.data.ServerResponse;
 import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.AppUtils;
-import co.yodo.launcher.data.ServerResponse;
 import co.yodo.launcher.helper.Intents;
 import co.yodo.launcher.net.YodoRequest;
 import co.yodo.launcher.service.LocationService;
 
 public class MainActivity extends Activity implements YodoRequest.RESTListener {
     /** DEBUG */
-    //private static final String TAG = MainActivity.class.getSimpleName();
+    @SuppressWarnings( "unused" )
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     /** The context object */
     private Context ac;
