@@ -18,6 +18,7 @@
     <TextView
         style="@style/EditTextView"
         android:id="@+id/cashTenderText"
+        android:drawablePadding="10dp"
         android:drawableLeft="@drawable/canada"
         android:drawableStart="@drawable/canada"/>
 

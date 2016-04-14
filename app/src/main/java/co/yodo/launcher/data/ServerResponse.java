@@ -31,6 +31,8 @@ public class ServerResponse implements Serializable {
     public static final String ACCOUNT      = "account";
     public static final String PURCHASE     = "purchase";
     public static final String AMOUNT_DELTA = "amount_delta";
+    public static final String MERCH_RATE   = "merch_currency_rate";
+    public static final String FARE_RATE    = "fare_currency_rate";
 
 	private String code;
 	private String authNumber;

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 
-import org.apache.http.conn.ConnectTimeoutException;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -15,12 +14,10 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import co.yodo.launcher.component.JsonParser;
 import co.yodo.launcher.data.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.net.XMLHandler;
@@ -85,11 +82,7 @@ public class RESTService extends IntentService {
         ResultReceiver receiver = extras.getParcelable( EXTRA_RESULT_RECEIVER );
 
         if( receiver == null ) {
-<<<<<<< HEAD
-            AppUtils.Logger( TAG, "Null ResultReceiver." );
-=======
             AppUtils.Logger( TAG, "You did not pass the receiver with the Intent." );
->>>>>>> hotfix
             return;
         }
 
@@ -107,7 +100,7 @@ public class RESTService extends IntentService {
             // Create handler to handle XML Tags ( extends DefaultHandler )
             xr.setContentHandler( new XMLHandler() );
             xr.parse( new InputSource( sourceUrl.getInputStream() ) );
-        } catch( ConnectTimeoutException | SocketTimeoutException | SocketException e) {
+        } catch( SocketTimeoutException | SocketException e) {
             AppUtils.Logger( TAG, "Timeout Exception = " + e );
             receiver.send( STATUS_NO_INTERNET, null );
             return;
@@ -119,14 +112,7 @@ public class RESTService extends IntentService {
 
         ServerResponse response = XMLHandler.response;
 
-        long currentTime    = response.getRTime() * 1000;
-        long lastUpdateTime = AppUtils.getCurrencyTimestamp( ac ) * 1000;
-
-        // Update four times a day
-        if( TimeUnit.MILLISECONDS.toHours( currentTime - lastUpdateTime ) > 6 ) {
-            JsonParser.deleteFile( ac );
-            AppUtils.saveCurrencyTimestamp( ac, response.getRTime() );
-        }
+        AppUtils.Logger( TAG, response.toString() );
 
         Bundle resultData = new Bundle();
         resultData.putSerializable( ACTION_RESULT, action );

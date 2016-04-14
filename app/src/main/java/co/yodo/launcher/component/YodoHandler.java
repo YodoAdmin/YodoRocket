@@ -27,13 +27,13 @@ public class YodoHandler extends Handler {
 
     private final WeakReference<Activity> wMain;
 
-    public YodoHandler(Activity main) {
+    public YodoHandler( Activity main ) {
         super();
-        this.wMain = new WeakReference<>(main);
+        this.wMain = new WeakReference<>( main );
     }
 
     @Override
-    public void handleMessage(Message msg) {
+    public void handleMessage( Message msg ) {
         super.handleMessage( msg );
         Activity main = wMain.get();
 
@@ -45,7 +45,7 @@ public class YodoHandler extends Handler {
             ToastMaster.makeText( main, R.string.error, Toast.LENGTH_LONG ).show();
         }
         else if( msg.what == NO_INTERNET ) {
-            ToastMaster.makeText( main, R.string.no_internet, Toast.LENGTH_LONG ).show();
+            ToastMaster.makeText( main, R.string.message_no_internet, Toast.LENGTH_LONG ).show();
         }
         else if( msg.what == SERVER_ERROR ) {
             String code     = msg.getData().getString( CODE );

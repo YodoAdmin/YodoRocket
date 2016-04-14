@@ -4,11 +4,7 @@
     <!-- Main Strings -->
     <string name="app_name">YodoRocket</string>
     <string name="action_settings">Configuración</string>
-<<<<<<< HEAD
-    <string name="version">Versión: 0.2.6</string>
-=======
-    <string name="version">Versión: 0.2.3</string>
->>>>>>> hotfix
+    <string name="version">Versión: 0.3.0</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTRAR</string>
     <string name="loading">Cargando</string>
@@ -18,9 +14,12 @@
     <!-- Error Messages -->
     <string name="error">Esto es embarazoso! Ocurrio un error en el proceso</string>
     <string name="no_balance">Lo sentimos, parece que no dispone de un balance</string>
-    <string name="no_internet">Lo sentimos, parece que no dispone de una conexion a Internet</string>
-    <string name="no_hardware">Debe encender su bluetooth primero</string>
-    <string name="no_camera">Esta cámara no existe</string>
+    <string name="message.no_internet">Lo sentimos, parece que no dispone de una conexion a Internet</string>
+    <string name="message.no_gps_support">Lo sentimos, parece que no dispone de servicio de localización</string>
+    <string name="message.no_hardware">Debe encender su bluetooth primero</string>
+    <string name="message.no_camera">Esta cámara no existe</string>
+    <string name="message.play_services">Google Play Services necesita estar instalado</string>
+    <string name="message.incorrect_pip">Contraseña incorrecta, intente de nuevo</string>
 
     <!-- General Messages -->
     <string name="input_pip">Merch Identity Phrase (MIP)</string>
@@ -29,7 +28,8 @@
     <string name="input_token">Inserte el Token Password</string>
     <string name="merch_pip_hint">Código de Activación</string>
     <string name="barcode_scanner">Escanee el código</string>
-    <string name="gps_enable">El GPS no está habilitado. Desea ir a configuraciones?</string>
+    <string name="message.gps_enable">El GPS no está habilitado. Desea ir a configuraciones?</string>
+    <string name="register_hint">Ingrese su código de activación. Debe estar registrado como un merchant. Contact: support@yodo.co</string>
 
     <!-- Exchange Response -->
     <string name="exchange_code">Código:</string>
@@ -49,10 +49,12 @@
 
     <!-- Labels -->
     <string name="imei">IMEI:</string>
+    <string name="label.currency">Moneda:</string>
     <string name="server_switch">Switch:</string>
 
     <!-- Activity titles -->
     <string name="title_activity_pos">Yodo Launcher</string>
+    <string name="title_activity_settings">Yodo Configuración</string>
     <string name="title_activity_registration">Yodo Registration</string>
 
     <!-- configuration labels -->
@@ -62,11 +64,18 @@
     <!-- configuration options -->
     <string name="set_language">Lenguajes</string>
     <string name="set_currency">Moneda</string>
-    <string name="set_username">Nombre Y-Beacon</string>
+    <string name="text.set_discount">Descuento</string>
+    <string name="settings">Configuración</string>
     <string name="adv_service">Servicio de Publicidad</string>
     <string name="get_balance">Obtener Balance</string>
     <string name="about">Acerca de Yodo</string>
     <string name="logout">Salir</string>
+
+    <!-- Messages for the permissions -->
+    <string name="message.permission.read_phone_state">Permiso necesario para identificar el dispositivo con el fin de acceder al servicio de Yodo en la nube </string>
+    <string name="message.permission.location">Permiso necesario para utilizar los servicios de ubicación para que las transacciones puedan ser geo-etiquetados</string>
+    <string name="message.permission.camera">Permiso necesario para utilizar la cámara con el fin de capturar las credenciales de pago</string>
+    <string name="message.permission.write_external_storage">Permiso necesario para almacenar los tipos de cambio</string>
 
     <!-- Preview Messages -->
     <string name="place_qrcode">Ubique el código SKS en esta ventana</string>
@@ -106,6 +115,7 @@
         <item>Inglés</item>
         <item>Español</item>
         <item>Chino</item>
+        <item>Ruso</item>
     </string-array>
 
     <!-- Currency -->
@@ -121,21 +131,19 @@
         <item>PHP</item>
     </string-array>
 
-    <!-- Currency Icon -->
-    <string-array name="currency_icon_array">
-        <item>mexico</item>
-        <item>canada</item>
-        <item>usa</item>
-        <item>japan</item>
-        <item>brazil</item>
-        <item>china</item>
-        <item>india</item>
-        <item>euro</item>
-        <item>philippine</item>
-    </string-array>
+    <!-- Preferences Options -->
+    <string name="config_pref_languages">Lenguajes</string>
+    <string name="config_pref_username">Nombre Y-Beacon</string>
+    <string name="config_pref_tip">Propina (%)</string>
+    <string name="config_pref_advertising">Servicio de Promoción</string>
+    <string name="config_pref_background">Color de Fondo</string>
+    <string name="config_pref_advertising_summary">Enviar promociones a clientes cercanos</string>
 
     <!-- Tutorial Instructions -->
     <string name="tutorial_title">Navegador &amp; items</string>
     <string name="tutorial_message">Deslice el dedo hacia la izquierda para ocultar el panel</string>
+
+    <!-- ACRA -->
+    <string name="crash_toast_text">Ooooops! Me he caído, pero un informe ha sido enviado a mi desarrollador para ayudar a solucionar el problema!</string>
 
 </resources>

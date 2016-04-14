@@ -3,7 +3,7 @@
  */
 package co.yodo.launcher.component;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
 
@@ -65,7 +65,7 @@ public class Encrypter {
 	 * @param parent		Parent activity of SKSCreater
 	 * @return				The public key specified in $keyFileName
 	 */
-	static PublicKey readKeyFromFile(Activity parent){
+	static PublicKey readKeyFromFile( Context parent ){
 		AssetManager as;
 		InputStream inFile;
 		byte[] encodedKey;
@@ -92,8 +92,8 @@ public class Encrypter {
 	 * Encrypts a string and returns a byte array containing the encrypted string
 	 * @return Byte array containing the encrypted string
 	 */
-	public void rsaEncrypt(Activity parent) {
-		PublicKey pubKey = readKeyFromFile(parent);
+	public void rsaEncrypt( Context parent ) {
+		PublicKey pubKey = readKeyFromFile( parent );
 		Cipher cipher;
 		try {
 			cipher = Cipher.getInstance(CIPHER_INSTANCE);

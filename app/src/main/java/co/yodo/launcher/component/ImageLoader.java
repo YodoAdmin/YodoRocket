@@ -1,5 +1,11 @@
 package co.yodo.launcher.component;
 
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.widget.ImageView;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,12 +19,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import android.app.Activity;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.widget.ImageView;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.AppUtils;
@@ -37,7 +37,7 @@ public class ImageLoader {
     }
     
     final int stub_id = R.drawable.no_image;
-    public void DisplayImage(String url, ImageView imageView) {
+    public void DisplayImage( String url, ImageView imageView ) {
         imageViews.put( imageView, url );
         Bitmap bitmap = memoryCache.get( url );
         if( bitmap != null )

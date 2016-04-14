@@ -30,17 +30,17 @@
 
         <Button
             style="@style/NavigationButton"
-            android:drawableLeft="@drawable/set_language"
-            android:drawableStart="@drawable/set_language"
-            android:text="@string/set_language"
-            android:onClick="setLanguageClick"/>
-
-        <Button
-            style="@style/NavigationButton"
             android:drawableLeft="@drawable/set_currency"
             android:drawableStart="@drawable/set_currency"
             android:text="@string/set_currency"
             android:onClick="setCurrencyClick" />
+
+        <Button
+            style="@style/NavigationButton"
+            android:drawableLeft="@drawable/set_discount"
+            android:drawableStart="@drawable/set_discount"
+            android:text="@string/text.set_discount"
+            android:onClick="setDiscountClick" />
 
         <Button
             style="@style/NavigationButton"

@@ -17,12 +17,17 @@ public class AppConfig {
     public static final String LOG_FILE = "output.log";
 
     /** ID of the shared preferences file */
-    public static final String SHARED_PREF_FILE = "YodoLauncherSharedPref";
+    public static final String SHARED_PREF_FILE = "YodoRocketSharedPref";
 
     /**
      * Keys used with the Shared Preferences (SP) and default values.
      * {{ ======================================================================
      */
+
+    /* Hardware token for the account
+     * type -- String
+     */
+    public static final String SPREF_HARDWARE_TOKEN = "SPHardwareToken";
 
     /* Login status.
 	 * type -- Boolean
@@ -61,6 +66,16 @@ public class AppConfig {
     * type -- String
     */
     public static final String SPREF_CURRENT_BEACON = "SPCurrentBeacon";
+
+    /* The current discount to the purchase.
+    * type -- String
+    */
+    public static final String SPREF_DISCOUNT = "SPDiscount";
+
+    /* The current tip to the purchase.
+    * type -- Integer
+    */
+    public static final String SPREF_CURRENT_TIP = "SPCurrentTip";
 
     /* The current password, in case of remember option selected.
     * type -- String
@@ -104,9 +119,9 @@ public class AppConfig {
     /*
 	 * Default value position for the language
 	 *
-	 * Default: position 0 (English)
+	 * Default: en (English)
 	 */
-    public static final Integer DEFAULT_LANGUAGE = 0;
+    public static final String DEFAULT_LANGUAGE = "en";
 
     /*
 	 * Default value position for the currency
@@ -116,15 +131,24 @@ public class AppConfig {
     public static final Integer DEFAULT_CURRENCY = 1;
 
     /*
+	 * Default value for the discount (%)
+	 */
+    public static final String DEFAULT_DISCOUNT = "0";
+
+    /*
+	 * Default value for the tip (%)
+	 */
+    public static final String DEFAULT_TIP = "0";
+
+    /*
 	 * Default value position for the scanner
 	 *
 	 * Default: position 0 (BarcodeScanner)
 	 */
     public static final Integer DEFAULT_SCANNER = 0;
 
-    /* Request Code (Activity Result) */
-    public static final int REGISTRATION_REQUEST = 1;
-    public static final int LAUNCHER_REQUEST     = 2;
+    /* Currency of the URL where we are getting the rates */
+    public static final String URL_CURRENCY  = "EUR";
 
     /* Bluetooth Yodo POS name */
     public static final String YODO_POS = "Yodo-Merch-";

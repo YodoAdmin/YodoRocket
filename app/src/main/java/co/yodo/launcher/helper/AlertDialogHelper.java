@@ -93,8 +93,8 @@ public class AlertDialogHelper {
      * @param message The message of the dialog
      * @param clickListener Action for the selection
      */
-    public static void showAlertDialog(final Context c, final int message,
-                                       final DialogInterface.OnClickListener clickListener) {
+    public static void showAlertDialog( final Context c, final int message,
+                                       final DialogInterface.OnClickListener clickListener ) {
         AlertDialog.Builder builder = new AlertDialog.Builder( c );
         builder.setMessage( message );
         builder.setCancelable( false );
@@ -104,6 +104,29 @@ public class AlertDialogHelper {
 
         final AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    /**
+     * Shows an alert dialog with an EditText
+     * @param c The context of the application
+     * @param message The message of the dialog
+     * @param positiveClick Action for the positive button
+     * @param negativeClick Action for the negative button
+     * @return The created dialog
+     */
+    public static AlertDialog showAlertDialog( final Context c, final int message,
+                                               final DialogInterface.OnClickListener positiveClick,
+                                               final DialogInterface.OnClickListener negativeClick ) {
+        AlertDialog.Builder builder = new AlertDialog.Builder( c );
+        builder.setMessage( message );
+        builder.setCancelable( false );
+
+        builder.setPositiveButton( c.getString( R.string.ok ), positiveClick );
+        builder.setNegativeButton( c.getString( R.string.cancel ), negativeClick );
+
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+        return alertDialog;
     }
 
     /**
@@ -133,7 +156,7 @@ public class AlertDialogHelper {
      * @param title The title of the dialog
      * @param view The view of the dialog
      */
-    public static void showAlertDialog(final Context c, final String title, final View view) {
+    public static void showAlertDialog( final Context c, final String title, final View view ) {
         AlertDialog.Builder builder = new AlertDialog.Builder( c );
         builder.setIcon( R.drawable.icon );
         builder.setTitle( title );

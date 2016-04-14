@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Typeface;
@@ -15,6 +17,8 @@ import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.text.InputType;
 import android.util.DisplayMetrics;
@@ -27,6 +31,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -73,8 +80,48 @@ public class AppUtils {
      * @param c The Context of the Android system.
      * @return Returns the shared preferences with the default values.
      */
-    private static SharedPreferences getSPrefConfig(Context c) {
+    private static SharedPreferences getSPrefConfig( Context c ) {
         return c.getSharedPreferences( AppConfig.SHARED_PREF_FILE, Context.MODE_PRIVATE );
+    }
+
+    /**
+     * Generates the mobile hardware identifier either
+     * from the Phone (IMEI) or the Bluetooth (MAC)
+     * @param c The Context of the Android system.
+     */
+    public static String generateHardwareToken( Context c ) {
+        String HARDWARE_TOKEN = null;
+
+        TelephonyManager telephonyManager  = (TelephonyManager) c.getSystemService( Context.TELEPHONY_SERVICE );
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if( telephonyManager != null ) {
+            String tempMAC = telephonyManager.getDeviceId();
+            if( tempMAC != null )
+                HARDWARE_TOKEN = tempMAC.replace( "/", "" );
+        }
+
+        if( HARDWARE_TOKEN == null && mBluetoothAdapter != null ) {
+            if( mBluetoothAdapter.isEnabled() ) {
+                String tempMAC = mBluetoothAdapter.getAddress();
+                HARDWARE_TOKEN = tempMAC.replaceAll( ":", "" );
+            }
+        }
+
+        return HARDWARE_TOKEN;
+    }
+
+    public static Boolean saveHardwareToken( Context c, String hardwareToken ) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+        writer.putString( AppConfig.SPREF_HARDWARE_TOKEN, hardwareToken );
+        return writer.commit();
+    }
+
+    public static String getHardwareToken( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        String token = config.getString( AppConfig.SPREF_HARDWARE_TOKEN, "" );
+        return ( token.equals( "" ) ) ? null : token;
     }
 
     /**
@@ -127,27 +174,13 @@ public class AppUtils {
     }
 
     /**
-     * It saves the language array position to the preferences.
-     * @param c The Context of the Android system.
-     * @param n The language position on the array.
-     * @return true  If it was saved.
-     *         false It it was not saved.
-     */
-    public static Boolean saveLanguage(Context c, int n) {
-        SharedPreferences config = getSPrefConfig( c );
-        SharedPreferences.Editor writer = config.edit();
-        writer.putInt( AppConfig.SPREF_CURRENT_LANGUAGE, n );
-        return writer.commit();
-    }
-
-    /**
      * It gets the language position.
      * @param c The Context of the Android system.
      * @return int It returns the language position.
      */
-    public static int getLanguage(Context c) {
+    public static String getLanguage( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt( AppConfig.SPREF_CURRENT_LANGUAGE, AppConfig.DEFAULT_LANGUAGE );
+        return config.getString( AppConfig.SPREF_CURRENT_LANGUAGE, AppConfig.DEFAULT_LANGUAGE );
     }
 
     /**
@@ -210,7 +243,7 @@ public class AppUtils {
      * @return true  If it was saved.
      *         false If it was not saved.
      */
-    public static Boolean saveScanner(Context c, int n) {
+    public static Boolean saveScanner( Context c, int n ) {
         SharedPreferences config = getSPrefConfig( c );
         SharedPreferences.Editor writer = config.edit();
         writer.putInt( AppConfig.SPREF_CURRENT_SCANNER, n );
@@ -222,26 +255,9 @@ public class AppUtils {
      * @param c The Context of the Android system.
      * @return int It returns the scanner position.
      */
-    public static int getScanner(Context c) {
+    public static int getScanner( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getInt( AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER );
-<<<<<<< HEAD
-    }
-
-    /**
-     * It saves the beacon name to the preferences.
-     * @param c The Context of the Android system.
-     * @param s The beacon name.
-     * @return true  If it was saved.
-     *         false If it was not saved.
-     */
-    public static Boolean saveBeaconName(Context c, String s) {
-        SharedPreferences config = getSPrefConfig( c );
-        SharedPreferences.Editor writer = config.edit();
-        writer.putString( AppConfig.SPREF_CURRENT_BEACON, s );
-        return writer.commit();
-=======
->>>>>>> hotfix
     }
 
     /**
@@ -249,9 +265,43 @@ public class AppUtils {
      * @param c The Context of the Android system.
      * @return int It returns the beacon name.
      */
-    public static String getBeaconName(Context c) {
+    public static String getBeaconName( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getString( AppConfig.SPREF_CURRENT_BEACON, "" );
+    }
+
+    /**
+     * It gets the current tip (%).
+     * @param c The Context of the Android system.
+     * @return int It returns the tip percentage.
+     */
+    public static String getCurrentTip( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getString( AppConfig.SPREF_CURRENT_TIP, AppConfig.DEFAULT_TIP );
+    }
+
+    /**
+     * It saves the discount for the payments to the preferences.
+     * @param c The Context of the Android system.
+     * @param n The scanner position on the array.
+     * @return true  If it was saved.
+     *         false If it was not saved.
+     */
+    public static Boolean saveDiscount( Context c, String n ) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+        writer.putString( AppConfig.SPREF_DISCOUNT, n );
+        return writer.commit();
+    }
+
+    /**
+     * It gets the current tip (%).
+     * @param c The Context of the Android system.
+     * @return int It returns the tip percentage.
+     */
+    public static String getDiscount( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getString( AppConfig.SPREF_DISCOUNT, AppConfig.DEFAULT_DISCOUNT );
     }
 
     /**
@@ -261,7 +311,7 @@ public class AppUtils {
      * @return true  If it was saved.
      *         false If it was not saved.
      */
-    public static Boolean savePassword(Context c, String s) {
+    public static Boolean savePassword( Context c, String s ) {
         SharedPreferences config = getSPrefConfig( c );
         SharedPreferences.Editor writer = config.edit();
 
@@ -284,7 +334,7 @@ public class AppUtils {
      * @param c The Context of the Android system.
      * @return int It returns the password or nul.
      */
-    public static String getPassword(Context c) {
+    public static String getPassword( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         String password = config.getString( AppConfig.SPREF_CURRENT_PASSWORD, null );
 
@@ -319,21 +369,6 @@ public class AppUtils {
      *         false It is not logged in.
      */
     public static Boolean isFirstLogin(Context c) {
-<<<<<<< HEAD
-        SharedPreferences config = getSPrefConfig( c );
-        return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
-    }
-
-    /**
-     * It saves the state of the advertising service.
-     * @param c The Context of the Android system.
-     * @param flag If it is running or not.
-     * @return true  The flag was saved successfully.
-     *         false The flag was not saved successfully.
-     */
-    public static Boolean saveAdvertisingServiceRunning(Context c, Boolean flag) {
-=======
->>>>>>> hotfix
         SharedPreferences config = getSPrefConfig( c );
         return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
     }
@@ -344,74 +379,14 @@ public class AppUtils {
      * @return true  Advertising service is on.
      *         false Advertising service is off.
      */
-    public static Boolean isAdvertisingServiceRunning(Context c) {
+    public static Boolean isAdvertisingServiceRunning( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getBoolean( AppConfig.SPREF_ADVERTISING_SERVICE, false );
-    }
-
-    /**
-     * It saves the currency timestamp for the latest update to the preferences.
-     * @param c The Context of the Android system.
-     * @param n The currency timestamp.
-     * @return true  If it was saved.
-     *         false If it was not saved.
-     */
-    public static Boolean saveCurrencyTimestamp(Context c, long n) {
-        SharedPreferences config = getSPrefConfig( c );
-        SharedPreferences.Editor writer = config.edit();
-        writer.putLong( AppConfig.SPREF_TIMESTAMP_CURRENCY, n );
-        return writer.commit();
-    }
-
-    /**
-     * It gets the currency timestamp of the latest update.
-     * @param c The Context of the Android system.
-     * @return long It returns the timestamp.
-     */
-    public static long getCurrencyTimestamp(Context c) {
-        SharedPreferences config = getSPrefConfig( c );
-        return config.getLong( AppConfig.SPREF_TIMESTAMP_CURRENCY, 0 );
     }
 
     public static int getCurrentBackground( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getInt( AppConfig.SPREF_CURRENT_BACKGROUND, -0x1 );
-    }
-
-    /**
-     * Gets the mobile hardware identifier
-     * @param c The Context of the Android system.
-     */
-    public static String getHardwareToken(Context c) {
-        String HARDWARE_TOKEN = null;
-
-        TelephonyManager telephonyManager  = (TelephonyManager) c.getSystemService( Context.TELEPHONY_SERVICE );
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        //WifiManager wifiManager            = (WifiManager) c.getSystemService( Context.WIFI_SERVICE );
-
-        if( telephonyManager != null ) {
-            String tempMAC = telephonyManager.getDeviceId();
-            if( tempMAC != null )
-                HARDWARE_TOKEN = tempMAC.replace( "/", "" );
-        }
-
-        if(HARDWARE_TOKEN == null && mBluetoothAdapter != null) {
-            if(mBluetoothAdapter.isEnabled()) {
-                String tempMAC = mBluetoothAdapter.getAddress();
-                if( tempMAC != null )
-                    HARDWARE_TOKEN = tempMAC.replaceAll( ":", "" );
-            }
-        }
-
-		/*if( HARDWARE_TOKEN == null && wifiManager != null ) {
-			if( wifiManager.isWifiEnabled() ) {
-				WifiInfo wifiInf = wifiManager.getConnectionInfo();
-				String tempMAC = wifiInf.getMacAddress();
-				HARDWARE_TOKEN = tempMAC.replaceAll( ":", "" );
-			}
-		}*/
-
-        return HARDWARE_TOKEN;
     }
 
     /**
@@ -461,10 +436,10 @@ public class AppUtils {
      * @param name The name of the drawable
      * @return The drawable
      */
-    public static Drawable getDrawableByName(Context c, String name) throws Resources.NotFoundException {
+    public static Drawable getDrawableByName( Context c, String name ) throws Resources.NotFoundException {
         Resources resources = c.getResources();
         final int resourceId = resources.getIdentifier(name, "drawable", c.getPackageName());
-        Drawable image = resources.getDrawable(resourceId);
+        Drawable image = ContextCompat.getDrawable( c, resourceId );
         int h = image.getIntrinsicHeight();
         int w = image.getIntrinsicWidth();
         image.setBounds( 0, 0, w, h );
@@ -478,10 +453,9 @@ public class AppUtils {
      */
     public static void showPassword(CheckBox state, EditText password) {
         if( state.isChecked() )
-            password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            password.setInputType( InputType.TYPE_TEXT_VARIATION_PASSWORD );
         else
-            password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-
+            password.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD );
         password.setTypeface( Typeface.MONOSPACE );
     }
 
@@ -512,22 +486,8 @@ public class AppUtils {
         mp.start();
     }
 
-    public static void setLanguage(Context c) {
-        Locale appLoc;
-        int language = getLanguage( c );
-
-        switch( language ) {
-            case 1: // Spanish
-                appLoc = new Locale( "es" );
-                break;
-
-            case 2: // Chinese
-                appLoc = new Locale( "zh" );
-                break;
-
-            default: // English
-                appLoc = new Locale( "en" );
-        }
+    public static void setLanguage( Context c ) {
+        Locale appLoc = new Locale( getLanguage( c ) );
 
         Resources res = c.getResources();
         DisplayMetrics dm = res.getDisplayMetrics();
@@ -555,6 +515,21 @@ public class AppUtils {
     }
 
     /**
+     * Method to verify google play services on the device
+     * @param activity The activity that
+     * @param code The code for the activity result
+     * */
+    public static boolean isGooglePlayServicesAvailable( Activity activity, int code ) {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable( activity );
+        if( resultCode == ConnectionResult.SUCCESS )
+            return true;
+        else {
+            GooglePlayServicesUtil.getErrorDialog( resultCode, activity, code ).show();
+            return false;
+        }
+    }
+
+    /**
      * Verify if the device has GPS
      * @param c The Context of the Android system.
      * @return Boolean true if it has GPS
@@ -573,6 +548,44 @@ public class AppUtils {
         LocationManager lm = (LocationManager) c.getSystemService( Context.LOCATION_SERVICE );
         String provider    = lm.getBestProvider( new Criteria(), true );
         return ( ( !provider.isEmpty() ) && !LocationManager.PASSIVE_PROVIDER.equals( provider ) );
+    }
+
+    /**
+     * Requests a permission for the use of a phone's characteristic (e.g. Camera, Phone info, etc)
+     * @param ac The application context
+     * @param message A message to request the permission
+     * @param permission The permission
+     * @param requestCode The request code for the result
+     * @return If the permission was already allowed or not
+     */
+    public static boolean requestPermission( final Activity ac, final int message, final String permission, final int requestCode ) {
+        // Assume thisActivity is the current activity
+        int permissionCheck = ContextCompat.checkSelfPermission( ac, permission );
+        if( permissionCheck != PackageManager.PERMISSION_GRANTED ) {
+            if( ActivityCompat.shouldShowRequestPermissionRationale( ac, permission ) ) {
+                DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dialog, int which ) {
+                        ActivityCompat.requestPermissions(
+                                ac,
+                                new String[]{permission},
+                                requestCode
+                        );
+                    }
+                };
+
+                AlertDialogHelper.showAlertDialog(
+                        ac,
+                        message,
+                        onClick
+                );
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions( ac, new String[]{permission}, requestCode );
+            }
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -613,6 +626,27 @@ public class AppUtils {
      * @param c The Context of the Android system.
      * @param v The view to modify the drawable
      */
+    public static boolean setViewIcon( Context c, TextView v, Integer resource ) {
+        // Clean an icon from the view
+        if( resource == null ) {
+            v.setCompoundDrawables( null, null, null, null );
+            return true;
+        }
+        // Try to set an icon to a view
+        Drawable icon = ContextCompat.getDrawable( c, resource );
+        if( icon != null ) {
+            icon.setBounds( 3, 0, v.getLineHeight(), (int) ( v.getLineHeight() * 0.9 ) );
+            v.setCompoundDrawables( icon, null, null, null );
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Modify the size of the drawable for a TextView
+     * @param c The Context of the Android system.
+     * @param v The view to modify the drawable
+     */
     public static void setMerchantCurrencyIcon( Context c, TextView v ) {
         final String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
         final String[] currencies = c.getResources().getStringArray( R.array.currency_array );
@@ -624,7 +658,7 @@ public class AppUtils {
         v.setCompoundDrawables( icon, null, null, null );
     }
 
-    private static void appendLog(String text) {
+    private static void appendLog( String text ) {
         File logFile = new File( Environment.getExternalStorageDirectory() + "/" + AppConfig.LOG_FILE );
 
         try {
@@ -646,7 +680,7 @@ public class AppUtils {
      * @param TAG The String of the TAG for the log
      * @param text The text to print on the log
      */
-    public static void Logger(String TAG, String text) {
+    public static void Logger( String TAG, String text ) {
         if( AppConfig.DEBUG ) {
             if( text == null )
                 Log.e( TAG, "Null Text" );

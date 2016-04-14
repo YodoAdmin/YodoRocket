@@ -10,8 +10,9 @@ public class ServerRequest {
 	private static final String PROTOCOL_VERSION = "1.1.1";
 	
 	/** Parameters used for creating an authenticate request */
-	private static final String AUTH_REQ            = "0";
-	public static final String AUTH_HW_MERCH_SUBREQ = "4";
+	private static final String AUTH_REQ                = "0";
+	public static final String AUTH_HW_MERCH_SUBREQ     = "4";
+    public static final String AUTH_HW_PIP_MERCH_SUBREQ = "5";
 
     /** Parameters used for creating an exchange request */
     private static final String EXCH_REQ         = "1";
@@ -58,6 +59,10 @@ public class ServerRequest {
 			//RT = 0, ST = 4
 			case 4: sAuthenticationRequest.append( AUTH_HW_MERCH_SUBREQ ).append( REQ_SEP );
 					break;
+
+            //RT = 0, ST = 5
+            case 5: sAuthenticationRequest.append( AUTH_HW_PIP_MERCH_SUBREQ ).append( REQ_SEP );
+                break;
 		}
 		sAuthenticationRequest.append( pUsrData );
 		
@@ -119,7 +124,7 @@ public class ServerRequest {
      * @param iExchReqType Sub-type of the request
      * @return	String	Request for getting the Exchange
      */
-    public static String createExchangeRequest(String pUsrData, int iExchReqType){
+    public static String createExchangeRequest( String pUsrData, int iExchReqType ){
         StringBuilder sExchangeRequest = new StringBuilder();
         sExchangeRequest.append( PROTOCOL_VERSION ).append( REQ_SEP );
         sExchangeRequest.append( EXCH_REQ ).append( REQ_SEP );

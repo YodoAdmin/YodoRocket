@@ -140,6 +140,7 @@
 
             <ImageView
                 style="@style/ImageButton"
+                android:id="@+id/ivYodoGear"
                 android:src="@drawable/yodo_gear"
                 android:contentDescription="@string/desc"
                 android:background="@null"
@@ -159,12 +160,8 @@
         android:layout_weight="1"
         android:visibility="gone" >
 
-        <!--<FrameLayout
-            android:id="@+id/cameraPreview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <<com.journeyapps.barcodescanner.CompoundBarcodeView
+        <!--
+        <com.journeyapps.barcodescanner.CompoundBarcodeView
             android:id="@+id/barcode_scanner"
             android:layout_width="match_parent"
             android:layout_height="match_parent">

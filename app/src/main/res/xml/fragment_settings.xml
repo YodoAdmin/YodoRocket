@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <ListPreference
+        android:key="SPCurrentLanguage"
+        android:title="@string/config_pref_languages"
+        android:summary="%s"
+        android:entries="@array/languages_array"
+        android:entryValues="@array/languages_array_values"
+        android:defaultValue="en"/>
+
     <EditTextPreference
         android:title="@string/config_pref_username"
         android:key="SPCurrentBeacon"
         android:inputType="text"/>
-
+<!--
+    <EditTextPreference
+        android:title="@string/config_pref_tip"
+        android:key="SPCurrentTip"
+        android:inputType="numberDecimal"/>
+-->
     <CheckBoxPreference
         android:key="SPAdvertisingService"
         android:title="@string/config_pref_advertising"

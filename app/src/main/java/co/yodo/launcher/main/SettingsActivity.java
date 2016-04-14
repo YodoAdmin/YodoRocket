@@ -54,11 +54,10 @@ public class SettingsActivity extends AppCompatActivity {
     public static class PrefsFragmentInner extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
         private Context c;
 
-        private CheckBoxPreference
-                ETP_ADVERTISING;
+        private CheckBoxPreference ETP_ADVERTISING;
 
-        private EditTextPreference
-                ETP_SPREF_USERNAME;
+        private EditTextPreference ETP_SPREF_USERNAME;
+        //private EditTextPreference ETP_SPREF_TIP;
 
         @Override
         public void onCreate(final Bundle savedInstanceState) {
@@ -80,6 +79,9 @@ public class SettingsActivity extends AppCompatActivity {
             ETP_SPREF_USERNAME = (EditTextPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_CURRENT_BEACON );
 
+            /*ETP_SPREF_TIP = (EditTextPreference) getPreferenceScreen()
+                    .findPreference( AppConfig.SPREF_CURRENT_TIP );*/
+
             ETP_ADVERTISING = (CheckBoxPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_ADVERTISING_SERVICE );
 
@@ -90,6 +92,11 @@ public class SettingsActivity extends AppCompatActivity {
         private void updateStatus(String key) {
             if( key.equals( AppConfig.SPREF_ADVERTISING_SERVICE ) )
                 AppUtils.setupAdvertising( c, AppUtils.isAdvertisingServiceRunning( c ), true );
+
+            if( key.equals( AppConfig.SPREF_CURRENT_LANGUAGE ) ) {
+                getActivity().setResult( RESULT_FIRST_USER );
+                getActivity().finish();
+            }
         }
 
         @Override
@@ -109,6 +116,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         private void setAllSummaries() {
             ETP_SPREF_USERNAME.setSummary( AppUtils.getBeaconName( c ) );
+            //ETP_SPREF_TIP.setSummary( AppUtils.getCurrentTip( c ) );
         }
 
         @Override
