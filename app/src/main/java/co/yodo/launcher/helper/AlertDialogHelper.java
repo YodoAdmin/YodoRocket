@@ -187,10 +187,9 @@ public class AlertDialogHelper {
         LayoutInflater inflater = (LayoutInflater) c.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
         View layout = inflater.inflate( R.layout.dialog_with_password, new LinearLayout( c ), false );
         ((LinearLayout) layout).addView( input, 0 );
-        ((LinearLayout) layout).addView( rememberPassword );
+        CheckBox showPassword = (CheckBox) layout.findViewById( R.id.showPassword );
 
         if( show ) {
-            CheckBox showPassword = (CheckBox) layout.findViewById(R.id.showPassword);
             showPassword.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -200,9 +199,12 @@ public class AlertDialogHelper {
                         input.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD );
                 }
             });
-        }
+        } else
+            showPassword.setVisibility( View.GONE );
 
         if( remember ) {
+            ((LinearLayout) layout).addView( rememberPassword );
+
             String password = AppUtils.getPassword( c );
 
             if( password != null ) {

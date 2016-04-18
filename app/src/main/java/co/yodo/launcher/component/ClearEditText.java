@@ -13,6 +13,7 @@ import co.yodo.launcher.R;
 
 /**
  * Created by luis on 25/07/13.
+ * Edit text with clear text function
  */
 public class ClearEditText extends EditText {
     //The image we are going to use for the Clear button

@@ -81,8 +81,8 @@
     <string name="place_qrcode">Ubique el código SKS en esta ventana</string>
 
     <!-- Values Labels -->
-    <string name="total_purchase">Total de Compra: </string>
-    <string name="cash_tender">Pago en Efectivo: </string>
+    <string name="total_purchase">Total: </string>
+    <string name="cash_tender">Efectivo: </string>
     <string name="cash_back">Vuelto: </string>
     <string name="balance">Balance: </string>
     <string name="zero">0.00</string>

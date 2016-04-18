@@ -26,10 +26,10 @@ public class ServerRequest {
     /** Parameters used for creating an alternate request */
     private static final String ALTER_REQ               = "7";
     public static final String ALTER_VISA_CRED_SUBREQ   = "1";
-    public static final String ALTER_PUB_TRANSIT_SUBREQ = "2";
     public static final String ALTER_HEART_SUBREQ       = "3";
     public static final String ALTER_VISA_PREP_SUBREQ   = "4";
     public static final String ALTER_PAYPAL_SUBREQ      = "5";
+    public static final String ALTER_PUB_TRANSIT_SUBREQ = "6";
 
     /** Parameters used for creating a registration request */
     private static final String REG_REQ         = "9";
@@ -156,10 +156,6 @@ public class ServerRequest {
             case 1: sAlternateRequest.append( ALTER_VISA_CRED_SUBREQ ).append( REQ_SEP );
                 break;
 
-            //RT = 7, ST = 2
-            case 2: sAlternateRequest.append( ALTER_PUB_TRANSIT_SUBREQ ).append( REQ_SEP );
-                break;
-
             //RT = 7, ST = 3
             case 3: sAlternateRequest.append( ALTER_HEART_SUBREQ ).append( REQ_SEP );
                 break;
@@ -170,6 +166,10 @@ public class ServerRequest {
 
             //RT = 7, ST = 5
             case 5: sAlternateRequest.append( ALTER_PAYPAL_SUBREQ ).append( REQ_SEP );
+                break;
+
+            //RT = 7, ST = 6
+            case 6: sAlternateRequest.append( ALTER_PUB_TRANSIT_SUBREQ ).append( REQ_SEP );
                 break;
         }
         sAlternateRequest.append( pUsrData );

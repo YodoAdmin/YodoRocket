@@ -37,6 +37,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -47,8 +50,8 @@ import java.util.HashMap;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.adapter.CurrencyAdapter;
+import co.yodo.launcher.component.MemoryBMCache;
 import co.yodo.launcher.component.ClearEditText;
-import co.yodo.launcher.component.ImageLoader;
 import co.yodo.launcher.component.ToastMaster;
 import co.yodo.launcher.component.YodoHandler;
 import co.yodo.launcher.data.Currency;
@@ -81,7 +84,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     private TextView mTotalView;
     private TextView mCashTenderView;
     private TextView mCashBackView;
-    private ImageView mLogoImage;
+    //private ImageView mLogoImage;
+    NetworkImageView mAvatarImage;
     private ImageView mPaymentButton;
     private ProgressBar mBalanceBar;
 
@@ -97,6 +101,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
 
     /** ImageLoader */
     private ImageLoader imageLoader;
+    private MemoryBMCache imageCache;
 
     /** Balance Temp */
     private HashMap<String, String> historyData = null;
@@ -204,7 +209,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         // get the context
         ac = LauncherActivity.this;
         // Loads images from urls
-        imageLoader = new ImageLoader( ac );
+        imageCache  = new MemoryBMCache( ac );
+        imageLoader = new ImageLoader( YodoRequest.getRequestQueue( ac ), imageCache );
         // creates the factory for the scanners
         mScannerFactory = new QRScannerFactory( this );
         // Globals
@@ -215,9 +221,12 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         mTotalView       = (TextView) findViewById( R.id.totalText );
         mCashTenderView  = (TextView) findViewById( R.id.cashTenderText );
         mCashBackView    = (TextView) findViewById( R.id.cashBackText );
-        mLogoImage       = (ImageView) findViewById( R.id.companyLogo );
+        //mLogoImage       = (ImageView) findViewById( R.id.companyLogo );
+        mAvatarImage     = (NetworkImageView) findViewById( R.id.companyLogo );
         mPaymentButton   = (ImageView) findViewById( R.id.ivYodoGear );
         mBalanceBar      = (ProgressBar) findViewById( R.id.progressBarBalance );
+        // Logo
+        mAvatarImage.setDefaultImageResId( R.drawable.no_image );
         // Popup
         mPopupMessage  = new PopupWindow( ac );
         // Sliding Panel Configurations
@@ -359,11 +368,11 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
 
         hardwareToken = AppUtils.getHardwareToken( ac );
         String logo_url = AppUtils.getLogoUrl( ac );
-
+        AppUtils.Logger( TAG, logo_url );
         if( logo_url.equals( "" ) ) {
             YodoRequest.getInstance().requestLogo( LauncherActivity.this, hardwareToken );
         } else {
-            imageLoader.DisplayImage( logo_url, mLogoImage );
+            mAvatarImage.setImageUrl( logo_url, imageLoader );
         }
         // Mock location
         mLocation = new Location( "flp" );
@@ -565,7 +574,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         AlertDialogHelper.showAlertDialog(
                 ac,
                 title,
-                inputBox,
+                inputBox, true, false,
+                null,
                 onClick
         );
     }
@@ -623,7 +633,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         AlertDialogHelper.showAlertDialog(
                 ac,
                 title,
-                inputBox, true, true,
+                inputBox, false, true,
                 remember,
                 onClick
         );
@@ -656,7 +666,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
      * @param v View, not used
      */
     public void logoutClick(View v) {
-        imageLoader.clearCache();
+        imageCache.clear();
         AppUtils.saveLoginStatus( ac, false );
         AppUtils.saveLogoUrl( ac, "" );
         finish();
@@ -895,8 +905,9 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                     String logoName = response.getParam( ServerResponse.LOGO );
 
                     if( logoName != null ) {
-                        AppUtils.saveLogoUrl(ac, AppConfig.LOGO_PATH + logoName );
-                        imageLoader.DisplayImage( AppConfig.LOGO_PATH + logoName, mLogoImage );
+                        String logo_url = AppConfig.LOGO_PATH + logoName;
+                        AppUtils.saveLogoUrl( ac, logo_url );
+                        mAvatarImage.setImageUrl( logo_url, imageLoader );
                     }
                 }
                 break;

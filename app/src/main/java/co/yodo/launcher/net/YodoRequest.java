@@ -1,11 +1,14 @@
 package co.yodo.launcher.net;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.os.ResultReceiver;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -51,6 +54,7 @@ import co.yodo.launcher.service.RESTService;
  * Created by luis on 15/12/14.
  * Request to the Yodo Server
  */
+@SuppressLint( "ParcelCreator" )
 public class YodoRequest extends ResultReceiver {
     /** DEBUG */
     @SuppressWarnings( "unused" )
@@ -126,7 +130,7 @@ public class YodoRequest extends ResultReceiver {
      *
      * @param handler Default
      */
-    private YodoRequest(Handler handler) {
+    private YodoRequest( Handler handler ) {
         super( handler );
         oEncrypter = new Encrypter();
     }
@@ -265,13 +269,13 @@ public class YodoRequest extends ResultReceiver {
 
     public void requestCurrency( Activity activity, String hardwareToken ) {
         String sEncryptedMerchData, pRequest;
-        StringBuilder sCurrencyData = new StringBuilder();
 
-        sCurrencyData.append( hardwareToken ).append( REQ_SEP );
-        sCurrencyData.append( ServerRequest.QUERY_MERCHANT_CURRENCY );
+        String sCurrencyData =
+                hardwareToken + REQ_SEP +
+                ServerRequest.QUERY_MERCHANT_CURRENCY;
 
         // Encrypting to create request
-        oEncrypter.setsUnEncryptedString( sCurrencyData.toString() );
+        oEncrypter.setsUnEncryptedString( sCurrencyData );
         oEncrypter.rsaEncrypt( activity );
         sEncryptedMerchData = oEncrypter.bytesToHex();
 
@@ -498,8 +502,8 @@ public class YodoRequest extends ResultReceiver {
     ///////////////////////////////////////////////////////
 
     /** Switch server IP address */
-    //private static final String IP 	         = "http://50.56.180.133";  // Production
-    private static final String IP 			 = "http://198.101.209.120";  // Development
+    private static final String IP 	         = "http://50.56.180.133";  // Production
+    //private static final String IP 			 = "http://198.101.209.120";  // Development
     private static final String YODO_ADDRESS = "/yodo/yodoswitchrequest/getRequest/";
     private static final String YODO         = "/yodo/";
 
@@ -515,12 +519,12 @@ public class YodoRequest extends ResultReceiver {
     /**
      * Global request queue for Volley
      */
-    private RequestQueue mRequestQueue;
+    private static RequestQueue mRequestQueue;
 
     /**
      * @return The Volley Request queue, the queue will be created if it is null
      */
-    public RequestQueue getRequestQueue( Context context ) {
+    public static RequestQueue getRequestQueue( Context context ) {
         // lazy initialize the request queue, the queue instance will be
         // created when it is accessed for the first time
         if( mRequestQueue == null ) {

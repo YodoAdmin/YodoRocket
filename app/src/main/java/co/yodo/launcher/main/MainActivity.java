@@ -54,7 +54,6 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
 
         setupGUI();
         updateData();
-        //YodoRequest.getInstance().requestPIPAuthentication( MainActivity.this, "354984054060899", "test" );
     }
 
     @Override
