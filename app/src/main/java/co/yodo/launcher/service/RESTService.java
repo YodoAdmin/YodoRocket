@@ -34,11 +34,9 @@ public class RESTService extends IntentService {
     private Context ac;
 
     /** Switch server IP address */
-    private static final String IP 	         = "http://50.56.180.133";  // Production
-    //private static final String IP 			 = "http://198.101.209.120";  // Development
-    //private static final String IP 			 = "http://139.82.100.71";  // Local
+    //private static final String IP 	         = "http://50.56.180.133";  // Production
+    private static final String IP 			 = "http://198.101.209.120";  // Development
     private static final String YODO_ADDRESS = "/yodo/yodoswitchrequest/getRequest/";
-    //private static final String YODO_ADDRESS = "/YodoSwitch/yodoswitchrequest/getRequest/";
 
     /** It is the ID of the application (the package) used for the extras */
     private static final String PARAMS_APPID = "yodo.co.yodolauncher.net.";

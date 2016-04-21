@@ -42,6 +42,13 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        YodoRequest.getInstance().setListener( this );
+    }
+
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         switch( itemId ) {
@@ -56,11 +63,8 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
         ac = RegistrationActivity.this;
 
         handlerMessages = new YodoHandler( RegistrationActivity.this );
-        YodoRequest.getInstance().setListener( this );
-
         // GUI global components
         password = (EditText) findViewById( R.id.merchTokenText );
-
         // Only used at creation
         Toolbar mActionBarToolbar = (Toolbar) findViewById( R.id.registrationBar );
 
@@ -78,7 +82,7 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
      * Realize a registration request
      * @param v View of the button, not used
      */
-    public void registrationClick(View v) {
+    public void registrationClick( View v ) {
         String token = password.getText().toString();
         if( token.isEmpty() ) {
             Animation shake = AnimationUtils.loadAnimation( this, R.anim.shake );

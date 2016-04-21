@@ -651,7 +651,9 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                                AppUtils.getHardwareToken( ac ) + "\n" +
                                getString( R.string.label_currency )    + " " +
                                AppUtils.getMerchantCurrency( ac ) + "\n" +
-                               getString( R.string.version ) + "/" + RESTService.getSwitch();
+                               getString( R.string.version_label ) + " " +
+                               getString( R.string.version_value ) + "/" +
+                               RESTService.getSwitch();
 
         AlertDialogHelper.showAlertDialog(
                 ac,
@@ -1015,11 +1017,17 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
 
     @Override
     public void onNewData( String data ) {
-        String totalPurchase = mTotalView.getText().toString();
+        final String[] currency = getResources().getStringArray( R.array.currency_array );
+
+        // Get subtotal with discount
+        BigDecimal discount = new BigDecimal( AppUtils.getDiscount( ac ) ).movePointLeft( 2 );
+        BigDecimal subTotal = new BigDecimal( mTotalView.getText().toString() ).multiply(
+                BigDecimal.ONE.subtract( discount )
+        );
+
+        String totalPurchase = subTotal.setScale( 2, RoundingMode.DOWN ).toString();
         String cashTender    = mCashTenderView.getText().toString();
         String cashBack      = mCashBackView.getText().toString();
-
-        final String[] currency = getResources().getStringArray( R.array.currency_array );
 
         switch( data.length() ) {
             case AppConfig.SKS_SIZE:

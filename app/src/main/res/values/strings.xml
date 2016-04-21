@@ -4,7 +4,8 @@
     <!-- Main Strings -->
     <string name="app_name">YodoRocket</string>
     <string name="action_settings">Settings</string>
-    <string name="version">Version: 0.3.0</string>
+    <string name="version.label">Version:</string>
+    <string name="version.value" translatable="false">0.3.1</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTER</string>
     <string name="loading">Loading</string>
@@ -53,7 +54,7 @@
     <string name="server_switch">Switch:</string>
 
     <!-- Activity titles -->
-    <string name="title_activity_pos">Yodo Launcher</string>
+    <string name="title_activity_pos">Yodo Rocket</string>
     <string name="title_activity_settings">Yodo Settings</string>
     <string name="title_activity_registration">Yodo Registration</string>
 
@@ -89,26 +90,26 @@
     <string name="no_item">- no item -</string>
 
     <!-- Input Labels -->
-    <string name="clear">C</string>
-    <string name="coins_0">00</string>
-    <string name="coins_5">5</string>
-    <string name="coins_10">10</string>
-    <string name="coins_20">20</string>
-    <string name="coins_50">50</string>
-    <string name="coins_100">100</string>
-    <string name="coins_200">200</string>
-    <string name="value_7">7</string>
-    <string name="value_8">8</string>
-    <string name="value_9">9</string>
-    <string name="value_4">4</string>
-    <string name="value_5">5</string>
-    <string name="value_6">6</string>
-    <string name="value_1">1</string>
-    <string name="value_2">2</string>
-    <string name="value_3">3</string>
-    <string name="value_0">0</string>
-    <string name="value_00">00</string>
-    <string name="value_.">.</string>
+    <string name="clear"     translatable="false">C</string>
+    <string name="coins_0"   translatable="false">00</string>
+    <string name="coins_5"   translatable="false">5</string>
+    <string name="coins_10"  translatable="false">10</string>
+    <string name="coins_20"  translatable="false">20</string>
+    <string name="coins_50"  translatable="false">50</string>
+    <string name="coins_100" translatable="false">100</string>
+    <string name="coins_200" translatable="false">200</string>
+    <string name="value_7"   translatable="false">7</string>
+    <string name="value_8"   translatable="false">8</string>
+    <string name="value_9"   translatable="false">9</string>
+    <string name="value_4"   translatable="false">4</string>
+    <string name="value_5"   translatable="false">5</string>
+    <string name="value_6"   translatable="false">6</string>
+    <string name="value_1"   translatable="false">1</string>
+    <string name="value_2"   translatable="false">2</string>
+    <string name="value_3"   translatable="false">3</string>
+    <string name="value_0"   translatable="false">0</string>
+    <string name="value_00"  translatable="false">00</string>
+    <string name="value_."   translatable="false">.</string>
 
     <!-- Languages -->
     <string-array name="languages_array">
@@ -118,7 +119,7 @@
         <item>Russian</item>
     </string-array>
 
-    <string-array name="languages_array_values">
+    <string-array name="languages_array_values" translatable="false">
         <item>en</item>
         <item>es</item>
         <item>zh</item>
@@ -126,7 +127,7 @@
     </string-array>
 
     <!-- Currency -->
-    <string-array name="currency_array">
+    <string-array name="currency_array" translatable="false">
         <item>MXN</item>
         <item>CAD</item>
         <item>USD</item>
@@ -139,7 +140,7 @@
     </string-array>
 
     <!-- Currency Icon -->
-    <string-array name="currency_icon_array">
+    <string-array name="currency_icon_array" translatable="false">
         <item>mexico</item>
         <item>canada</item>
         <item>usa</item>
