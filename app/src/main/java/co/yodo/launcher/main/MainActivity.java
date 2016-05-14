@@ -48,7 +48,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
     private Bundle bundle;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
         AppUtils.setLanguage( this );
 
@@ -85,9 +85,10 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
                 MainActivity.this,
                 REQUEST_CODE_RECOVER_PLAY_SERVICES
         );
+        boolean isLegacy = AppUtils.isLegacy( ac );
 
         // Verify Google Play Services
-        if( hasServices ) {
+        if( hasServices || isLegacy ) {
             hardwareToken = AppUtils.getHardwareToken( ac );
             if( hardwareToken == null ) {
                 setupPermissions();
@@ -210,6 +211,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
             switch( requestCode ) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
                     // Google play services installed
+                    AppUtils.setLegacy( ac, false );
                     Intent iSplash = new Intent( this, MainActivity.class );
                     iSplash.putExtras( bundle );
                     startActivity( iSplash );
@@ -231,7 +233,12 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
             switch( requestCode ) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
                     // Denied to install
-                    ToastMaster.makeText( ac, R.string.message_play_services, Toast.LENGTH_SHORT ).show();
+                    //ToastMaster.makeText( ac, R.string.message_play_services, Toast.LENGTH_SHORT ).show();
+                    AppUtils.setLegacy( ac, true );
+                    Intent iSplash = new Intent( this, MainActivity.class );
+                    iSplash.putExtras( bundle );
+                    startActivity( iSplash );
+                    finish();
                     break;
             }
         }

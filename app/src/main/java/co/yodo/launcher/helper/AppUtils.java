@@ -32,14 +32,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.android.volley.Network;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.BasicNetwork;
-import com.android.volley.toolbox.DiskBasedCache;
-import com.android.volley.toolbox.HttpStack;
-import com.android.volley.toolbox.HurlStack;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -128,6 +122,31 @@ public class AppUtils {
         SharedPreferences config = getSPrefConfig( c );
         String token = config.getString( AppConfig.SPREF_HARDWARE_TOKEN, "" );
         return ( token.equals( "" ) ) ? null : token;
+    }
+
+    /**
+     * Sets if the device is legacy or not
+     * @param c The Android application context
+     * @param legacy True or false, (if legacy or not)
+     * @return true  The flag was saved successfully.
+     *         false The flag was not saved successfully.
+     */
+    public static Boolean setLegacy( Context c, Boolean legacy ) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+        writer.putBoolean( AppConfig.SPREF_LEGACY, legacy );
+        return writer.commit();
+    }
+
+    /**
+     * Returns if the device is leagacy (doesn't support Google Service)
+     * @param c The Android application context
+     * @return True if legacy
+     *         False if not
+     */
+    public static Boolean isLegacy( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getBoolean( AppConfig.SPREF_LEGACY, false );
     }
 
     /**
@@ -526,13 +545,17 @@ public class AppUtils {
      * @param code The code for the activity result
      * */
     public static boolean isGooglePlayServicesAvailable( Activity activity, int code ) {
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable( activity );
-        if( resultCode == ConnectionResult.SUCCESS )
-            return true;
-        else {
-            GooglePlayServicesUtil.getErrorDialog( resultCode, activity, code ).show();
+        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+        int resultCode = googleAPI.isGooglePlayServicesAvailable( activity );
+        if( resultCode != ConnectionResult.SUCCESS ) {
+            if( googleAPI.isUserResolvableError( resultCode ) ) {
+                googleAPI.getErrorDialog( activity, resultCode, code ).show();
+            } else {
+                AppUtils.setLegacy( activity, true );
+            }
             return false;
         }
+        return true;
     }
 
     /**

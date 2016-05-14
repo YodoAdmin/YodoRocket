@@ -8,7 +8,7 @@ import co.yodo.launcher.service.RESTService;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
 
     /** FILE flag: to print the logs in a file */
     public static final boolean FDEBUG = false;
@@ -28,6 +28,15 @@ public class AppConfig {
      * type -- String
      */
     public static final String SPREF_HARDWARE_TOKEN = "SPHardwareToken";
+
+    /* Device state: legacy or not.
+	 * type -- Boolean
+	 *
+	 * __Values__
+	 * true  -- The device is legacy (doesn't have google services)
+	 * false -- The device supports google services
+	 */
+    public static final String SPREF_LEGACY = "SPLegacy";
 
     /* Login status.
 	 * type -- Boolean

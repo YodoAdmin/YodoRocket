@@ -84,8 +84,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     private TextView mTotalView;
     private TextView mCashTenderView;
     private TextView mCashBackView;
-    //private ImageView mLogoImage;
-    NetworkImageView mAvatarImage;
+    private NetworkImageView mAvatarImage;
     private ImageView mPaymentButton;
     private ProgressBar mBalanceBar;
 
@@ -384,6 +383,9 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
      * Request the necessary permissions for this activity
      */
     private void setupPermissions() {
+        if( AppUtils.isLegacy( ac ) )
+            return;
+
         boolean locationPermission = AppUtils.requestPermission(
                 LauncherActivity.this,
                 R.string.message_permission_location,

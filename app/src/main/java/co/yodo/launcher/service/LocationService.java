@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -184,7 +185,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     }
 
     @Override
-    public void onConnectionFailed( ConnectionResult connectionResult ) {
+    public void onConnectionFailed( @NonNull ConnectionResult connectionResult ) {
         AppUtils.Logger( TAG, "GoogleApiClient connection has failed" );
         stopSelf();
     }
