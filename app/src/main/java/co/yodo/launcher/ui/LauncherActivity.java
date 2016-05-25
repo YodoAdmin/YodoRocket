@@ -1,9 +1,10 @@
-package co.yodo.launcher.main;
+package co.yodo.launcher.ui;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputFilter;
@@ -39,6 +41,15 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.nearby.Nearby;
+import com.google.android.gms.nearby.messages.NearbyMessagesStatusCodes;
+import com.google.android.gms.nearby.messages.PublishCallback;
+import com.google.android.gms.nearby.messages.PublishOptions;
+import com.google.android.gms.nearby.messages.Strategy;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -49,24 +60,28 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.adapter.CurrencyAdapter;
+import co.yodo.launcher.ui.adapter.CurrencyAdapter;
 import co.yodo.launcher.component.MemoryBMCache;
 import co.yodo.launcher.component.ClearEditText;
-import co.yodo.launcher.component.ToastMaster;
+import co.yodo.launcher.ui.component.ToastMaster;
 import co.yodo.launcher.component.YodoHandler;
 import co.yodo.launcher.data.Currency;
-import co.yodo.launcher.data.ServerResponse;
-import co.yodo.launcher.helper.AlertDialogHelper;
+import co.yodo.launcher.network.model.ServerResponse;
+import co.yodo.launcher.ui.component.AlertDialogHelper;
 import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.helper.Intents;
-import co.yodo.launcher.net.YodoRequest;
+import co.yodo.launcher.network.YodoRequest;
 import co.yodo.launcher.scanner.QRScanner;
 import co.yodo.launcher.scanner.QRScannerFactory;
 import co.yodo.launcher.service.LocationService;
 import co.yodo.launcher.service.RESTService;
 
-public class LauncherActivity extends AppCompatActivity implements YodoRequest.RESTListener, QRScanner.QRScannerListener {
+public class LauncherActivity extends AppCompatActivity implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        YodoRequest.RESTListener,
+        QRScanner.QRScannerListener {
     /** DEBUG */
     private static final String TAG = LauncherActivity.class.getSimpleName();
 
@@ -98,7 +113,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     /** Messages Handler */
     private static YodoHandler handlerMessages;
 
-    /** ImageLoader */
+    /** Image Loader */
     private ImageLoader imageLoader;
     private MemoryBMCache imageCache;
 
@@ -114,6 +129,18 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     /** Location */
     private Location mLocation;
 
+    /** Provides an entry point for Google Play services. */
+    private GoogleApiClient mGoogleApiClient;
+
+    /** The {@link Message} object used to broadcast information about the device to nearby devices. */
+    private com.google.android.gms.nearby.messages.Message mActiveMessage;
+
+    /** Sets the time in seconds for a published message or a subscription to live.*/
+    private static final Strategy PUB_SUB_STRATEGY = new Strategy.Builder()
+            .setTtlSeconds( Strategy.TTL_SECONDS_MAX ).build();
+
+    private boolean mUnpublishing = false;
+
     /** Code for the error dialog */
     private static final int REQUEST_CODE_LOCATION_SERVICES = 0;
     private static final int REQUEST_SETTINGS               = 1;
@@ -121,6 +148,16 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     /** Request codes for the permissions */
     private static final int PERMISSIONS_REQUEST_CAMERA   = 1;
     private static final int PERMISSIONS_REQUEST_LOCATION = 2;
+
+    /** Request code to use when launching the resolution activity */
+    public static final int REQUEST_RESOLVE_ERROR = 1001;
+
+    /**
+     * Tracks if we are currently resolving an error related to Nearby permissions. Used to avoid
+     * duplicate Nearby permission dialogs if the user initiates both subscription and publication
+     * actions without having opted into Nearby.
+     */
+    private boolean mResolvingNearbyPermissionError = false;
 
     /** External data */
     private Bundle externBundle;
@@ -142,8 +179,12 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         super.onStart();
         // register to event bus
         EventBus.getDefault().register( this );
+        // We are going to start publishing
+        mUnpublishing = false;
         // Setup the required permissions
         setupPermissions();
+        // Setup the advertisement service
+        setupAdvertisement();
     }
 
     @Override
@@ -153,8 +194,6 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         YodoRequest.getInstance().setListener( this );
         // Request the fare value in the rate of the merchant currency
         YodoRequest.getInstance().requestCurrencies( ac );
-        // Enable the advertising service
-        AppUtils.setupAdvertising( ac, AppUtils.isAdvertisingServiceRunning( ac ), false );
         // Start the scanner if necessary
         if( currentScanner != null && isScanning ) {
             isScanning = false;
@@ -177,12 +216,21 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     @Override
     public void onStop() {
         super.onStop();
-        // unregister from event bus
+        // Unregister from event bus
         EventBus.getDefault().unregister( this );
+        // We are going to unpublish
+        mUnpublishing = true;
         // Stop location service while app is in background
         if( AppUtils.isMyServiceRunning( ac, LocationService.class.getName() ) ) {
             Intent iLoc = new Intent( ac, LocationService.class );
             stopService( iLoc );
+        }
+
+        if( mGoogleApiClient != null && mGoogleApiClient.isConnected() && !isChangingConfigurations() ) {
+            // Using Nearby is battery intensive. To preserve battery, stop subscribing or
+            // publishing when the fragment is inactive.
+            unpublish();
+            mGoogleApiClient.disconnect();
         }
     }
 
@@ -220,7 +268,6 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         mTotalView       = (TextView) findViewById( R.id.totalText );
         mCashTenderView  = (TextView) findViewById( R.id.cashTenderText );
         mCashBackView    = (TextView) findViewById( R.id.cashBackText );
-        //mLogoImage       = (ImageView) findViewById( R.id.companyLogo );
         mAvatarImage     = (NetworkImageView) findViewById( R.id.companyLogo );
         mPaymentButton   = (ImageView) findViewById( R.id.ivYodoGear );
         mBalanceBar      = (ProgressBar) findViewById( R.id.progressBarBalance );
@@ -350,13 +397,26 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
             BigDecimal cashBack = new BigDecimal( externBundle.getString( Intents.CASH_BACK, "0.00" ) );
             //String currency = externBundle.getString( Intents.CURRENCY );
 
+            // Checks a positive total value
             if( total.signum() > 0 ) {
-                BigDecimal tip = new BigDecimal( AppUtils.getCurrentTip( ac ) );
-                tip = tip.scaleByPowerOfTen( -2 ).multiply( total );
-                mTotalView.setText( total.add( tip ).setScale( 2, RoundingMode.DOWN ).toString() );
+                //BigDecimal tip = new BigDecimal( AppUtils.getCurrentTip( ac ) );
+                //tip = tip.scaleByPowerOfTen( -2 ).multiply( total );
+                //mTotalView.setText( total.add( tip ).setScale( 2, RoundingMode.DOWN ).toString() );
+                final String tvTotal = total.setScale( 2, RoundingMode.DOWN ).toString();
+                mTotalView.setText( tvTotal );
             }
-            if( cashTender.signum() > 0 ) mCashTenderView.setText( cashTender.setScale( 2, RoundingMode.DOWN ).toString() );
-            if( cashBack.signum() > 0 ) mCashBackView.setText( cashBack.setScale( 2, RoundingMode.DOWN ).toString() );
+
+            // Checks a positive cash tender value
+            if( cashTender.signum() > 0 ) {
+                final String tvCashTender = cashTender.setScale( 2, RoundingMode.DOWN ).toString();
+                mCashTenderView.setText( tvCashTender );
+            }
+
+            // Checks a positive cash back value
+            if( cashBack.signum() > 0 ) {
+                final String tvCashBack = cashBack.setScale( 2, RoundingMode.DOWN ).toString();
+                mCashBackView.setText( tvCashBack );
+            }
 
             viewClick( mCashTenderView );
 
@@ -398,6 +458,24 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
     }
 
     /**
+     * Enables the advertisement services using nearby
+     */
+    private void setupAdvertisement() {
+        if( AppUtils.isLegacy( ac ) )
+            return;
+
+        if( !AppUtils.isAdvertising( ac ) )
+            return;
+
+        mGoogleApiClient = new GoogleApiClient.Builder( this )
+                .addApi( Nearby.MESSAGES_API )
+                .addConnectionCallbacks( this )
+                .addOnConnectionFailedListener( this )
+                .build();
+        mGoogleApiClient.connect();
+    }
+
+    /**
      * Asks the user to enable the location services, otherwise it
      * closes the application
      */
@@ -427,6 +505,116 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
             };
 
             AlertDialogHelper.showAlertDialog( ac, R.string.message_gps_enable, onClick, onCancel );
+        }
+    }
+
+    /**
+     * Publishes device information to nearby devices. If not successful, attempts to resolve any
+     * error related to Nearby permissions by displaying an opt-in dialog. Registers a callback
+     * that updates the UI when the publication expires.
+     */
+    private void publish() {
+        AppUtils.Logger( TAG, "trying to publish" );
+        // Cannot proceed without a connected GoogleApiClient. Reconnect and execute the pending
+        // task in onConnected().
+        if( !mGoogleApiClient.isConnected() ) {
+            if( !mGoogleApiClient.isConnecting() ) {
+                mGoogleApiClient.connect();
+            }
+        } else {
+            String message = AppUtils.getBeaconName( ac );
+            mActiveMessage = new com.google.android.gms.nearby.messages.Message(
+                    message.getBytes()
+            );
+            
+            PublishOptions options = new PublishOptions.Builder()
+                .setStrategy( PUB_SUB_STRATEGY )
+                .setCallback( new PublishCallback() {
+                    @Override
+                    public void onExpired() {
+                        super.onExpired();
+                        AppUtils.Logger( TAG, "no longer publishing" );
+                        if( !mUnpublishing )
+                            publish();
+                    }
+                }).build();
+
+            Nearby.Messages.publish( mGoogleApiClient, mActiveMessage, options )
+                .setResultCallback( new ResultCallback<Status>() {
+                    @Override
+                    public void onResult( @NonNull Status status ) {
+                        if( status.isSuccess() ) {
+                            AppUtils.Logger( TAG, "published successfully" );
+                        } else {
+                            AppUtils.Logger( TAG, "could not publish" );
+                            handleUnsuccessfulNearbyResult( status );
+                        }
+                    }
+                });
+        }
+    }
+
+    /**
+     * Stops publishing device information to nearby devices. If successful, resets state. If not
+     * successful, attempts to resolve any error related to Nearby permissions by displaying an
+     * opt-in dialog.
+     */
+    private void unpublish() {
+        AppUtils.Logger( TAG, "trying to unpublish" );
+        // Cannot proceed without a connected GoogleApiClient. Reconnect and execute the pending
+        // task in onConnected().
+        if( !mGoogleApiClient.isConnected() ) {
+            if( !mGoogleApiClient.isConnecting() ) {
+                mGoogleApiClient.connect();
+            }
+        } else {
+            Nearby.Messages.unpublish( mGoogleApiClient, mActiveMessage )
+                .setResultCallback( new ResultCallback<Status>() {
+                    @Override
+                    public void onResult( @NonNull Status status ) {
+                        if( status.isSuccess() ) {
+                            AppUtils.Logger( TAG, "unpublished successfully" );
+                        } else {
+                            AppUtils.Logger( TAG, "could not unpublish" );
+                            handleUnsuccessfulNearbyResult(status);
+                        }
+                    }
+                });
+        }
+    }
+
+    /**
+     * Handles errors generated when performing a subscription or publication action. Uses
+     * {@link Status#startResolutionForResult} to display an opt-in dialog to handle the case
+     * where a device is not opted into using Nearby.
+     */
+    private void handleUnsuccessfulNearbyResult( Status status ) {
+        AppUtils.Logger( TAG, "processing error, status = " + status );
+        if( status.getStatusCode() == NearbyMessagesStatusCodes.APP_NOT_OPTED_IN ) {
+            if( !mResolvingNearbyPermissionError ) {
+                try {
+                    mResolvingNearbyPermissionError = true;
+                    status.startResolutionForResult( this, REQUEST_RESOLVE_ERROR );
+
+                } catch( IntentSender.SendIntentException e ) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            if( status.getStatusCode() == ConnectionResult.NETWORK_ERROR ) {
+                ToastMaster.makeText(
+                        ac,
+                        "No connectivity, cannot proceed. Fix in 'Settings' and try again.",
+                        Toast.LENGTH_LONG
+                ).show();
+            } else {
+                // To keep things simple, pop a toast for all other error messages.
+                Toast.makeText(
+                        ac,
+                        "Unsuccessful: " + status.getStatusMessage(),
+                        Toast.LENGTH_LONG
+                ).show();
+            }
         }
     }
 
@@ -484,29 +672,31 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         BigDecimal total = BigDecimal.ZERO;
 
         BigDecimal result = new BigDecimal( historyData.get( ServerResponse.DEBIT ) );
-        debitsText.setText( result.setScale( 2, RoundingMode.DOWN ).toString() );
+        final String tvResult = result.setScale( 2, RoundingMode.DOWN ).toString();
+        debitsText.setText( tvResult );
         total = total.subtract( result );
 
         result = new BigDecimal( historyData.get( ServerResponse.CREDIT ) );
-        creditsText.setText( result.setScale( 2, RoundingMode.DOWN ).toString() );
+        final String tvCredits = result.setScale( 2, RoundingMode.DOWN ).toString();
+        creditsText.setText( tvCredits );
         total = total.add( result );
 
-        balanceText.setText(
-                total.negate().setScale( 2, RoundingMode.DOWN ).toString()
-        );
+        final String tvBalance = total.negate().setScale( 2, RoundingMode.DOWN ).toString();
+        balanceText.setText( tvBalance );
         total = BigDecimal.ZERO;
 
         result = new BigDecimal( todayData.get( ServerResponse.DEBIT ) );
-        todayDebitsText.setText( result.setScale( 2, RoundingMode.DOWN ).toString() );
+        final String tvTodayDebit = result.setScale( 2, RoundingMode.DOWN ).toString();
+        todayDebitsText.setText( tvTodayDebit );
         total = total.subtract( result );
 
         result = new BigDecimal( todayData.get( ServerResponse.CREDIT ) );
-        todayCreditsText.setText( result.setScale( 2, RoundingMode.DOWN ).toString() );
+        final String tvTodayCredit = result.setScale( 2, RoundingMode.DOWN ).toString();
+        todayCreditsText.setText( tvTodayCredit );
         total = total.add( result );
 
-        todayBalanceText.setText(
-                total.negate().setScale( 2, RoundingMode.DOWN ).toString()
-        );
+        final String tvTodayBalance = total.negate().setScale( 2, RoundingMode.DOWN ).toString();
+        todayBalanceText.setText( tvTodayBalance );
 
         AlertDialogHelper.showAlertDialog( ac, getString( R.string.yodo_title ), layout );
         todayData = historyData = null;
@@ -560,7 +750,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         final EditText inputBox = new ClearEditText( ac );
 
         DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int item) {
+            @Override
+            public void onClick( DialogInterface dialog, int item ) {
                 String pip = inputBox.getText().toString();
                 AppUtils.hideSoftKeyboard( LauncherActivity.this );
 
@@ -717,9 +908,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
             final String current = selectedView.getText().toString();
 
             BigDecimal temp = new BigDecimal( current + value );
-            selectedView.setText(
-                    temp.multiply( BigDecimal.TEN ).setScale( 2, RoundingMode.DOWN ).toString()
-            );
+            final String tvNewValue = temp.multiply( BigDecimal.TEN ).setScale( 2, RoundingMode.DOWN ).toString();
+            selectedView.setText( tvNewValue );
         }
         // Request the fare value in the rate of the merchant currency
         YodoRequest.getInstance().requestCurrencies( ac );
@@ -737,7 +927,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
             selectedView.setText( getString( R.string.zero ) );
         } else {
             BigDecimal value = new BigDecimal( current ).add( new BigDecimal( amount ) );
-            selectedView.setText( value.setScale( 2, RoundingMode.DOWN ).toString() );
+            final String tvNewValue = value.setScale( 2, RoundingMode.DOWN ).toString();
+            selectedView.setText( tvNewValue );
         }
         // Request the fare value in the rate of the merchant currency
         YodoRequest.getInstance().requestCurrencies( ac );
@@ -816,8 +1007,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                             StringBuilder builder = new StringBuilder( dest );
                             builder.replace( dstart, dend, source.subSequence( start, end ).toString() );
                             if( !builder.toString().matches(
-                                    "(([1-9]{1})([0-9]{0,"+( maxDigitsBeforeDecimalPoint - 1 ) +
-                                    "})?)?(\\.[0-9]{0," + maxDigitsAfterDecimalPoint + "})?"
+                                    "(([" +( maxDigitsBeforeDecimalPoint - 1 ) +
+                                    "-9])([0-9]?)?)?(\\.[0-9]{0," + maxDigitsAfterDecimalPoint + "})?"
 
                             )) {
                                 if( source.length() == 0 )
@@ -835,7 +1026,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                         public void onClick(DialogInterface dialog, int item) {
                             String discount = inputBox.getText().toString();
                             AppUtils.hideSoftKeyboard( LauncherActivity.this );
-                            if( discount.length() > 0 && Integer.parseInt( discount ) > 0 ) {
+                            if( discount.length() > 0 ) {
                                 AppUtils.saveDiscount( ac, discount );
                                 AppUtils.setViewIcon( ac, mTotalView, R.drawable.discount );
                             } else {
@@ -948,7 +1139,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                     BigDecimal total = equivalentTender.subtract(
                             subTotal.add( new BigDecimal( cashBack ) )
                     );
-                    mBalanceView.setText( total.setScale( 2, RoundingMode.DOWN ).toString() );
+                    final String tvBalance = total.setScale( 2, RoundingMode.DOWN ).toString();
+                    mBalanceView.setText( tvBalance );
                     mBalanceView.setVisibility( View.VISIBLE );
                     mBalanceBar.setVisibility( View.GONE );
                     // If the popup is showing, then use the new value
@@ -957,7 +1149,8 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                         mPopupMessage.getContentView().findViewById( R.id.progressBarPopUp ).setVisibility( View.GONE );
                         TextView value = (TextView) mPopupMessage.getContentView().findViewById( R.id.cashTenderText );
                         value.setVisibility( View.VISIBLE );
-                        value.setText( equivalentTender.setScale( 2, RoundingMode.DOWN ).toString() );
+                        final String tvTender = equivalentTender.setScale( 2, RoundingMode.DOWN ).toString();
+                        value.setText( tvTender );
                     }
                 }
 
@@ -1076,7 +1269,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
         }
     }
 
-    @SuppressWarnings("unused") // it receives events from the Location Service
+    @SuppressWarnings( "unused" ) // it receives events from the Location Service
     @Subscribe( sticky = true, threadMode = ThreadMode.MAIN )
     public void onLocationEvent( Location location ) {
         // Remove Sticky Event
@@ -1087,6 +1280,7 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
 
     @Override
     protected void onActivityResult( int requestCode, int resultCode, Intent data ) {
+        super.onActivityResult( requestCode, resultCode, data );
         switch( requestCode ) {
             case REQUEST_CODE_LOCATION_SERVICES:
                 // The user didn't enable the GPS
@@ -1099,6 +1293,12 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
                     setResult( RESULT_FIRST_USER );
                     finish();
                 }
+                break;
+
+            case REQUEST_RESOLVE_ERROR:
+                mResolvingNearbyPermissionError = false;
+                if( resultCode == RESULT_OK )
+                    publish();
                 break;
         }
     }
@@ -1128,5 +1328,21 @@ public class LauncherActivity extends AppCompatActivity implements YodoRequest.R
             default:
                 super.onRequestPermissionsResult( requestCode, permissions, grantResults );
         }
+    }
+
+    @Override
+    public void onConnected( @Nullable Bundle bundle ) {
+        AppUtils.Logger( TAG, "GoogleApiClient connected" );
+        publish();
+    }
+
+    @Override
+    public void onConnectionSuspended( int i ) {
+        AppUtils.Logger( TAG, "GoogleApiClient connection suspended" );
+    }
+
+    @Override
+    public void onConnectionFailed( @NonNull ConnectionResult result ) {
+        AppUtils.Logger( TAG, "connection to GoogleApiClient failed" );
     }
 }

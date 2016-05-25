@@ -18,9 +18,9 @@ import java.net.URLConnection;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import co.yodo.launcher.data.ServerResponse;
+import co.yodo.launcher.network.model.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
-import co.yodo.launcher.net.XMLHandler;
+import co.yodo.launcher.network.handler.XMLHandler;
 
 /**
  * Created by luis on 15/12/14.

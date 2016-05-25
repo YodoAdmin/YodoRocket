@@ -1,4 +1,4 @@
-package co.yodo.launcher.main;
+package co.yodo.launcher.ui;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -14,9 +14,9 @@ import android.widget.EditText;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.component.YodoHandler;
-import co.yodo.launcher.data.ServerResponse;
+import co.yodo.launcher.network.model.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
-import co.yodo.launcher.net.YodoRequest;
+import co.yodo.launcher.network.YodoRequest;
 
 public class RegistrationActivity extends AppCompatActivity implements YodoRequest.RESTListener {
     /** DEBUG */

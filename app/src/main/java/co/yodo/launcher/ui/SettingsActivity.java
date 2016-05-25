@@ -1,4 +1,4 @@
-package co.yodo.launcher.main;
+package co.yodo.launcher.ui;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -21,8 +21,8 @@ import co.yodo.launcher.helper.AppUtils;
  */
 public class SettingsActivity extends AppCompatActivity {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void onCreate( Bundle savedInstanceState ) {
+        super.onCreate( savedInstanceState );
         AppUtils.setLanguage( SettingsActivity.this );
         setContentView( R.layout.activity_settings );
 
@@ -60,8 +60,8 @@ public class SettingsActivity extends AppCompatActivity {
         //private EditTextPreference ETP_SPREF_TIP;
 
         @Override
-        public void onCreate(final Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
+        public void onCreate( final Bundle savedInstanceState ) {
+            super.onCreate( savedInstanceState );
 
             PreferenceManager prefMgr = getPreferenceManager();
             prefMgr.setSharedPreferencesName( AppConfig.SHARED_PREF_FILE );
@@ -85,14 +85,11 @@ public class SettingsActivity extends AppCompatActivity {
             ETP_ADVERTISING = (CheckBoxPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_ADVERTISING_SERVICE );
 
-            if( !AppUtils.hasBluetooth() )
+            if( AppUtils.isLegacy( c ) )
                 ETP_ADVERTISING.setEnabled( false );
         }
 
-        private void updateStatus(String key) {
-            if( key.equals( AppConfig.SPREF_ADVERTISING_SERVICE ) )
-                AppUtils.setupAdvertising( c, AppUtils.isAdvertisingServiceRunning( c ), true );
-
+        private void updateStatus( String key ) {
             if( key.equals( AppConfig.SPREF_CURRENT_LANGUAGE ) ) {
                 getActivity().setResult( RESULT_FIRST_USER );
                 getActivity().finish();

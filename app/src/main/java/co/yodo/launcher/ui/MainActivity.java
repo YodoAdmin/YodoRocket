@@ -1,4 +1,4 @@
-package co.yodo.launcher.main;
+package co.yodo.launcher.ui;
 
 import android.Manifest;
 import android.app.Activity;
@@ -13,12 +13,12 @@ import android.widget.Toast;
 import java.util.Arrays;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.component.ToastMaster;
+import co.yodo.launcher.ui.component.ToastMaster;
 import co.yodo.launcher.component.YodoHandler;
-import co.yodo.launcher.data.ServerResponse;
+import co.yodo.launcher.network.model.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.helper.Intents;
-import co.yodo.launcher.net.YodoRequest;
+import co.yodo.launcher.network.YodoRequest;
 
 public class MainActivity extends Activity implements YodoRequest.RESTListener {
     /** DEBUG */

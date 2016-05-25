@@ -1,4 +1,4 @@
-package co.yodo.launcher.adapter;
+package co.yodo.launcher.ui.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;

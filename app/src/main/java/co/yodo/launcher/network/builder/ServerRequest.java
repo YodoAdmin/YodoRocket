@@ -1,4 +1,4 @@
-package co.yodo.launcher.net;
+package co.yodo.launcher.network.builder;
 
 import co.yodo.launcher.helper.AppUtils;
 

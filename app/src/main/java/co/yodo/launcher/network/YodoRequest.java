@@ -1,4 +1,4 @@
-package co.yodo.launcher.net;
+package co.yodo.launcher.network;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -7,8 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.os.ResultReceiver;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -45,9 +43,12 @@ import javax.xml.parsers.SAXParserFactory;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.component.Encrypter;
-import co.yodo.launcher.component.TransparentProgressDialog;
-import co.yodo.launcher.data.ServerResponse;
+import co.yodo.launcher.ui.component.TransparentProgressDialog;
+import co.yodo.launcher.network.builder.ServerRequest;
+import co.yodo.launcher.network.model.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
+import co.yodo.launcher.network.handler.JSONHandler;
+import co.yodo.launcher.network.handler.XMLHandler;
 import co.yodo.launcher.service.RESTService;
 
 /**

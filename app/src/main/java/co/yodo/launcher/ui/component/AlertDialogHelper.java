@@ -1,4 +1,4 @@
-package co.yodo.launcher.helper;
+package co.yodo.launcher.ui.component;
 
 import android.support.v7.app.AlertDialog;
 import android.content.Context;
@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 
 import co.yodo.launcher.R;
+import co.yodo.launcher.helper.AppUtils;
 
 /**
  * Created by luis on 16/12/14.
