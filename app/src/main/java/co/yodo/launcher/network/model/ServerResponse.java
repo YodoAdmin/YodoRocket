@@ -1,4 +1,4 @@
-package co.yodo.launcher.data;
+package co.yodo.launcher.network.model;
 
 import java.io.Serializable;
 import java.util.Arrays;

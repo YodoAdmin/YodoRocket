@@ -8,7 +8,8 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.AlertDialogHelper;
+import co.yodo.launcher.ui.component.AlertDialogHelper;
+import co.yodo.launcher.ui.component.ToastMaster;
 
 /**
  * Created by luis on 15/12/14.

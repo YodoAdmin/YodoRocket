@@ -4,10 +4,10 @@ import android.test.ActivityInstrumentationTestCase2;
 
 import java.util.concurrent.Semaphore;
 
-import co.yodo.launcher.data.ServerResponse;
+import co.yodo.launcher.network.model.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
-import co.yodo.launcher.main.RegistrationActivity;
-import co.yodo.launcher.net.YodoRequest;
+import co.yodo.launcher.ui.RegistrationActivity;
+import co.yodo.launcher.network.YodoRequest;
 
 /**
  * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>

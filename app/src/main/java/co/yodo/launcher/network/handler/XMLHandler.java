@@ -1,10 +1,10 @@
-package co.yodo.launcher.net;
+package co.yodo.launcher.network.handler;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import co.yodo.launcher.data.ServerResponse;
+import co.yodo.launcher.network.model.ServerResponse;
 
 /**
  * Created by luis on 15/12/14.

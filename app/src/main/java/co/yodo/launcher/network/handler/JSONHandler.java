@@ -1,4 +1,4 @@
-package co.yodo.launcher.net;
+package co.yodo.launcher.network.handler;
 
 import android.content.Context;
 
@@ -7,7 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.data.ServerResponse;
+import co.yodo.launcher.network.model.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
 
 /**

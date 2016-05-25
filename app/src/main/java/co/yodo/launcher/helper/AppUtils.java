@@ -46,6 +46,7 @@ import java.util.Locale;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.component.AES;
+import co.yodo.launcher.ui.component.AlertDialogHelper;
 
 /**
  * Created by luis on 15/12/14.
@@ -150,6 +151,17 @@ public class AppUtils {
     }
 
     /**
+     * Returns if the device is leagacy (doesn't support Google Service)
+     * @param c The Android application context
+     * @return True if legacy
+     *         False if not
+     */
+    public static Boolean isAdvertising( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getBoolean( AppConfig.SPREF_ADVERTISING_SERVICE, false );
+    }
+
+    /**
      * It saves the status of login.
      * @param c The Context of the Android system.
      * @param flag The status of the login.
@@ -169,7 +181,7 @@ public class AppUtils {
      * @return true  It is logged in.
      *         false It is not logged in.
      */
-    public static Boolean isLoggedIn(Context c) {
+    public static Boolean isLoggedIn( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getBoolean( AppConfig.SPREF_LOGIN_STATE, false );
     }
@@ -181,7 +193,7 @@ public class AppUtils {
      * @return true  If it was saved.
      *         false If it was not saved.
      */
-    public static Boolean saveLogoUrl(Context c, String s) {
+    public static Boolean saveLogoUrl( Context c, String s ) {
         SharedPreferences config = getSPrefConfig( c );
         SharedPreferences.Editor writer = config.edit();
         writer.putString( AppConfig.SPREF_CURRENT_LOGO, s );
@@ -193,7 +205,7 @@ public class AppUtils {
      * @param c The Context of the Android system.
      * @return int It returns the beacon name.
      */
-    public static String getLogoUrl(Context c) {
+    public static String getLogoUrl( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getString( AppConfig.SPREF_CURRENT_LOGO, "" );
     }
@@ -398,61 +410,9 @@ public class AppUtils {
         return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
     }
 
-    /**
-     * It gets the status of the advertising service.
-     * @param c The Context of the Android system.
-     * @return true  Advertising service is on.
-     *         false Advertising service is off.
-     */
-    public static Boolean isAdvertisingServiceRunning( Context c ) {
-        SharedPreferences config = getSPrefConfig( c );
-        return config.getBoolean( AppConfig.SPREF_ADVERTISING_SERVICE, false );
-    }
-
     public static int getCurrentBackground( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getInt( AppConfig.SPREF_CURRENT_BACKGROUND, -0x1 );
-    }
-
-    /**
-     * Gets the bluetooth adapter
-     * @return The bluetooth adapter
-     */
-    private static BluetoothAdapter getBluetoothAdapter() {
-        return BluetoothAdapter.getDefaultAdapter();
-    }
-
-    /**
-     * Check if the device possess bluetooth
-     * @return true if it possess bluetooth otherwise false
-     */
-    public static boolean hasBluetooth() {
-        return getBluetoothAdapter() != null;
-    }
-
-    /**
-     * Set-up bluetooth for advertising
-     * @param start To start or stop
-     * @param force To force the require for being discoverable
-     */
-    public static void setupAdvertising( Context ac, boolean start, boolean force ) {
-        if( !hasBluetooth() )
-            return;
-
-        BluetoothAdapter mBluetoothAdapter = getBluetoothAdapter();
-        if( start ) {
-            if( !mBluetoothAdapter.isEnabled() || force ) {
-                mBluetoothAdapter.enable();
-
-                Intent discoverableIntent = new Intent( BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE );
-                discoverableIntent.putExtra( BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0 );
-                ac.startActivity( discoverableIntent );
-            }
-
-            mBluetoothAdapter.setName( AppConfig.YODO_POS + AppUtils.getBeaconName( ac ) );
-        } else {
-            mBluetoothAdapter.setName( Build.MODEL );
-        }
     }
 
     /**
@@ -687,23 +647,6 @@ public class AppUtils {
         v.setCompoundDrawables( icon, null, null, null );
     }
 
-    private static void appendLog( String text ) {
-        File logFile = new File( Environment.getExternalStorageDirectory() + "/" + AppConfig.LOG_FILE );
-
-        try {
-            if( !logFile.exists() )
-                logFile.createNewFile();
-
-            BufferedWriter buf = new BufferedWriter( new FileWriter( logFile, true ) );
-            buf.append( text );
-            buf.newLine();
-            buf.close();
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * Logger for Android
      * @param TAG The String of the TAG for the log
@@ -715,16 +658,6 @@ public class AppUtils {
                 Log.e( TAG, "Null Text" );
             else
                 Log.e( TAG, text );
-        }
-
-        if( AppConfig.FDEBUG ) {
-            SimpleDateFormat sdf = new SimpleDateFormat( "yyyyMMdd_HHmmss", Locale.US );
-            String currentDate   = sdf.format( new Date() );
-
-            if( text == null )
-                appendLog( currentDate + "\t/D" + TAG + ": Null Text" );
-            else
-                appendLog( currentDate + "\t/D" + TAG + ": " + text );
         }
     }
 }
