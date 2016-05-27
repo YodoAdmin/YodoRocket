@@ -16,7 +16,9 @@ import android.location.Criteria;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
@@ -46,6 +48,7 @@ import java.util.Locale;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.component.AES;
+import co.yodo.launcher.component.YodoHandler;
 import co.yodo.launcher.ui.component.AlertDialogHelper;
 
 /**
@@ -645,6 +648,34 @@ public class AppUtils {
         Drawable icon  = AppUtils.getDrawableByName( c, icons[ position ] );
         icon.setBounds( 3, 0, v.getLineHeight(), (int)( v.getLineHeight() * 0.9 ) );
         v.setCompoundDrawables( icon, null, null, null );
+    }
+
+    /**
+     * Sends a message to the handler
+     * @param handlerMessages The Handler for the app
+     * @param title The title for the alert
+     * @param message The message for the alert
+     */
+    public static void sendMessage( int messageType, YodoHandler handlerMessages, String title, String message ) {
+        Message msg = new Message();
+        msg.what = messageType;
+
+        Bundle bundle = new Bundle();
+        bundle.putString( YodoHandler.CODE, title );
+        bundle.putString( YodoHandler.MESSAGE, message );
+        msg.setData( bundle );
+
+        handlerMessages.sendMessage( msg );
+    }
+
+    /**
+     * Sends a message to the handler
+     * @param handlerMessages The Handler for the app
+     * @param title The title for the alert
+     * @param message The message for the alert
+     */
+    public static void sendMessage( YodoHandler handlerMessages, String title, String message ) {
+        sendMessage( YodoHandler.SERVER_ERROR, handlerMessages, title, message );
     }
 
     /**

@@ -2,7 +2,7 @@ package co.yodo.launcher.ui;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Message;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -11,12 +11,15 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.component.YodoHandler;
-import co.yodo.launcher.network.model.ServerResponse;
 import co.yodo.launcher.helper.AppUtils;
-import co.yodo.launcher.network.YodoRequest;
+import co.yodo.launcher.ui.component.ProgressDialogHelper;
+import co.yodo.launcher.ui.component.ToastMaster;
+import co.yodo.restapi.network.YodoRequest;
+import co.yodo.restapi.network.model.ServerResponse;
 
 public class RegistrationActivity extends AppCompatActivity implements YodoRequest.RESTListener {
     /** DEBUG */
@@ -26,11 +29,23 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     /** The context object */
     private Context ac;
 
+    /** Account identifiers */
+    private String hardwareToken;
+
     /** GUI Controllers */
-    private EditText password;
+    private EditText etPassword;
 
     /** Messages Handler */
     private static YodoHandler handlerMessages;
+
+    /** Manager for the server requests */
+    private YodoRequest mRequestManager;
+
+    /** The shake animation for wrong inputs */
+    private Animation aShake;
+
+    /** Response codes for the queries */
+    private static final int REG_REQ = 0x00;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,40 +57,49 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        YodoRequest.getInstance().setListener( this );
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected( MenuItem item ) {
         int itemId = item.getItemId();
         switch( itemId ) {
             case android.R.id.home:
                 finish();
                 break;
         }
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected( item );
     }
 
     private void setupGUI() {
+        // Get the context and handler for the messages
         ac = RegistrationActivity.this;
-
         handlerMessages = new YodoHandler( RegistrationActivity.this );
-        // GUI global components
-        password = (EditText) findViewById( R.id.merchTokenText );
-        // Only used at creation
-        Toolbar mActionBarToolbar = (Toolbar) findViewById( R.id.registrationBar );
+        mRequestManager = YodoRequest.getInstance( ac );
+        mRequestManager.setListener( this );
 
-        setSupportActionBar( mActionBarToolbar );
-        if( getSupportActionBar() != null )
-            getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        // GUI global components
+        etPassword = (EditText) findViewById( R.id.merchTokenText );
+
+        // Load the animation
+        aShake = AnimationUtils.loadAnimation( this, R.anim.shake );
+
+        // Only used at creation
+        Toolbar toolbar = (Toolbar) findViewById( R.id.registrationBar );
+
+        // Setup the toolbar
+        setSupportActionBar( toolbar );
+        ActionBar actionBar = getSupportActionBar();
+        if( actionBar != null )
+            actionBar.setDisplayHomeAsUpEnabled( true );
     }
 
     private void updateData() {
         if( AppUtils.isLoggedIn( ac ) )
             finish();
+
+        // Gets the hardware token - account identifier
+        hardwareToken = AppUtils.getHardwareToken( ac );
+        if( hardwareToken == null ) {
+            ToastMaster.makeText( ac, R.string.message_no_hardware, Toast.LENGTH_LONG ).show();
+            finish();
+        }
     }
 
     /**
@@ -83,62 +107,44 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
      * @param v View of the button, not used
      */
     public void registrationClick( View v ) {
-        String token = password.getText().toString();
+        // Get the token
+        String token = etPassword.getText().toString();
+
         if( token.isEmpty() ) {
-            Animation shake = AnimationUtils.loadAnimation( this, R.anim.shake );
-            password.startAnimation( shake );
+            etPassword.startAnimation( aShake );
         } else {
-            String hardwareToken = AppUtils.getHardwareToken( ac );
             AppUtils.hideSoftKeyboard( this );
 
-            YodoRequest.getInstance().createProgressDialog(
-                    RegistrationActivity.this ,
-                    YodoRequest.ProgressDialogType.NORMAL
+            ProgressDialogHelper.getInstance().createProgressDialog(
+                    ac,
+                    ProgressDialogHelper.ProgressDialogType.NORMAL
             );
-
-            YodoRequest.getInstance().requestRegistration(
-                    RegistrationActivity.this,
+            mRequestManager.requestMerchReg(
+                    REG_REQ,
                     hardwareToken,
                     token
             );
         }
     }
 
-    public void showPasswordClick(View v) {
-        AppUtils.showPassword((CheckBox) v, password);
+    public void showPasswordClick( View v ) {
+        AppUtils.showPassword( (CheckBox) v, etPassword );
     }
 
     @Override
-    public void onResponse(YodoRequest.RequestType type, ServerResponse response) {
-        YodoRequest.getInstance().destroyProgressDialog();
+    public void onResponse( int responseCode, ServerResponse response ) {
+        ProgressDialogHelper.getInstance().destroyProgressDialog();
 
-        switch( type ) {
-            case ERROR_NO_INTERNET:
-                handlerMessages.sendEmptyMessage( YodoHandler.NO_INTERNET );
-                finish();
-                break;
-
-            case ERROR_GENERAL:
-                handlerMessages.sendEmptyMessage( YodoHandler.GENERAL_ERROR );
-                finish();
-                break;
-
-            case REG_MERCH_REQUEST:
+        switch( responseCode ) {
+            case REG_REQ:
                 String code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED_REGISTRATION ) ) {
                     setResult( RESULT_OK );
                     finish();
                 } else {
-                    Message msg = new Message();
-                    msg.what = YodoHandler.SERVER_ERROR;
-
-                    Bundle bundle = new Bundle();
-                    bundle.putString( YodoHandler.CODE, code );
-                    bundle.putString( YodoHandler.MESSAGE, response.getMessage() );
-                    msg.setData( bundle );
-
-                    handlerMessages.sendMessage( msg );
+                    String message = response.getMessage();
+                    AppUtils.sendMessage( handlerMessages, code, message );
                 }
                 break;
         }

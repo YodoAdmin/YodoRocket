@@ -170,7 +170,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     @Override
     public void onConnected( Bundle bundle ) {
         createLocationRequest();
-        //lastTimestamp = null;
+
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient,
                 mLocationRequest,
