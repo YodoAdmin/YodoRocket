@@ -7,6 +7,7 @@ import android.os.Message;
 
 import java.lang.ref.WeakReference;
 
+import co.yodo.launcher.R;
 import co.yodo.launcher.ui.component.AlertDialogHelper;
 import co.yodo.restapi.network.model.ServerResponse;
 
@@ -35,8 +36,8 @@ public class YodoHandler extends Handler {
         super.handleMessage( msg );
         final Activity main = wMain.get();
 
-        // message arrived after activity death
-        if( main == null )
+        // message arrived after activity death or while dying
+        if( main == null || main.isFinishing() )
             return;
 
         DialogInterface.OnClickListener clickListener = null;
@@ -54,6 +55,15 @@ public class YodoHandler extends Handler {
         String response = msg.getData().getString( MESSAGE );
 
         switch( code ) {
+            case ServerResponse.ERROR_DUP_AUTH:
+                AlertDialogHelper.showAlertDialog(
+                        main,
+                        code,
+                        main.getString( R.string.message_error_amount_exceed ),
+                        clickListener
+                );
+                break;
+
             default:
                 AlertDialogHelper.showAlertDialog( main, code, response, clickListener );
         }

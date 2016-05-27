@@ -76,8 +76,6 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
         handlerMessages = new YodoHandler( MainActivity.this );
         mRequestManager = YodoRequest.getInstance( ac );
         mRequestManager.setListener( this );
-
-
     }
 
     private void updateData() {

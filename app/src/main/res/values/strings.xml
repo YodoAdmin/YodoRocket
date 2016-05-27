@@ -5,7 +5,7 @@
     <string name="app_name" translatable="false">YodoRocket</string>
     <string name="action_settings">Settings</string>
     <string name="version.label">Version:</string>
-    <string name="version.value" translatable="false">0.3.4</string>
+    <string name="version.value" translatable="false">0.3.6</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTER</string>
     <string name="loading">Loading</string>
@@ -30,6 +30,7 @@
     <string name="message.error.timeout">Sorry, seems that the server is too busy. Try again later</string>
     <string name="message.error.server">Sorry, the server responded with an error. Try again later</string>
     <string name="message.error.transaction">Sorry, the type of transaction is not valid. Try again later</string>
+    <string name="message.error.amount_exceed">Transaction not allowed. Exceeding maximum amount.</string>
 
     <!-- General Messages -->
     <string name="input_pip">Merch Identity Phrase (MIP)</string>

@@ -2,7 +2,6 @@
 <resources>
 
     <!-- Main Strings -->
-    <string name="app_name">YodoRocket</string>
     <string name="action_settings">Настройки</string>
     <string name="version.label">Версия:</string>
     <string name="desc">По убыванию</string>
@@ -11,7 +10,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Отмена</string>
 
-    <!-- Error Messages -->
+    <!-- Error Application Messages -->
     <string name="error">В процессе выполнения произошла ошибка</string>
     <string name="no_balance">Извините, у вас нулевой остаток</string>
     <string name="message.no_internet">Извините, на данный момент у вас проблема с Интернет подключением</string>
@@ -20,6 +19,15 @@
     <string name="message.no_camera">Данная камера не существует</string>
     <string name="message.play_services">Google Play Services должен быть установлен</string>
     <string name="message.incorrect_pip">Неправильный пароль, попробуйте еще раз</string>
+
+    <!-- Error Server Messages -->
+    <string name="message.error.code">Не удалось найти решение ошибки с кодом:</string>
+    <string name="message.error.no_connectivity">Нет связи, не можем продолжить. Исправьте в Настройках и попробуйте еще раз</string>
+    <string name="message.error.unknown">В процессе выполнения возникла ошибка</string>
+    <string name="message.error.network">Похоже у вас отсутствует соединение с интернетом</string>
+    <string name="message.error.timeout">Сервер перегружен. Попробуйте еще раз позже</string>
+    <string name="message.error.server">Сервер ответил с ошибкой. Попробуйте еще раз позже</string>
+    <string name="message.error.transaction">Неверный тип транзакции. Попробуйте еще раз позже</string>
 
     <!-- General Messages -->
     <string name="input_pip">Кодовая фраза продавца (MIP)</string>
