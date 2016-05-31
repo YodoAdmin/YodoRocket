@@ -1155,7 +1155,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     if( AppConfig.URL_CURRENCY.equals( currencies[ AppUtils.getCurrency( ac ) ] ) ) {
                         equivalentTender = temp_tender.multiply( merchRate );
                     } else {
-                        BigDecimal currency_rate = merchRate.divide( fareRate, 2 );
+                        BigDecimal currency_rate = merchRate.divide( fareRate, 2, RoundingMode.DOWN );
                         equivalentTender = temp_tender.multiply( currency_rate );
                     }
                     // Get subtotal with discount
@@ -1167,6 +1167,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     BigDecimal total = equivalentTender.subtract(
                             subTotal.add( new BigDecimal( cashBack ) )
                     );
+
                     final String tvBalance = total.setScale( 2, RoundingMode.DOWN ).toString();
                     mBalanceView.setText( tvBalance );
                     mBalanceView.setVisibility( View.VISIBLE );
