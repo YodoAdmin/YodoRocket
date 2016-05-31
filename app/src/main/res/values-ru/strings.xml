@@ -121,5 +121,6 @@
 
     <!-- ACRA -->
     <string name="crash_toast_text">Упс! Неудача. Чтобы помочь исправить проблему, отчет был отправлен разработчикам!</string>
+    <string name="message.error.amount_exceed">Сделка не допускается. Превышение максимального количества.</string>
 
 </resources>
