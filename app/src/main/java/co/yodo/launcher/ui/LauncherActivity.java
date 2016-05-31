@@ -39,7 +39,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -60,22 +59,23 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.ui.adapter.CurrencyAdapter;
-import co.yodo.launcher.component.MemoryBMCache;
 import co.yodo.launcher.component.ClearEditText;
-import co.yodo.launcher.ui.component.ToastMaster;
 import co.yodo.launcher.component.YodoHandler;
 import co.yodo.launcher.data.Currency;
-import co.yodo.launcher.network.model.ServerResponse;
-import co.yodo.launcher.ui.component.AlertDialogHelper;
 import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.helper.Intents;
-import co.yodo.launcher.network.YodoRequest;
 import co.yodo.launcher.scanner.QRScanner;
 import co.yodo.launcher.scanner.QRScannerFactory;
 import co.yodo.launcher.service.LocationService;
-import co.yodo.launcher.service.RESTService;
+import co.yodo.launcher.ui.adapter.CurrencyAdapter;
+import co.yodo.launcher.ui.component.AlertDialogHelper;
+import co.yodo.launcher.ui.component.ProgressDialogHelper;
+import co.yodo.launcher.ui.component.ToastMaster;
+import co.yodo.restapi.network.YodoRequest;
+import co.yodo.restapi.network.builder.ServerRequest;
+import co.yodo.restapi.network.handler.XMLHandler;
+import co.yodo.restapi.network.model.ServerResponse;
 
 public class LauncherActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -113,9 +113,12 @@ public class LauncherActivity extends AppCompatActivity implements
     /** Messages Handler */
     private static YodoHandler handlerMessages;
 
+    /** Manager for the server requests */
+    private YodoRequest mRequestManager;
+
     /** Image Loader */
-    private ImageLoader imageLoader;
-    private MemoryBMCache imageCache;
+    /*private ImageLoader imageLoader;
+    private MemoryBMCache imageCache;*/
 
     /** Balance Temp */
     private HashMap<String, String> historyData = null;
@@ -163,6 +166,15 @@ public class LauncherActivity extends AppCompatActivity implements
     private Bundle externBundle;
     private boolean prompt_response = true;
 
+    /** Response codes for the queries */
+    private static final int QRY_LOG_REQ  = 0x00;
+    private static final int AUTH_REQ     = 0x01;
+    private static final int QRY_HBAL_REQ = 0x02; // History Balance
+    private static final int QRY_TBAL_REQ = 0x03; // Today Balance
+    private static final int EXCH_REQ     = 0x04;
+    private static final int ALT_REQ      = 0x05;
+    private static final int CURR_REQ     = 0x06;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
@@ -190,10 +202,10 @@ public class LauncherActivity extends AppCompatActivity implements
     @Override
     public void onResume() {
         super.onResume();
-        // Set the listener for the request (this activity)
-        YodoRequest.getInstance().setListener( this );
+        // Register listener for requests and  broadcast receivers
+        mRequestManager.setListener( this );
         // Request the fare value in the rate of the merchant currency
-        YodoRequest.getInstance().requestCurrencies( ac );
+        requestCurrencies();
         // Start the scanner if necessary
         if( currentScanner != null && isScanning ) {
             isScanning = false;
@@ -255,9 +267,11 @@ public class LauncherActivity extends AppCompatActivity implements
     private void setupGUI() {
         // get the context
         ac = LauncherActivity.this;
+        mRequestManager = YodoRequest.getInstance( ac );
+        mRequestManager.setListener( this );
         // Loads images from urls
-        imageCache  = new MemoryBMCache( ac );
-        imageLoader = new ImageLoader( YodoRequest.getRequestQueue( ac ), imageCache );
+        //imageCache  = new MemoryBMCache( ac );
+        //imageLoader = new ImageLoader( YodoRequest.getRequestQueue( ac ), imageCache );
         // creates the factory for the scanners
         mScannerFactory = new QRScannerFactory( this );
         // Globals
@@ -354,7 +368,7 @@ public class LauncherActivity extends AppCompatActivity implements
             public boolean onLongClick( View v ) {
                 setupPopup( v, null );
                 // Request the fare value in the rate of the merchant currency
-                YodoRequest.getInstance().requestCurrencies( ac );
+                requestCurrencies();
                 return false;
             }
         } );
@@ -429,9 +443,12 @@ public class LauncherActivity extends AppCompatActivity implements
         String logo_url = AppUtils.getLogoUrl( ac );
         AppUtils.Logger( TAG, logo_url );
         if( logo_url.equals( "" ) ) {
-            YodoRequest.getInstance().requestLogo( LauncherActivity.this, hardwareToken );
+            mRequestManager.requestQuery(
+                    QRY_LOG_REQ,
+                    hardwareToken,
+                    ServerRequest.QueryRecord.MERCHANT_LOGO );
         } else {
-            mAvatarImage.setImageUrl( logo_url, imageLoader );
+            mAvatarImage.setImageUrl( logo_url, mRequestManager.getImageLoader() );
         }
         // Mock location
         mLocation = new Location( "flp" );
@@ -672,12 +689,12 @@ public class LauncherActivity extends AppCompatActivity implements
         BigDecimal total = BigDecimal.ZERO;
 
         BigDecimal result = new BigDecimal( historyData.get( ServerResponse.DEBIT ) );
-        final String tvResult = result.setScale( 2, RoundingMode.DOWN ).toString();
+        final String tvResult = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
         debitsText.setText( tvResult );
         total = total.subtract( result );
 
         result = new BigDecimal( historyData.get( ServerResponse.CREDIT ) );
-        final String tvCredits = result.setScale( 2, RoundingMode.DOWN ).toString();
+        final String tvCredits = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
         creditsText.setText( tvCredits );
         total = total.add( result );
 
@@ -686,12 +703,12 @@ public class LauncherActivity extends AppCompatActivity implements
         total = BigDecimal.ZERO;
 
         result = new BigDecimal( todayData.get( ServerResponse.DEBIT ) );
-        final String tvTodayDebit = result.setScale( 2, RoundingMode.DOWN ).toString();
+        final String tvTodayDebit = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
         todayDebitsText.setText( tvTodayDebit );
         total = total.subtract( result );
 
         result = new BigDecimal( todayData.get( ServerResponse.CREDIT ) );
-        final String tvTodayCredit = result.setScale( 2, RoundingMode.DOWN ).toString();
+        final String tvTodayCredit = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
         todayCreditsText.setText( tvTodayCredit );
         total = total.add( result );
 
@@ -700,6 +717,17 @@ public class LauncherActivity extends AppCompatActivity implements
 
         AlertDialogHelper.showAlertDialog( ac, getString( R.string.yodo_title ), layout );
         todayData = historyData = null;
+    }
+
+    /**
+     * Gets the used currencies (merchant and tender) and requests their rates from the
+     * server or cache
+     */
+    private void requestCurrencies() {
+        String[] currencies = ac.getResources().getStringArray( R.array.currency_array );
+        String merchantCurr = AppUtils.getMerchantCurrency( ac );
+        String tenderCurr   = currencies[ AppUtils.getCurrency( ac ) ];
+        mRequestManager.requestCurrencies( CURR_REQ, merchantCurr, tenderCurr );
     }
 
     /**
@@ -727,8 +755,8 @@ public class LauncherActivity extends AppCompatActivity implements
                 Drawable icon = AppUtils.getDrawableByName( ac, icons[ item ] );
                 icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int) ( mCashTenderView.getLineHeight() * 0.9 ) );
                 mCashTenderView.setCompoundDrawables( icon, null, null, null );
-                // Request the fare value in the rate of the merchant currency
-                YodoRequest.getInstance().requestCurrencies( ac );
+                // Request the tender value in the rate of the merchant currency
+                requestCurrencies();
 
                 dialog.dismiss();
             }
@@ -755,12 +783,15 @@ public class LauncherActivity extends AppCompatActivity implements
                 String pip = inputBox.getText().toString();
                 AppUtils.hideSoftKeyboard( LauncherActivity.this );
 
-                YodoRequest.getInstance().createProgressDialog(
-                        LauncherActivity.this,
-                        YodoRequest.ProgressDialogType.NORMAL
+                ProgressDialogHelper.getInstance().createProgressDialog(
+                        ac,
+                        ProgressDialogHelper.ProgressDialogType.NORMAL
                 );
-
-                YodoRequest.getInstance().requestPIPAuthentication( ac, hardwareToken, pip );
+                mRequestManager.requestMerchAuth(
+                        AUTH_REQ,
+                        hardwareToken,
+                        pip
+                );
             }
         };
 
@@ -806,19 +837,23 @@ public class LauncherActivity extends AppCompatActivity implements
                 else
                     AppUtils.savePassword( ac, null );
 
-                YodoRequest.getInstance().createProgressDialog(
+                ProgressDialogHelper.getInstance().createProgressDialog(
                         LauncherActivity.this,
-                        YodoRequest.ProgressDialogType.NORMAL
+                        ProgressDialogHelper.ProgressDialogType.NORMAL
                 );
 
-                YodoRequest.getInstance().requestHistory(
-                        LauncherActivity.this,
-                        hardwareToken, pip
+                mRequestManager.requestQuery(
+                        QRY_HBAL_REQ,
+                        hardwareToken,
+                        pip,
+                        ServerRequest.QueryRecord.HISTORY_BALANCE
                 );
 
-                YodoRequest.getInstance().requestDailyHistory(
-                        LauncherActivity.this,
-                        hardwareToken, pip
+                mRequestManager.requestQuery(
+                        QRY_TBAL_REQ,
+                        hardwareToken,
+                        pip,
+                        ServerRequest.QueryRecord.TODAY_BALANCE
                 );
             }
         };
@@ -846,7 +881,7 @@ public class LauncherActivity extends AppCompatActivity implements
                                AppUtils.getMerchantCurrency( ac ) + "\n" +
                                getString( R.string.version_label ) + " " +
                                getString( R.string.version_value ) + "/" +
-                               RESTService.getSwitch();
+                               YodoRequest.getSwitch();
 
         AlertDialogHelper.showAlertDialog(
                 ac,
@@ -861,7 +896,7 @@ public class LauncherActivity extends AppCompatActivity implements
      * @param v View, not used
      */
     public void logoutClick(View v) {
-        imageCache.clear();
+        //imageCache.clear();
         AppUtils.saveLoginStatus( ac, false );
         AppUtils.saveLogoUrl( ac, "" );
         finish();
@@ -912,7 +947,7 @@ public class LauncherActivity extends AppCompatActivity implements
             selectedView.setText( tvNewValue );
         }
         // Request the fare value in the rate of the merchant currency
-        YodoRequest.getInstance().requestCurrencies( ac );
+        requestCurrencies();
     }
 
     /** Handle numeric add clicked
@@ -931,7 +966,7 @@ public class LauncherActivity extends AppCompatActivity implements
             selectedView.setText( tvNewValue );
         }
         // Request the fare value in the rate of the merchant currency
-        YodoRequest.getInstance().requestCurrencies( ac );
+        requestCurrencies();
     }
 
     /**
@@ -977,20 +1012,13 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onResponse(YodoRequest.RequestType type, ServerResponse response) {
-        YodoRequest.getInstance().destroyProgressDialog();
+    public void onResponse( int responseCode, ServerResponse response ) {
+        ProgressDialogHelper.getInstance().destroyProgressDialog();
         String code, message;
 
-        switch( type ) {
-            case ERROR_NO_INTERNET:
-                handlerMessages.sendEmptyMessage( YodoHandler.NO_INTERNET );
-                break;
+        switch( responseCode ) {
 
-            case ERROR_GENERAL:
-                handlerMessages.sendEmptyMessage( YodoHandler.GENERAL_ERROR );
-                break;
-
-            case AUTH_PIP_REQUEST:
+            case AUTH_REQ:
                 code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
@@ -1033,7 +1061,7 @@ public class LauncherActivity extends AppCompatActivity implements
                                 AppUtils.saveDiscount( ac, AppConfig.DEFAULT_DISCOUNT );
                                 AppUtils.setViewIcon( ac, mTotalView, null );
                             }
-                            YodoRequest.getInstance().requestCurrencies( ac );
+                            requestCurrencies();
                         }
                     };
 
@@ -1059,7 +1087,7 @@ public class LauncherActivity extends AppCompatActivity implements
                 }
                 break;
 
-            case QUERY_BAL_REQUEST:
+            case QRY_HBAL_REQ:
                 code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
@@ -1083,7 +1111,7 @@ public class LauncherActivity extends AppCompatActivity implements
                 }
                 break;
 
-            case QUERY_DAY_REQUEST:
+            case QRY_TBAL_REQ:
                 code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
@@ -1093,7 +1121,7 @@ public class LauncherActivity extends AppCompatActivity implements
                 }
                 break;
 
-            case QUERY_LOGO_REQUEST:
+            case QRY_LOG_REQ:
                 code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
@@ -1102,14 +1130,14 @@ public class LauncherActivity extends AppCompatActivity implements
                     if( logoName != null ) {
                         String logo_url = AppConfig.LOGO_PATH + logoName;
                         AppUtils.saveLogoUrl( ac, logo_url );
-                        mAvatarImage.setImageUrl( logo_url, imageLoader );
+                        mAvatarImage.setImageUrl( logo_url, mRequestManager.getImageLoader() );
                     }
                 }
                 break;
 
-            case CURRENCIES_REQUEST:
+            case CURR_REQ:
                 final String sMerchRate = response.getParam( ServerResponse.MERCH_RATE );
-                final String sFareRate  = response.getParam( ServerResponse.FARE_RATE );
+                final String sFareRate  = response.getParam( ServerResponse.TENDER_RATE );
 
                 if( sMerchRate != null && sFareRate != null ) {
                     // List of Currencies
@@ -1127,7 +1155,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     if( AppConfig.URL_CURRENCY.equals( currencies[ AppUtils.getCurrency( ac ) ] ) ) {
                         equivalentTender = temp_tender.multiply( merchRate );
                     } else {
-                        BigDecimal currency_rate = merchRate.divide( fareRate, 2 );
+                        BigDecimal currency_rate = merchRate.divide( fareRate, 2, RoundingMode.DOWN );
                         equivalentTender = temp_tender.multiply( currency_rate );
                     }
                     // Get subtotal with discount
@@ -1139,6 +1167,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     BigDecimal total = equivalentTender.subtract(
                             subTotal.add( new BigDecimal( cashBack ) )
                     );
+
                     final String tvBalance = total.setScale( 2, RoundingMode.DOWN ).toString();
                     mBalanceView.setText( tvBalance );
                     mBalanceView.setVisibility( View.VISIBLE );
@@ -1156,8 +1185,8 @@ public class LauncherActivity extends AppCompatActivity implements
 
                 break;
 
-            case EXCH_MERCH_REQUEST:
-            case ALT_MERCH_REQUEST:
+            case EXCH_REQ:
+            case ALT_REQ:
                 code = response.getCode();
                 final String ex_code       = response.getCode();
                 final String ex_authNumber = response.getAuthNumber();
@@ -1194,17 +1223,8 @@ public class LauncherActivity extends AppCompatActivity implements
                     else finish();
                 } else {
                     AppUtils.errorSound( ac );
-
-                    Message msg = new Message();
-                    msg.what = YodoHandler.SERVER_ERROR;
-                    message  = response.getMessage() + "\n" + response.getParam( ServerResponse.PARAMS );
-
-                    Bundle bundle = new Bundle();
-                    bundle.putString( YodoHandler.CODE, code );
-                    bundle.putString( YodoHandler.MESSAGE, message );
-                    msg.setData( bundle );
-
-                    handlerMessages.sendMessage( msg );
+                    message  = response.getMessage() + "\n" + response.getParam( XMLHandler.PARAMS );
+                    AppUtils.sendMessage( handlerMessages, code, message );
                 }
                 break;
         }
@@ -1226,13 +1246,13 @@ public class LauncherActivity extends AppCompatActivity implements
 
         switch( data.length() ) {
             case AppConfig.SKS_SIZE:
-                YodoRequest.getInstance().createProgressDialog(
+                ProgressDialogHelper.getInstance().createProgressDialog(
                         LauncherActivity.this,
-                        YodoRequest.ProgressDialogType.TRANSPARENT
+                        ProgressDialogHelper.ProgressDialogType.TRANSPARENT
                 );
 
-                YodoRequest.getInstance().requestExchange(
-                        LauncherActivity.this,
+                mRequestManager.requestExchange(
+                        EXCH_REQ,
                         hardwareToken,
                         data,
                         totalPurchase,
@@ -1245,15 +1265,19 @@ public class LauncherActivity extends AppCompatActivity implements
                 break;
 
             case AppConfig.ALT_SIZE:
-                YodoRequest.getInstance().createProgressDialog(
+                String clientData  = data.substring( 0, data.length() - 1 );
+                String accountType = data.substring( data.length() - 1 );
+
+                ProgressDialogHelper.getInstance().createProgressDialog(
                         LauncherActivity.this,
-                        YodoRequest.ProgressDialogType.TRANSPARENT
+                        ProgressDialogHelper.ProgressDialogType.TRANSPARENT
                 );
 
-                YodoRequest.getInstance().requestAlternate(
-                        LauncherActivity.this,
+                mRequestManager.requestAlternate(
+                        ALT_REQ,
+                        accountType,
                         hardwareToken,
-                        data,
+                        clientData,
                         totalPurchase,
                         cashTender,
                         cashBack,

@@ -1,6 +1,6 @@
 package co.yodo.launcher.helper;
 
-import co.yodo.launcher.service.RESTService;
+import co.yodo.restapi.network.YodoRequest;
 
 /**
  * Created by luis on 15/12/14.
@@ -8,7 +8,7 @@ import co.yodo.launcher.service.RESTService;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoRocketSharedPref";
@@ -149,7 +149,7 @@ public class AppConfig {
     public static final String URL_CURRENCY  = "EUR";
 
     /* Logo URL */
-    public static final String LOGO_PATH = RESTService.getRoot() + "/yodo-merch/uploads/img/logo/";
+    public static final String LOGO_PATH = YodoRequest.getRoot() + "/yodo-merch/uploads/img/logo/";
 
     /* SKS Sizes */
     public static final int SKS_SIZE = 256;
