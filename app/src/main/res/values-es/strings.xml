@@ -2,7 +2,6 @@
 <resources>
 
     <!-- Main Strings -->
-    <string name="app_name">YodoRocket</string>
     <string name="action_settings">Configuración</string>
     <string name="version.label">Versión:</string>
     <string name="desc">Desc</string>
@@ -11,7 +10,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancelar</string>
 
-    <!-- Error Messages -->
+    <!-- Error Application Messages -->
     <string name="error">Esto es embarazoso! Ocurrio un error en el proceso</string>
     <string name="no_balance">Lo sentimos, parece que no dispone de un balance</string>
     <string name="message.no_internet">Lo sentimos, parece que no dispone de una conexion a Internet</string>
@@ -20,6 +19,16 @@
     <string name="message.no_camera">Esta cámara no existe</string>
     <string name="message.play_services">Google Play Services necesita estar instalado</string>
     <string name="message.incorrect_pip">Contraseña incorrecta, intente de nuevo</string>
+
+    <!-- Error Server Messages -->
+    <string name="message.error.code">Fallo al resolver error con código:</string>
+    <string name="message.error.no_connectivity">No hay conectividad, no se puede proceder. Arreglelo en \'Configuración\' e intente de nuevo.</string>
+    <string name="message.error.unknown">Esto es embarazoso! Ocurrió un error en el proceso</string>
+    <string name="message.error.network">Lo sentimos, parece que no dispone de una conexion a Internet en este momentow</string>
+    <string name="message.error.timeout">Lo sentimos, parece que el servidor está muy ocupado. Intente de nuevo luego</string>
+    <string name="message.error.server">Lo sentimos, el servidor respondió con un error. Intente de nuevo luegor</string>
+    <string name="message.error.transaction">Lo sentimos, el tipo de transacción no es válido. Intente de nuevo luegor</string>
+    <string name="message.error.amount_exceed">Transacción no permitida. Excedido el límite máximo.</string>
 
     <!-- General Messages -->
     <string name="input_pip">Merch Identity Phrase (MIP)</string>

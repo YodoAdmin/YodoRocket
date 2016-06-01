@@ -2,10 +2,10 @@
 <resources>
 
     <!-- Main Strings -->
-    <string name="app_name">YodoRocket</string>
+    <string name="app_name" translatable="false">YodoRocket</string>
     <string name="action_settings">Settings</string>
     <string name="version.label">Version:</string>
-    <string name="version.value" translatable="false">0.3.1</string>
+    <string name="version.value" translatable="false">0.3.7</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTER</string>
     <string name="loading">Loading</string>
@@ -21,6 +21,16 @@
     <string name="message.no_camera">This camera doesn\'t exist</string>
     <string name="message.play_services">Google Play Services must be installed</string>
     <string name="message.incorrect_pip">Incorrect password, try again</string>
+
+    <!-- Error Server Messages -->
+    <string name="message.error.code">Failed to resolve error with code:</string>
+    <string name="message.error.no_connectivity">No connectivity, cannot proceed. Fix in \'Settings\' and try again.</string>
+    <string name="message.error.unknown">This is embarrassing! An error occurred in the process</string>
+    <string name="message.error.network">Sorry, seems that you don\'t have an Internet connection right now</string>
+    <string name="message.error.timeout">Sorry, seems that the server is too busy. Try again later</string>
+    <string name="message.error.server">Sorry, the server responded with an error. Try again later</string>
+    <string name="message.error.transaction">Sorry, the type of transaction is not valid. Try again later</string>
+    <string name="message.error.amount_exceed">Transaction not allowed. Exceeding maximum amount.</string>
 
     <!-- General Messages -->
     <string name="input_pip">Merch Identity Phrase (MIP)</string>

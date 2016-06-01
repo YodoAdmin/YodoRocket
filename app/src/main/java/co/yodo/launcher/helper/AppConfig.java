@@ -1,6 +1,6 @@
 package co.yodo.launcher.helper;
 
-import co.yodo.launcher.service.RESTService;
+import co.yodo.restapi.network.YodoRequest;
 
 /**
  * Created by luis on 15/12/14.
@@ -8,13 +8,7 @@ import co.yodo.launcher.service.RESTService;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = true;
-
-    /** FILE flag: to print the logs in a file */
-    public static final boolean FDEBUG = false;
-
-    /** Name of the log file */
-    public static final String LOG_FILE = "output.log";
+    public static final boolean DEBUG = false;
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoRocketSharedPref";
@@ -65,11 +59,6 @@ public class AppConfig {
 	 * type -- Integer
 	 */
     public static final String SPREF_CURRENT_LANGUAGE = "SPCurrentLanguage";
-
-    /* The timestamp of the latest currency update.
-	 * type -- Integer
-	 */
-    public static final String SPREF_TIMESTAMP_CURRENCY = "SPTimestampCurrency";
 
     /* The current beacon.
     * type -- String
@@ -159,11 +148,8 @@ public class AppConfig {
     /* Currency of the URL where we are getting the rates */
     public static final String URL_CURRENCY  = "EUR";
 
-    /* Bluetooth Yodo POS name */
-    public static final String YODO_POS = "Yodo-Merch-";
-
     /* Logo URL */
-    public static final String LOGO_PATH = RESTService.getRoot() + "/yodo-merch/uploads/img/logo/";
+    public static final String LOGO_PATH = YodoRequest.getRoot() + "/yodo-merch/uploads/img/logo/";
 
     /* SKS Sizes */
     public static final int SKS_SIZE = 256;

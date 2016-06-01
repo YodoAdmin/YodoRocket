@@ -1,14 +1,15 @@
 package co.yodo.launcher.component;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Message;
-import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.AlertDialogHelper;
+import co.yodo.launcher.ui.component.AlertDialogHelper;
+import co.yodo.restapi.network.model.ServerResponse;
 
 /**
  * Created by luis on 15/12/14.
@@ -16,10 +17,8 @@ import co.yodo.launcher.helper.AlertDialogHelper;
  */
 public class YodoHandler extends Handler {
     /** Id for Messages */
-    public static final int NO_INTERNET   = 0;
-    public static final int GENERAL_ERROR = 1;
-    public static final int SERVER_ERROR  = 2;
-    public static final int SUCCESS       = 3;
+    public static final int INIT_ERROR   = 1;
+    public static final int SERVER_ERROR = 2;
 
     /** Id for the content */
     public static final String CODE    = "code";
@@ -29,28 +28,44 @@ public class YodoHandler extends Handler {
 
     public YodoHandler( Activity main ) {
         super();
-        this.wMain = new WeakReference<>( main );
+        this.wMain = new WeakReference<>(main);
     }
 
     @Override
     public void handleMessage( Message msg ) {
         super.handleMessage( msg );
-        Activity main = wMain.get();
+        final Activity main = wMain.get();
 
-        // message arrived after activity death
-        if( main == null )
+        // message arrived after activity death or while dying
+        if( main == null || main.isFinishing() )
             return;
 
-        if( msg.what == GENERAL_ERROR ) {
-            ToastMaster.makeText( main, R.string.error, Toast.LENGTH_LONG ).show();
+        DialogInterface.OnClickListener clickListener = null;
+
+        if( msg.what == INIT_ERROR ) {
+            clickListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick( DialogInterface dialog, int which ) {
+                    main.finish();
+                }
+            };
         }
-        else if( msg.what == NO_INTERNET ) {
-            ToastMaster.makeText( main, R.string.message_no_internet, Toast.LENGTH_LONG ).show();
-        }
-        else if( msg.what == SERVER_ERROR ) {
-            String code     = msg.getData().getString( CODE );
-            String response = msg.getData().getString( MESSAGE );
-            AlertDialogHelper.showAlertDialog( main, code, response, null );
+
+        String code     = msg.getData().getString( CODE, ServerResponse.ERROR_FAILED );
+        String response = msg.getData().getString( MESSAGE );
+
+        switch( code ) {
+            case ServerResponse.ERROR_DUP_AUTH:
+                AlertDialogHelper.showAlertDialog(
+                        main,
+                        code,
+                        main.getString( R.string.message_error_amount_exceed ),
+                        clickListener
+                );
+                break;
+
+            default:
+                AlertDialogHelper.showAlertDialog( main, code, response, clickListener );
         }
     }
 }
