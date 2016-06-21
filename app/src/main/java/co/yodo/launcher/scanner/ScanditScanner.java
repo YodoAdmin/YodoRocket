@@ -14,7 +14,7 @@ import com.scandit.barcodepicker.ScanditLicense;
 import com.scandit.recognition.Barcode;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.AppUtils;
+import co.yodo.launcher.helper.PrefsUtils;
 
 /**
  * Created by luis on 10/01/16.
@@ -47,7 +47,7 @@ public class ScanditScanner extends QRScanner implements OnScanListener {
 
     public ScanditScanner( Activity activity ) {
         super( activity );
-        AppUtils.Logger( TAG, ">> Created" );
+        PrefsUtils.Logger( TAG, ">> Created" );
         ScanditLicense.setAppKey( sScanditSdkAppKey );
         // Setup GUI
         opPanel = (TableRow) act.findViewById( R.id.operationsPanel );

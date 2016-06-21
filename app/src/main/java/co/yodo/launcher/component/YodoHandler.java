@@ -8,7 +8,7 @@ import android.os.Message;
 import java.lang.ref.WeakReference;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.ui.component.AlertDialogHelper;
+import co.yodo.launcher.ui.notification.AlertDialogHelper;
 import co.yodo.restapi.network.model.ServerResponse;
 
 /**

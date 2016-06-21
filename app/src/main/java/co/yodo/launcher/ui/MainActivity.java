@@ -12,9 +12,11 @@ import android.widget.Toast;
 import java.util.Arrays;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.ui.component.ToastMaster;
+import co.yodo.launcher.helper.GUIUtils;
+import co.yodo.launcher.helper.PrefsUtils;
+import co.yodo.launcher.helper.SystemUtils;
+import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.launcher.component.YodoHandler;
-import co.yodo.launcher.helper.AppUtils;
 import co.yodo.launcher.helper.Intents;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.builder.ServerRequest;
@@ -57,7 +59,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        AppUtils.setLanguage( this );
+        GUIUtils.setLanguage( this );
         setContentView( R.layout.activity_splash );
 
         setupGUI();
@@ -91,18 +93,18 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
         /*****************************/
 
         // Get the main booleans
-        boolean hasServices = AppUtils.isGooglePlayServicesAvailable(
+        boolean hasServices = SystemUtils.isGooglePlayServicesAvailable(
                 MainActivity.this,
                 REQUEST_CODE_RECOVER_PLAY_SERVICES
         );
-        boolean isLegacy = AppUtils.isLegacy( ac );
+        boolean isLegacy = PrefsUtils.isLegacy( ac );
 
         // Verify Google Play Services
         if( hasServices || isLegacy ) {
-            hardwareToken = AppUtils.getHardwareToken( ac );
+            hardwareToken = PrefsUtils.getHardwareToken( ac );
             if( hardwareToken == null ) {
                 setupPermissions();
-            } else if( !AppUtils.isLoggedIn( ac ) || AppUtils.getMerchantCurrency( ac ) == null ) {
+            } else if( !PrefsUtils.isLoggedIn( ac ) || PrefsUtils.getMerchantCurrency( ac ) == null ) {
                 mRequestManager.requestMerchAuth( AUTH_REQ, hardwareToken );
             } else {
                 intent = new Intent( ac, LauncherActivity.class );
@@ -116,7 +118,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
      * Request the necessary permissions for this activity
      */
     private void setupPermissions() {
-        boolean phoneStatePermission = AppUtils.requestPermission(
+        boolean phoneStatePermission = SystemUtils.requestPermission(
                 MainActivity.this,
                 R.string.message_permission_read_phone_state,
                 Manifest.permission.READ_PHONE_STATE,
@@ -133,12 +135,12 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
      * if the bluetooth is off
      */
     private void authenticateUser() {
-        hardwareToken = AppUtils.generateHardwareToken( ac );
+        hardwareToken = PrefsUtils.generateHardwareToken( ac );
         if( hardwareToken == null ) {
             ToastMaster.makeText( ac, R.string.message_no_hardware, Toast.LENGTH_LONG ).show();
             finish();
-        } else if( AppUtils.getMerchantCurrency( ac ) == null || !AppUtils.isLoggedIn( ac ) ) {
-            AppUtils.saveHardwareToken( ac, hardwareToken );
+        } else if( PrefsUtils.getMerchantCurrency( ac ) == null || !PrefsUtils.isLoggedIn( ac ) ) {
+            PrefsUtils.saveHardwareToken( ac, hardwareToken );
             mRequestManager.requestMerchAuth( AUTH_REQ, hardwareToken );
         } else {
             Intent intent = new Intent( MainActivity.this, LauncherActivity.class );
@@ -166,14 +168,14 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
                         break;
 
                     case ServerResponse.ERROR_FAILED:
-                        AppUtils.saveLoginStatus( ac, false );
+                        PrefsUtils.saveLoginStatus( ac, false );
                         Intent intent = new Intent( MainActivity.this, RegistrationActivity.class );
                         startActivityForResult( intent, ACTIVITY_REGISTRATION_REQUEST );
                         break;
 
                     default:
                         message = response.getMessage();
-                        AppUtils.sendMessage( YodoHandler.INIT_ERROR, handlerMessages, code, message );
+                        PrefsUtils.sendMessage( YodoHandler.INIT_ERROR, handlerMessages, code, message );
                         break;
                 }
 
@@ -185,19 +187,19 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
                     // Merchant Currency
                     String currency = response.getParam( ServerResponse.CURRENCY );
-                    AppUtils.saveMerchantCurrency( ac, currency );
+                    PrefsUtils.saveMerchantCurrency( ac, currency );
                     // POS Currency
                     final String[] currencies = getResources().getStringArray( R.array.currency_array );
                     int position = Arrays.asList( currencies ).indexOf( currency );
-                    AppUtils.saveCurrency( ac, position );
+                    PrefsUtils.saveCurrency( ac, position );
                     // Start the app
-                    AppUtils.saveLoginStatus( ac, true );
+                    PrefsUtils.saveLoginStatus( ac, true );
                     Intent intent = new Intent( MainActivity.this, LauncherActivity.class );
                     if( bundle != null ) intent.putExtras( bundle );
                     startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
                 } else {
                     message = response.getMessage();
-                    AppUtils.sendMessage( YodoHandler.INIT_ERROR, handlerMessages, code, message );
+                    PrefsUtils.sendMessage( YodoHandler.INIT_ERROR, handlerMessages, code, message );
                 }
 
                 break;
@@ -215,7 +217,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
             switch( requestCode ) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
                     // Google play services installed, start the app again
-                    AppUtils.setLegacy( ac, false );
+                    PrefsUtils.setLegacy( ac, false );
                     Intent iSplash = new Intent( this, MainActivity.class );
                     iSplash.putExtras( bundle );
                     startActivity( iSplash );
@@ -242,7 +244,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
             switch( requestCode ) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
                     // Denied to install, restart in legacy mode
-                    AppUtils.setLegacy( ac, true );
+                    PrefsUtils.setLegacy( ac, true );
                     Intent iSplash = new Intent( this, MainActivity.class );
                     iSplash.putExtras( bundle );
                     startActivity( iSplash );
@@ -251,7 +253,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
             }
         }
         else if( resultCode == RESULT_FIRST_USER ) {
-            AppUtils.setLanguage( this );
+            GUIUtils.setLanguage( this );
             Intent intent = new Intent( MainActivity.this, LauncherActivity.class );
             if( bundle != null ) intent.putExtras( bundle );
             startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );

@@ -1,4 +1,4 @@
-package co.yodo.launcher.ui.component;
+package co.yodo.launcher.ui.notification;
 
 import android.support.v7.app.AlertDialog;
 import android.content.Context;
@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.AppUtils;
+import co.yodo.launcher.helper.PrefsUtils;
 
 /**
  * Created by luis on 16/12/14.
@@ -206,7 +206,7 @@ public class AlertDialogHelper {
         if( remember ) {
             ((LinearLayout) layout).addView( rememberPassword );
 
-            String password = AppUtils.getPassword( c );
+            String password = PrefsUtils.getPassword( c );
 
             if( password != null ) {
                 input.setText( password );

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -41,14 +40,6 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.nearby.Nearby;
-import com.google.android.gms.nearby.messages.NearbyMessagesStatusCodes;
-import com.google.android.gms.nearby.messages.PublishCallback;
-import com.google.android.gms.nearby.messages.PublishOptions;
-import com.google.android.gms.nearby.messages.Strategy;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -56,30 +47,33 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.component.ClearEditText;
 import co.yodo.launcher.component.YodoHandler;
 import co.yodo.launcher.data.Currency;
 import co.yodo.launcher.helper.AppConfig;
-import co.yodo.launcher.helper.AppUtils;
+import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.Intents;
+import co.yodo.launcher.helper.PrefsUtils;
+import co.yodo.launcher.helper.SystemUtils;
+import co.yodo.launcher.manager.PromotionManager;
 import co.yodo.launcher.scanner.QRScanner;
 import co.yodo.launcher.scanner.QRScannerFactory;
 import co.yodo.launcher.service.LocationService;
 import co.yodo.launcher.ui.adapter.CurrencyAdapter;
-import co.yodo.launcher.ui.component.AlertDialogHelper;
-import co.yodo.launcher.ui.component.ProgressDialogHelper;
-import co.yodo.launcher.ui.component.ToastMaster;
+import co.yodo.launcher.ui.component.ClearEditText;
+import co.yodo.launcher.ui.notification.AlertDialogHelper;
+import co.yodo.launcher.ui.notification.ProgressDialogHelper;
+import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.builder.ServerRequest;
 import co.yodo.restapi.network.handler.XMLHandler;
 import co.yodo.restapi.network.model.ServerResponse;
 
 public class LauncherActivity extends AppCompatActivity implements
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
+        PromotionManager.IPromotionListener,
         YodoRequest.RESTListener,
         QRScanner.QRScannerListener {
     /** DEBUG */
@@ -116,9 +110,8 @@ public class LauncherActivity extends AppCompatActivity implements
     /** Manager for the server requests */
     private YodoRequest mRequestManager;
 
-    /** Image Loader */
-    /*private ImageLoader imageLoader;
-    private MemoryBMCache imageCache;*/
+    /** Handles the start/stop subscribe/unsubscribe functions of Nearby */
+    private PromotionManager mPromotionManager;
 
     /** Balance Temp */
     private HashMap<String, String> historyData = null;
@@ -132,18 +125,6 @@ public class LauncherActivity extends AppCompatActivity implements
     /** Location */
     private Location mLocation;
 
-    /** Provides an entry point for Google Play services. */
-    private GoogleApiClient mGoogleApiClient;
-
-    /** The {@link Message} object used to broadcast information about the device to nearby devices. */
-    private com.google.android.gms.nearby.messages.Message mActiveMessage;
-
-    /** Sets the time in seconds for a published message or a subscription to live.*/
-    private static final Strategy PUB_SUB_STRATEGY = new Strategy.Builder()
-            .setTtlSeconds( Strategy.TTL_SECONDS_MAX ).build();
-
-    private boolean mUnpublishing = false;
-
     /** Code for the error dialog */
     private static final int REQUEST_CODE_LOCATION_SERVICES = 0;
     private static final int REQUEST_SETTINGS               = 1;
@@ -154,13 +135,6 @@ public class LauncherActivity extends AppCompatActivity implements
 
     /** Request code to use when launching the resolution activity */
     public static final int REQUEST_RESOLVE_ERROR = 1001;
-
-    /**
-     * Tracks if we are currently resolving an error related to Nearby permissions. Used to avoid
-     * duplicate Nearby permission dialogs if the user initiates both subscription and publication
-     * actions without having opted into Nearby.
-     */
-    private boolean mResolvingNearbyPermissionError = false;
 
     /** External data */
     private Bundle externBundle;
@@ -178,7 +152,7 @@ public class LauncherActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
-        AppUtils.setLanguage( LauncherActivity.this );
+        GUIUtils.setLanguage( LauncherActivity.this );
         getWindow().setFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN );
         setContentView( R.layout.activity_launcher );
 
@@ -191,12 +165,11 @@ public class LauncherActivity extends AppCompatActivity implements
         super.onStart();
         // register to event bus
         EventBus.getDefault().register( this );
-        // We are going to start publishing
-        mUnpublishing = false;
         // Setup the required permissions
         setupPermissions();
         // Setup the advertisement service
-        setupAdvertisement();
+        if( PrefsUtils.isAdvertising( ac ) )
+            this.mPromotionManager.startService();
     }
 
     @Override
@@ -212,7 +185,7 @@ public class LauncherActivity extends AppCompatActivity implements
             currentScanner.startScan();
         }
         // Sets Background
-        mRootLayout.setBackgroundColor( AppUtils.getCurrentBackground( ac ) );
+        mRootLayout.setBackgroundColor( PrefsUtils.getCurrentBackground( ac ) );
     }
 
     @Override
@@ -230,20 +203,15 @@ public class LauncherActivity extends AppCompatActivity implements
         super.onStop();
         // Unregister from event bus
         EventBus.getDefault().unregister( this );
-        // We are going to unpublish
-        mUnpublishing = true;
+
         // Stop location service while app is in background
-        if( AppUtils.isMyServiceRunning( ac, LocationService.class.getName() ) ) {
+        if( SystemUtils.isMyServiceRunning( ac, LocationService.class.getName() ) ) {
             Intent iLoc = new Intent( ac, LocationService.class );
             stopService( iLoc );
         }
 
-        if( mGoogleApiClient != null && mGoogleApiClient.isConnected() && !isChangingConfigurations() ) {
-            // Using Nearby is battery intensive. To preserve battery, stop subscribing or
-            // publishing when the fragment is inactive.
-            unpublish();
-            mGoogleApiClient.disconnect();
-        }
+        // Disconnect the advertise service
+        this.mPromotionManager.stopService();
     }
 
     @Override
@@ -296,8 +264,8 @@ public class LauncherActivity extends AppCompatActivity implements
             public void onItemSelected( AdapterView<?> parentView, View selectedItemView, int position, long id ) {
                 TextView scanner = (TextView) selectedItemView;
                 if( scanner != null )
-                    AppUtils.Logger( TAG, scanner.getText().toString() );
-                AppUtils.saveScanner( ac, position );
+                    SystemUtils.Logger( TAG, scanner.getText().toString() );
+                PrefsUtils.saveScanner( ac, position );
             }
 
             @Override
@@ -318,18 +286,18 @@ public class LauncherActivity extends AppCompatActivity implements
             }
         };
         // Get current selected scanner and verify it exists
-        int position = AppUtils.getScanner( ac );
+        int position = PrefsUtils.getScanner( ac );
         if( position >= QRScannerFactory.SupportedScanners.length ) {
             position = AppConfig.DEFAULT_SCANNER;
-            AppUtils.saveScanner( ac, position );
+            PrefsUtils.saveScanner( ac, position );
         }
         // Set the current scanner
         mScannersSpinner.setAdapter( adapter );
-        mScannersSpinner.setSelection( AppUtils.getScanner( ac ) );
+        mScannersSpinner.setSelection( PrefsUtils.getScanner( ac ) );
         // Start the messages handler
         handlerMessages   = new YodoHandler( LauncherActivity.this );
         // Set the currency icon
-        AppUtils.setCurrencyIcon( ac, mCashTenderView, false );
+        GUIUtils.setCurrencyIcon( ac, mCashTenderView );
         // Set selected view as the total
         selectedView = mTotalView;
         selectedView.setBackgroundResource( R.drawable.selected_text_field );
@@ -338,7 +306,7 @@ public class LauncherActivity extends AppCompatActivity implements
             @Override
             public boolean onLongClick( View v ) {
                 // Get subtotal with discount
-                BigDecimal discount = new BigDecimal( AppUtils.getDiscount( ac ) ).movePointLeft( 2 );
+                BigDecimal discount = new BigDecimal( PrefsUtils.getDiscount( ac ) ).movePointLeft( 2 );
                 BigDecimal subTotal = new BigDecimal( mTotalView.getText().toString() ).multiply(
                         BigDecimal.ONE.subtract( discount )
                 );
@@ -389,14 +357,17 @@ public class LauncherActivity extends AppCompatActivity implements
             }
         } );
         // Set an icon there is a discount
-        if( !AppUtils.getDiscount( ac ).equals( AppConfig.DEFAULT_DISCOUNT ) ) {
-            AppUtils.setViewIcon( ac, mTotalView, R.drawable.discount );
+        if( !PrefsUtils.getDiscount( ac ).equals( AppConfig.DEFAULT_DISCOUNT ) ) {
+            GUIUtils.setViewIcon( ac, mTotalView, R.drawable.discount );
         }
         // If it is the first login, show the navigation panel
-        if( AppUtils.isFirstLogin( ac ) ) {
+        if( PrefsUtils.isFirstLogin( ac ) ) {
             mSlidingLayout.openPane();
-            AppUtils.saveFirstLogin( ac, false );
+            PrefsUtils.saveFirstLogin( ac, false );
         }
+
+        // Setup promotion manager
+        mPromotionManager = new PromotionManager( this, REQUEST_RESOLVE_ERROR );
     }
 
     /**
@@ -413,7 +384,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
             // Checks a positive total value
             if( total.signum() > 0 ) {
-                //BigDecimal tip = new BigDecimal( AppUtils.getCurrentTip( ac ) );
+                //BigDecimal tip = new BigDecimal( PrefsUtils.getCurrentTip( ac ) );
                 //tip = tip.scaleByPowerOfTen( -2 ).multiply( total );
                 //mTotalView.setText( total.add( tip ).setScale( 2, RoundingMode.DOWN ).toString() );
                 final String tvTotal = total.setScale( 2, RoundingMode.DOWN ).toString();
@@ -439,9 +410,9 @@ public class LauncherActivity extends AppCompatActivity implements
         }
         /*****************************/
 
-        hardwareToken = AppUtils.getHardwareToken( ac );
-        String logo_url = AppUtils.getLogoUrl( ac );
-        AppUtils.Logger( TAG, logo_url );
+        hardwareToken = PrefsUtils.getHardwareToken( ac );
+        String logo_url = PrefsUtils.getLogoUrl( ac );
+        SystemUtils.Logger( TAG, logo_url );
         if( logo_url.equals( "" ) ) {
             mRequestManager.requestQuery(
                     QRY_LOG_REQ,
@@ -460,10 +431,10 @@ public class LauncherActivity extends AppCompatActivity implements
      * Request the necessary permissions for this activity
      */
     private void setupPermissions() {
-        if( AppUtils.isLegacy( ac ) )
+        if( PrefsUtils.isLegacy( ac ) )
             return;
 
-        boolean locationPermission = AppUtils.requestPermission(
+        boolean locationPermission = SystemUtils.requestPermission(
                 LauncherActivity.this,
                 R.string.message_permission_location,
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -475,36 +446,18 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     /**
-     * Enables the advertisement services using nearby
-     */
-    private void setupAdvertisement() {
-        if( AppUtils.isLegacy( ac ) )
-            return;
-
-        if( !AppUtils.isAdvertising( ac ) )
-            return;
-
-        mGoogleApiClient = new GoogleApiClient.Builder( this )
-                .addApi( Nearby.MESSAGES_API )
-                .addConnectionCallbacks( this )
-                .addOnConnectionFailedListener( this )
-                .build();
-        mGoogleApiClient.connect();
-    }
-
-    /**
      * Asks the user to enable the location services, otherwise it
      * closes the application
      */
     private void enableLocation() {
         // If the device doesn't support the Location service, just finish the app
-        if( !AppUtils.hasLocationService( ac ) ) {
+        if( !SystemUtils.hasLocationService( ac ) ) {
             ToastMaster.makeText( ac, R.string.message_no_gps_support, Toast.LENGTH_SHORT ).show();
             finish();
-        } else if( AppUtils.isLocationEnabled( ac ) ) {
+        } else if( SystemUtils.isLocationEnabled( ac ) ) {
             // Start the location service
             Intent iLoc = new Intent( ac, LocationService.class );
-            if( !AppUtils.isMyServiceRunning( ac, LocationService.class.getName() ) )
+            if( !SystemUtils.isMyServiceRunning( ac, LocationService.class.getName() ) )
                 startService( iLoc );
         } else {
             // If location not enabled, then request
@@ -526,116 +479,6 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     /**
-     * Publishes device information to nearby devices. If not successful, attempts to resolve any
-     * error related to Nearby permissions by displaying an opt-in dialog. Registers a callback
-     * that updates the UI when the publication expires.
-     */
-    private void publish() {
-        AppUtils.Logger( TAG, "trying to publish" );
-        // Cannot proceed without a connected GoogleApiClient. Reconnect and execute the pending
-        // task in onConnected().
-        if( !mGoogleApiClient.isConnected() ) {
-            if( !mGoogleApiClient.isConnecting() ) {
-                mGoogleApiClient.connect();
-            }
-        } else {
-            String message = AppUtils.getBeaconName( ac );
-            mActiveMessage = new com.google.android.gms.nearby.messages.Message(
-                    message.getBytes()
-            );
-            
-            PublishOptions options = new PublishOptions.Builder()
-                .setStrategy( PUB_SUB_STRATEGY )
-                .setCallback( new PublishCallback() {
-                    @Override
-                    public void onExpired() {
-                        super.onExpired();
-                        AppUtils.Logger( TAG, "no longer publishing" );
-                        if( !mUnpublishing )
-                            publish();
-                    }
-                }).build();
-
-            Nearby.Messages.publish( mGoogleApiClient, mActiveMessage, options )
-                .setResultCallback( new ResultCallback<Status>() {
-                    @Override
-                    public void onResult( @NonNull Status status ) {
-                        if( status.isSuccess() ) {
-                            AppUtils.Logger( TAG, "published successfully" );
-                        } else {
-                            AppUtils.Logger( TAG, "could not publish" );
-                            handleUnsuccessfulNearbyResult( status );
-                        }
-                    }
-                });
-        }
-    }
-
-    /**
-     * Stops publishing device information to nearby devices. If successful, resets state. If not
-     * successful, attempts to resolve any error related to Nearby permissions by displaying an
-     * opt-in dialog.
-     */
-    private void unpublish() {
-        AppUtils.Logger( TAG, "trying to unpublish" );
-        // Cannot proceed without a connected GoogleApiClient. Reconnect and execute the pending
-        // task in onConnected().
-        if( !mGoogleApiClient.isConnected() ) {
-            if( !mGoogleApiClient.isConnecting() ) {
-                mGoogleApiClient.connect();
-            }
-        } else {
-            Nearby.Messages.unpublish( mGoogleApiClient, mActiveMessage )
-                .setResultCallback( new ResultCallback<Status>() {
-                    @Override
-                    public void onResult( @NonNull Status status ) {
-                        if( status.isSuccess() ) {
-                            AppUtils.Logger( TAG, "unpublished successfully" );
-                        } else {
-                            AppUtils.Logger( TAG, "could not unpublish" );
-                            handleUnsuccessfulNearbyResult(status);
-                        }
-                    }
-                });
-        }
-    }
-
-    /**
-     * Handles errors generated when performing a subscription or publication action. Uses
-     * {@link Status#startResolutionForResult} to display an opt-in dialog to handle the case
-     * where a device is not opted into using Nearby.
-     */
-    private void handleUnsuccessfulNearbyResult( Status status ) {
-        AppUtils.Logger( TAG, "processing error, status = " + status );
-        if( status.getStatusCode() == NearbyMessagesStatusCodes.APP_NOT_OPTED_IN ) {
-            if( !mResolvingNearbyPermissionError ) {
-                try {
-                    mResolvingNearbyPermissionError = true;
-                    status.startResolutionForResult( this, REQUEST_RESOLVE_ERROR );
-
-                } catch( IntentSender.SendIntentException e ) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            if( status.getStatusCode() == ConnectionResult.NETWORK_ERROR ) {
-                ToastMaster.makeText(
-                        ac,
-                        "No connectivity, cannot proceed. Fix in 'Settings' and try again.",
-                        Toast.LENGTH_LONG
-                ).show();
-            } else {
-                // To keep things simple, pop a toast for all other error messages.
-                Toast.makeText(
-                        ac,
-                        "Unsuccessful: " + status.getStatusMessage(),
-                        Toast.LENGTH_LONG
-                ).show();
-            }
-        }
-    }
-
-    /**
      * Setup a PopupWindow below a View (tender)
      * @param v The view for te popup
      */
@@ -649,7 +492,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
         // If there is no value to set, then start the progress bar
         if( value == null ) {
-            AppUtils.setMerchantCurrencyIcon( ac, cashTender );
+            GUIUtils.setMerchantCurrencyIcon( ac, cashTender );
 
             cashTender.setVisibility( View.GONE );
             progressBar.setVisibility( View.VISIBLE );
@@ -725,8 +568,8 @@ public class LauncherActivity extends AppCompatActivity implements
      */
     private void requestCurrencies() {
         String[] currencies = ac.getResources().getStringArray( R.array.currency_array );
-        String merchantCurr = AppUtils.getMerchantCurrency( ac );
-        String tenderCurr   = currencies[ AppUtils.getCurrency( ac ) ];
+        String merchantCurr = PrefsUtils.getMerchantCurrency( ac );
+        String tenderCurr   = currencies[ PrefsUtils.getCurrency( ac ) ];
         mRequestManager.requestCurrencies( CURR_REQ, merchantCurr, tenderCurr );
     }
 
@@ -742,17 +585,17 @@ public class LauncherActivity extends AppCompatActivity implements
 
         Currency[] currencyList = new Currency[currency.length];
         for( int i = 0; i < currency.length; i++ )
-            currencyList[i] = new Currency( currency[i], AppUtils.getDrawableByName( ac, icons[i] ) );
+            currencyList[i] = new Currency( currency[i], GUIUtils.getDrawableByName( ac, icons[i] ) );
 
         final String title        = ((Button) v).getText().toString();
         final ListAdapter adapter = new CurrencyAdapter( ac, currencyList );
-        final int current         = AppUtils.getCurrency( ac );
+        final int current         = PrefsUtils.getCurrency( ac );
 
         DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
             public void onClick( DialogInterface dialog, int item ) {
-                AppUtils.saveCurrency( ac, item );
+                PrefsUtils.saveCurrency( ac, item );
 
-                Drawable icon = AppUtils.getDrawableByName( ac, icons[ item ] );
+                Drawable icon = GUIUtils.getDrawableByName( ac, icons[ item ] );
                 icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int) ( mCashTenderView.getLineHeight() * 0.9 ) );
                 mCashTenderView.setCompoundDrawables( icon, null, null, null );
                 // Request the tender value in the rate of the merchant currency
@@ -781,7 +624,7 @@ public class LauncherActivity extends AppCompatActivity implements
             @Override
             public void onClick( DialogInterface dialog, int item ) {
                 String pip = inputBox.getText().toString();
-                AppUtils.hideSoftKeyboard( LauncherActivity.this );
+                GUIUtils.hideSoftKeyboard( LauncherActivity.this );
 
                 ProgressDialogHelper.getInstance().createProgressDialog(
                         ac,
@@ -830,12 +673,12 @@ public class LauncherActivity extends AppCompatActivity implements
         DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int item) {
                 String pip = inputBox.getText().toString();
-                AppUtils.hideSoftKeyboard( LauncherActivity.this );
+                GUIUtils.hideSoftKeyboard( LauncherActivity.this );
 
                 if( remember.isChecked() )
-                    AppUtils.savePassword( ac, pip );
+                    PrefsUtils.savePassword( ac, pip );
                 else
-                    AppUtils.savePassword( ac, null );
+                    PrefsUtils.savePassword( ac, null );
 
                 ProgressDialogHelper.getInstance().createProgressDialog(
                         LauncherActivity.this,
@@ -876,9 +719,9 @@ public class LauncherActivity extends AppCompatActivity implements
 
         final String title   = ((Button) v).getText().toString();
         final String message = getString( R.string.imei )    + " " +
-                               AppUtils.getHardwareToken( ac ) + "\n" +
+                               PrefsUtils.getHardwareToken( ac ) + "\n" +
                                getString( R.string.label_currency )    + " " +
-                               AppUtils.getMerchantCurrency( ac ) + "\n" +
+                               PrefsUtils.getMerchantCurrency( ac ) + "\n" +
                                getString( R.string.version_label ) + " " +
                                getString( R.string.version_value ) + "/" +
                                YodoRequest.getSwitch();
@@ -897,8 +740,8 @@ public class LauncherActivity extends AppCompatActivity implements
      */
     public void logoutClick(View v) {
         //imageCache.clear();
-        AppUtils.saveLoginStatus( ac, false );
-        AppUtils.saveLogoUrl( ac, "" );
+        PrefsUtils.saveLoginStatus( ac, false );
+        PrefsUtils.saveLogoUrl( ac, "" );
         finish();
     }
 
@@ -986,7 +829,7 @@ public class LauncherActivity extends AppCompatActivity implements
             return;
         }
 
-        AppUtils.rotateImage( mPaymentButton );
+        GUIUtils.rotateImage( mPaymentButton );
         currentScanner = mScannerFactory.getScanner(
                 (QRScannerFactory.SupportedScanners) mScannersSpinner.getSelectedItem()
         );
@@ -1000,7 +843,7 @@ public class LauncherActivity extends AppCompatActivity implements
      * @param v The View, not used
      */
     public void yodoPayClick(View v) {
-        boolean cameraPermission = AppUtils.requestPermission(
+        boolean cameraPermission = SystemUtils.requestPermission(
                 LauncherActivity.this,
                 R.string.message_permission_camera,
                 Manifest.permission.CAMERA,
@@ -1048,18 +891,18 @@ public class LauncherActivity extends AppCompatActivity implements
                         }
                     };
                     inputBox.setFilters( new InputFilter[] { filter } );
-                    inputBox.setText( AppUtils.getDiscount( ac ) );
+                    inputBox.setText( PrefsUtils.getDiscount( ac ) );
 
                     DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int item) {
                             String discount = inputBox.getText().toString();
-                            AppUtils.hideSoftKeyboard( LauncherActivity.this );
+                            GUIUtils.hideSoftKeyboard( LauncherActivity.this );
                             if( discount.length() > 0 ) {
-                                AppUtils.saveDiscount( ac, discount );
-                                AppUtils.setViewIcon( ac, mTotalView, R.drawable.discount );
+                                PrefsUtils.saveDiscount( ac, discount );
+                                GUIUtils.setViewIcon( ac, mTotalView, R.drawable.discount );
                             } else {
-                                AppUtils.saveDiscount( ac, AppConfig.DEFAULT_DISCOUNT );
-                                AppUtils.setViewIcon( ac, mTotalView, null );
+                                PrefsUtils.saveDiscount( ac, AppConfig.DEFAULT_DISCOUNT );
+                                GUIUtils.setViewIcon( ac, mTotalView, null );
                             }
                             requestCurrencies();
                         }
@@ -1072,7 +915,7 @@ public class LauncherActivity extends AppCompatActivity implements
                             onClick
                     );
                 } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
-                    AppUtils.errorSound( ac );
+                    GUIUtils.errorSound( ac );
 
                     Message msg = new Message();
                     msg.what = YodoHandler.SERVER_ERROR;
@@ -1095,7 +938,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     if( todayData != null )
                         balanceDialog();
                 } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
-                    AppUtils.errorSound( ac );
+                    GUIUtils.errorSound( ac );
 
                     Message msg = new Message();
                     msg.what = YodoHandler.SERVER_ERROR;
@@ -1129,7 +972,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
                     if( logoName != null ) {
                         String logo_url = AppConfig.LOGO_PATH + logoName;
-                        AppUtils.saveLogoUrl( ac, logo_url );
+                        PrefsUtils.saveLogoUrl( ac, logo_url );
                         mAvatarImage.setImageUrl( logo_url, mRequestManager.getImageLoader() );
                     }
                 }
@@ -1152,14 +995,14 @@ public class LauncherActivity extends AppCompatActivity implements
                     BigDecimal temp_tender = new BigDecimal( mCashTenderView.getText().toString() );
 
                     // Transform the currencies using the rate
-                    if( AppConfig.URL_CURRENCY.equals( currencies[ AppUtils.getCurrency( ac ) ] ) ) {
+                    if( AppConfig.URL_CURRENCY.equals( currencies[ PrefsUtils.getCurrency( ac ) ] ) ) {
                         equivalentTender = temp_tender.multiply( merchRate );
                     } else {
                         BigDecimal currency_rate = merchRate.divide( fareRate, 2, RoundingMode.DOWN );
                         equivalentTender = temp_tender.multiply( currency_rate );
                     }
                     // Get subtotal with discount
-                    BigDecimal discount = new BigDecimal( AppUtils.getDiscount( ac ) ).movePointLeft( 2 );
+                    BigDecimal discount = new BigDecimal( PrefsUtils.getDiscount( ac ) ).movePointLeft( 2 );
                     BigDecimal subTotal = new BigDecimal( totalPurchase ).multiply(
                             BigDecimal.ONE.subtract( discount )
                     );
@@ -1218,13 +1061,24 @@ public class LauncherActivity extends AppCompatActivity implements
                         };
                     }
 
+                    final String[] currency = getResources().getStringArray( R.array.currency_array );
+
+                    // Gets the merchant currency and its position in the array of currencies
+                    final String merchCurrency = PrefsUtils.getMerchantCurrency( ac );
+                    if( merchCurrency != null ) {
+                        final int currPosition = Arrays.asList( currency ).indexOf( merchCurrency );
+                        // Saves the currency and sets the icon
+                        PrefsUtils.saveCurrency( ac, currPosition );
+                        GUIUtils.setCurrencyIcon( ac, mCashTenderView );
+                    }
+
                     if( prompt_response )
                         AlertDialogHelper.showAlertDialog( ac, response.getCode(), message , onClick );
                     else finish();
                 } else {
-                    AppUtils.errorSound( ac );
+                    GUIUtils.errorSound( ac );
                     message  = response.getMessage() + "\n" + response.getParam( XMLHandler.PARAMS );
-                    AppUtils.sendMessage( handlerMessages, code, message );
+                    PrefsUtils.sendMessage( handlerMessages, code, message );
                 }
                 break;
         }
@@ -1235,7 +1089,7 @@ public class LauncherActivity extends AppCompatActivity implements
         final String[] currency = getResources().getStringArray( R.array.currency_array );
 
         // Get subtotal with discount
-        BigDecimal discount = new BigDecimal( AppUtils.getDiscount( ac ) ).movePointLeft( 2 );
+        BigDecimal discount = new BigDecimal( PrefsUtils.getDiscount( ac ) ).movePointLeft( 2 );
         BigDecimal subTotal = new BigDecimal( mTotalView.getText().toString() ).multiply(
                 BigDecimal.ONE.subtract( discount )
         );
@@ -1260,7 +1114,7 @@ public class LauncherActivity extends AppCompatActivity implements
                         cashBack,
                         mLocation.getLatitude(),
                         mLocation.getLongitude(),
-                        currency[ AppUtils.getCurrency( ac ) ]
+                        currency[ PrefsUtils.getCurrency( ac ) ]
                 );
                 break;
 
@@ -1283,7 +1137,7 @@ public class LauncherActivity extends AppCompatActivity implements
                         cashBack,
                         mLocation.getLatitude(),
                         mLocation.getLongitude(),
-                        currency[ AppUtils.getCurrency( ac ) ]
+                        currency[ PrefsUtils.getCurrency( ac ) ]
                 );
                 break;
 
@@ -1308,7 +1162,7 @@ public class LauncherActivity extends AppCompatActivity implements
         switch( requestCode ) {
             case REQUEST_CODE_LOCATION_SERVICES:
                 // The user didn't enable the GPS
-                if( !AppUtils.isLocationEnabled( ac ) )
+                if( !SystemUtils.isLocationEnabled( ac ) )
                     finish();
                 break;
 
@@ -1320,9 +1174,9 @@ public class LauncherActivity extends AppCompatActivity implements
                 break;
 
             case REQUEST_RESOLVE_ERROR:
-                mResolvingNearbyPermissionError = false;
+                this.mPromotionManager.onResolutionResult();
                 if( resultCode == RESULT_OK )
-                    publish();
+                    this.mPromotionManager.publish();
                 break;
         }
     }
@@ -1356,17 +1210,17 @@ public class LauncherActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected( @Nullable Bundle bundle ) {
-        AppUtils.Logger( TAG, "GoogleApiClient connected" );
-        publish();
+        SystemUtils.Logger( TAG, "GoogleApiClient connected" );
+        this.mPromotionManager.publish();
     }
 
     @Override
     public void onConnectionSuspended( int i ) {
-        AppUtils.Logger( TAG, "GoogleApiClient connection suspended" );
+        SystemUtils.Logger( TAG, "GoogleApiClient connection suspended" );
     }
 
     @Override
     public void onConnectionFailed( @NonNull ConnectionResult result ) {
-        AppUtils.Logger( TAG, "connection to GoogleApiClient failed" );
+        SystemUtils.Logger( TAG, "connection to GoogleApiClient failed" );
     }
 }

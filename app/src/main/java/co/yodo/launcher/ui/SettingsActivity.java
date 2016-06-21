@@ -13,7 +13,8 @@ import android.view.MenuItem;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.AppConfig;
-import co.yodo.launcher.helper.AppUtils;
+import co.yodo.launcher.helper.GUIUtils;
+import co.yodo.launcher.helper.PrefsUtils;
 
 /**
  * Created by luis on 3/08/15.
@@ -23,7 +24,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        AppUtils.setLanguage( SettingsActivity.this );
+        GUIUtils.setLanguage( SettingsActivity.this );
         setContentView( R.layout.activity_settings );
 
         setupGUI();
@@ -85,7 +86,7 @@ public class SettingsActivity extends AppCompatActivity {
             ETP_ADVERTISING = (CheckBoxPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_ADVERTISING_SERVICE );
 
-            if( AppUtils.isLegacy( c ) )
+            if( PrefsUtils.isLegacy( c ) )
                 ETP_ADVERTISING.setEnabled( false );
         }
 
@@ -112,8 +113,8 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void setAllSummaries() {
-            ETP_SPREF_USERNAME.setSummary( AppUtils.getBeaconName( c ) );
-            //ETP_SPREF_TIP.setSummary( AppUtils.getCurrentTip( c ) );
+            ETP_SPREF_USERNAME.setSummary( PrefsUtils.getBeaconName( c ) );
+            //ETP_SPREF_TIP.setSummary( PrefsUtils.getCurrentTip( c ) );
         }
 
         @Override

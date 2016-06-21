@@ -1,64 +1,23 @@
 package co.yodo.launcher.helper;
 
-import android.app.Activity;
-import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.location.Criteria;
-import android.location.LocationManager;
-import android.media.MediaPlayer;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Message;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
-import android.text.InputType;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.TextView;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Locale;
-
-import co.yodo.launcher.R;
 import co.yodo.launcher.component.AES;
 import co.yodo.launcher.component.YodoHandler;
-import co.yodo.launcher.ui.component.AlertDialogHelper;
 
 /**
  * Created by luis on 15/12/14.
  * Utilities for the App, Mainly shared preferences
  */
-public class AppUtils {
+public class PrefsUtils {
     /** DEBUG */
     @SuppressWarnings( "unused" )
-    private static final String TAG = AppUtils.class.getSimpleName();
+    private static final String TAG = PrefsUtils.class.getSimpleName();
 
     /**
      * A simple check to see if a string is a valid number before inserting
@@ -363,7 +322,7 @@ public class AppUtils {
                 e.printStackTrace();
             }
         } else {
-            writer.remove(AppConfig.SPREF_CURRENT_PASSWORD);
+            writer.remove( AppConfig.SPREF_CURRENT_PASSWORD );
         }
 
         return writer.commit();
@@ -419,238 +378,6 @@ public class AppUtils {
     }
 
     /**
-     * Get the drawable based on the name
-     * @param c The Context of the Android system.
-     * @param name The name of the drawable
-     * @return The drawable
-     */
-    public static Drawable getDrawableByName( Context c, String name ) throws Resources.NotFoundException {
-        Resources resources = c.getResources();
-        final int resourceId = resources.getIdentifier(name, "drawable", c.getPackageName());
-        Drawable image = ContextCompat.getDrawable( c, resourceId );
-        int h = image.getIntrinsicHeight();
-        int w = image.getIntrinsicWidth();
-        image.setBounds( 0, 0, w, h );
-        return image;
-    }
-
-    /**
-     * Show or hide the password depending on the checkbox
-     * @param state The checkbox
-     * @param password The EditText for the password
-     */
-    public static void showPassword(CheckBox state, EditText password) {
-        if( state.isChecked() )
-            password.setInputType( InputType.TYPE_TEXT_VARIATION_PASSWORD );
-        else
-            password.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD );
-        password.setTypeface( Typeface.MONOSPACE );
-    }
-
-    /**
-     * Hides the soft keyboard
-     * @param a The activity where the keyboard is open
-     */
-    public static void hideSoftKeyboard(Activity a) {
-        View v = a.getCurrentFocus();
-        if( v != null ) {
-            InputMethodManager imm = (InputMethodManager) a.getSystemService( Context.INPUT_METHOD_SERVICE );
-            imm.hideSoftInputFromWindow( v.getWindowToken(), 0 );
-        }
-    }
-
-    /**
-     * Plays a sound of error
-     * @param c The Context of the Android system.
-     */
-    public static void errorSound(Context c) {
-        MediaPlayer mp = MediaPlayer.create( c, R.raw.error );
-        mp.setOnCompletionListener( new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                mp.release();
-            }
-        });
-        mp.start();
-    }
-
-    public static void setLanguage( Context c ) {
-        Locale appLoc = new Locale( getLanguage( c ) );
-
-        Resources res = c.getResources();
-        DisplayMetrics dm = res.getDisplayMetrics();
-
-        Locale.setDefault( appLoc );
-        Configuration config = new Configuration( res.getConfiguration() );
-        config.locale = appLoc;
-
-        res.updateConfiguration( config, dm );
-    }
-
-    /**
-     * Verify if a service is running
-     * @param c The Context of the Android system.
-     * @param serviceName The name of the service.
-     * @return Boolean true if is running otherwise false
-     */
-    public static boolean isMyServiceRunning(Context c, String serviceName) {
-        ActivityManager manager = (ActivityManager) c.getSystemService( Context.ACTIVITY_SERVICE );
-        for( ActivityManager.RunningServiceInfo service : manager.getRunningServices( Integer.MAX_VALUE ) )  {
-            if( serviceName.equals( service.service.getClassName() ) )
-                return true;
-        }
-        return false;
-    }
-
-    /**
-     * Method to verify google play services on the device
-     * @param activity The activity that
-     * @param code The code for the activity result
-     * */
-    public static boolean isGooglePlayServicesAvailable( Activity activity, int code ) {
-        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
-        int resultCode = googleAPI.isGooglePlayServicesAvailable( activity );
-        if( resultCode != ConnectionResult.SUCCESS ) {
-            if( googleAPI.isUserResolvableError( resultCode ) ) {
-                googleAPI.getErrorDialog( activity, resultCode, code ).show();
-            } else {
-                AppUtils.setLegacy( activity, true );
-            }
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Verify if the device has GPS
-     * @param c The Context of the Android system.
-     * @return Boolean true if it has GPS
-     */
-    public static boolean hasLocationService( Context c ) {
-        LocationManager locManager = (LocationManager) c.getSystemService( Context.LOCATION_SERVICE );
-        return locManager.getProvider( LocationManager.GPS_PROVIDER ) != null;
-    }
-
-    /**
-     * Verify if the location services are enabled (any provider)
-     * @param c The Context of the Android system.
-     * @return Boolean true if is running otherwise false
-     */
-    public static boolean isLocationEnabled( Context c ) {
-        LocationManager lm = (LocationManager) c.getSystemService( Context.LOCATION_SERVICE );
-        String provider    = lm.getBestProvider( new Criteria(), true );
-        return ( ( !provider.isEmpty() ) && !LocationManager.PASSIVE_PROVIDER.equals( provider ) );
-    }
-
-    /**
-     * Requests a permission for the use of a phone's characteristic (e.g. Camera, Phone info, etc)
-     * @param ac The application context
-     * @param message A message to request the permission
-     * @param permission The permission
-     * @param requestCode The request code for the result
-     * @return If the permission was already allowed or not
-     */
-    public static boolean requestPermission( final Activity ac, final int message, final String permission, final int requestCode ) {
-        // Assume thisActivity is the current activity
-        int permissionCheck = ContextCompat.checkSelfPermission( ac, permission );
-        if( permissionCheck != PackageManager.PERMISSION_GRANTED ) {
-            if( ActivityCompat.shouldShowRequestPermissionRationale( ac, permission ) ) {
-                DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick( DialogInterface dialog, int which ) {
-                        ActivityCompat.requestPermissions(
-                                ac,
-                                new String[]{permission},
-                                requestCode
-                        );
-                    }
-                };
-
-                AlertDialogHelper.showAlertDialog(
-                        ac,
-                        message,
-                        onClick
-                );
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions( ac, new String[]{permission}, requestCode );
-            }
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Rotates an image by 360 in 1 second
-     * @param image The image to rotate
-     */
-    public static void rotateImage(View image) {
-        RotateAnimation rotateAnimation1 = new RotateAnimation( 0, 90,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f );
-        rotateAnimation1.setInterpolator( new LinearInterpolator() );
-        rotateAnimation1.setDuration( 500 );
-        rotateAnimation1.setRepeatCount( 0 );
-
-        image.startAnimation( rotateAnimation1 );
-    }
-
-    /**
-     * Modify the size of the drawable for a TextView
-     * @param c The Context of the Android system.
-     * @param v The view to modify the drawable
-     * @param d if Default or not
-     */
-    public static void setCurrencyIcon( Context c, TextView v, boolean d ) {
-        String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
-        Drawable icon;
-
-        if( !d )
-            icon  = AppUtils.getDrawableByName( c, icons[ AppUtils.getCurrency( c ) ] );
-        else
-            icon  = AppUtils.getDrawableByName( c, icons[ AppConfig.DEFAULT_CURRENCY ] );
-        icon.setBounds( 3, 0, v.getLineHeight(), (int) ( v.getLineHeight() * 0.9 ) );
-        v.setCompoundDrawables( icon, null, null, null );
-    }
-
-    /**
-     * Modify the size of the drawable for a TextView
-     * @param c The Context of the Android system.
-     * @param v The view to modify the drawable
-     */
-    public static boolean setViewIcon( Context c, TextView v, Integer resource ) {
-        // Clean an icon from the view
-        if( resource == null ) {
-            v.setCompoundDrawables( null, null, null, null );
-            return true;
-        }
-        // Try to set an icon to a view
-        Drawable icon = ContextCompat.getDrawable( c, resource );
-        if( icon != null ) {
-            icon.setBounds( 3, 0, v.getLineHeight(), (int) ( v.getLineHeight() * 0.9 ) );
-            v.setCompoundDrawables( icon, null, null, null );
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Modify the size of the drawable for a TextView
-     * @param c The Context of the Android system.
-     * @param v The view to modify the drawable
-     */
-    public static void setMerchantCurrencyIcon( Context c, TextView v ) {
-        final String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
-        final String[] currencies = c.getResources().getStringArray( R.array.currency_array );
-        final String cur = AppUtils.getMerchantCurrency( c );
-        final int position = Arrays.asList( currencies ).indexOf( cur );
-
-        Drawable icon  = AppUtils.getDrawableByName( c, icons[ position ] );
-        icon.setBounds( 3, 0, v.getLineHeight(), (int)( v.getLineHeight() * 0.9 ) );
-        v.setCompoundDrawables( icon, null, null, null );
-    }
-
-    /**
      * Sends a message to the handler
      * @param handlerMessages The Handler for the app
      * @param title The title for the alert
@@ -678,17 +405,5 @@ public class AppUtils {
         sendMessage( YodoHandler.SERVER_ERROR, handlerMessages, title, message );
     }
 
-    /**
-     * Logger for Android
-     * @param TAG The String of the TAG for the log
-     * @param text The text to print on the log
-     */
-    public static void Logger( String TAG, String text ) {
-        if( AppConfig.DEBUG ) {
-            if( text == null )
-                Log.e( TAG, "Null Text" );
-            else
-                Log.e( TAG, text );
-        }
-    }
+
 }
