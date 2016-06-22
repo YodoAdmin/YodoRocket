@@ -14,12 +14,7 @@
         android:key="SPCurrentBeacon"
         android:inputType="text"
         android:maxLength="20"/>
-<!--
-    <EditTextPreference
-        android:title="@string/config_pref_tip"
-        android:key="SPCurrentTip"
-        android:inputType="numberDecimal"/>
--->
+
     <CheckBoxPreference
         android:key="SPAdvertisingService"
         android:title="@string/config_pref_advertising"

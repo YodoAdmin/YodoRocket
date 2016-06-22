@@ -13,10 +13,10 @@ import java.util.Arrays;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.GUIUtils;
-import co.yodo.launcher.helper.PrefsUtils;
+import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
 import co.yodo.launcher.ui.notification.ToastMaster;
-import co.yodo.launcher.component.YodoHandler;
+import co.yodo.launcher.ui.notification.YodoHandler;
 import co.yodo.launcher.helper.Intents;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.builder.ServerRequest;
@@ -31,10 +31,10 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
     private Context ac;
 
     /** Hardware Token */
-    private String hardwareToken;
+    private String mHardwareToken;
 
     /** Messages Handler */
-    private static YodoHandler handlerMessages;
+    private YodoHandler mHandlerMessages;
 
     /** Manager for the server requests */
     private YodoRequest mRequestManager;
@@ -75,37 +75,41 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
     private void setupGUI() {
         // Get the context and handler for the messages
         ac = MainActivity.this;
-        handlerMessages = new YodoHandler( MainActivity.this );
+        mHandlerMessages = new YodoHandler( MainActivity.this );
         mRequestManager = YodoRequest.getInstance( ac );
         mRequestManager.setListener( this );
     }
 
     private void updateData() {
-        /** Handle external Requests */
+        /*********** Handle external Requests *************/
+        /**************************************************/
         Intent intent = getIntent();
         if( intent != null ) {
             String action = intent.getAction();
             if( Intents.ACTION.equals( action ) ) {
                 bundle = intent.getExtras();
-                if( bundle == null ) bundle = new Bundle();
+                //if( bundle == null ) bundle = new Bundle();
             }
         }
-        /*****************************/
+        /**************************************************/
 
         // Get the main booleans
         boolean hasServices = SystemUtils.isGooglePlayServicesAvailable(
                 MainActivity.this,
                 REQUEST_CODE_RECOVER_PLAY_SERVICES
         );
-        boolean isLegacy = PrefsUtils.isLegacy( ac );
+        boolean isLegacy = PrefUtils.isLegacy( ac );
 
         // Verify Google Play Services
         if( hasServices || isLegacy ) {
-            hardwareToken = PrefsUtils.getHardwareToken( ac );
-            if( hardwareToken == null ) {
+            mHardwareToken = PrefUtils.getHardwareToken( ac );
+            if( mHardwareToken == null ) {
                 setupPermissions();
-            } else if( !PrefsUtils.isLoggedIn( ac ) || PrefsUtils.getMerchantCurrency( ac ) == null ) {
-                mRequestManager.requestMerchAuth( AUTH_REQ, hardwareToken );
+            } else if( !PrefUtils.isLoggedIn( ac ) || PrefUtils.getMerchantCurrency( ac ) == null ) {
+                mRequestManager.requestMerchAuth(
+                        AUTH_REQ,
+                        mHardwareToken
+                );
             } else {
                 intent = new Intent( ac, LauncherActivity.class );
                 if( bundle != null ) intent.putExtras( bundle );
@@ -135,71 +139,77 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
      * if the bluetooth is off
      */
     private void authenticateUser() {
-        hardwareToken = PrefsUtils.generateHardwareToken( ac );
-        if( hardwareToken == null ) {
+        mHardwareToken = PrefUtils.generateHardwareToken( ac );
+        if( mHardwareToken == null ) {
             ToastMaster.makeText( ac, R.string.message_no_hardware, Toast.LENGTH_LONG ).show();
             finish();
-        } else if( PrefsUtils.getMerchantCurrency( ac ) == null || !PrefsUtils.isLoggedIn( ac ) ) {
-            PrefsUtils.saveHardwareToken( ac, hardwareToken );
-            mRequestManager.requestMerchAuth( AUTH_REQ, hardwareToken );
         } else {
-            Intent intent = new Intent( MainActivity.this, LauncherActivity.class );
-            if( bundle != null ) intent.putExtras( bundle );
-            startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
+            // We have the hardware token, now let's verify if the user exists
+            PrefUtils.saveHardwareToken( ac, mHardwareToken );
+            mRequestManager.requestMerchAuth(
+                    AUTH_REQ,
+                    mHardwareToken
+            );
         }
     }
 
     @Override
     public void onResponse( int responseCode, ServerResponse response ) {
-        String code, message;
+        // Get response values
+        String code    = response.getCode();
+        String message = response.getMessage();
 
         switch( responseCode ) {
             case AUTH_REQ:
-                code = response.getCode();
 
                 switch( code ) {
                     case ServerResponse.AUTHORIZED:
                         // Get the merchant currency
                         mRequestManager.requestQuery(
                                 QUERY_REQ,
-                                hardwareToken,
+                                mHardwareToken,
                                 ServerRequest.QueryRecord.MERCHANT_CURRENCY
                         );
                         break;
 
                     case ServerResponse.ERROR_FAILED:
-                        PrefsUtils.saveLoginStatus( ac, false );
-                        Intent intent = new Intent( MainActivity.this, RegistrationActivity.class );
+                        PrefUtils.saveLoginStatus( ac, false );
+                        Intent intent = new Intent( ac, RegistrationActivity.class );
                         startActivityForResult( intent, ACTIVITY_REGISTRATION_REQUEST );
                         break;
 
                     default:
-                        message = response.getMessage();
-                        PrefsUtils.sendMessage( YodoHandler.INIT_ERROR, handlerMessages, code, message );
+                        YodoHandler.sendMessage( YodoHandler.INIT_ERROR,
+                                mHandlerMessages,
+                                code,
+                                message
+                        );
                         break;
                 }
 
                 break;
 
             case QUERY_REQ:
-                code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
                     // Merchant Currency
-                    String currency = response.getParam( ServerResponse.CURRENCY );
-                    PrefsUtils.saveMerchantCurrency( ac, currency );
+                    String merchCurr = response.getParam( ServerResponse.CURRENCY );
+                    PrefUtils.saveMerchantCurrency( ac, merchCurr );
                     // POS Currency
                     final String[] currencies = getResources().getStringArray( R.array.currency_array );
-                    int position = Arrays.asList( currencies ).indexOf( currency );
-                    PrefsUtils.saveCurrency( ac, position );
+                    int position = Arrays.asList( currencies ).indexOf( merchCurr );
+                    PrefUtils.saveCurrency( ac, position );
                     // Start the app
-                    PrefsUtils.saveLoginStatus( ac, true );
-                    Intent intent = new Intent( MainActivity.this, LauncherActivity.class );
+                    PrefUtils.saveLoginStatus( ac, true );
+                    Intent intent = new Intent( ac, LauncherActivity.class );
                     if( bundle != null ) intent.putExtras( bundle );
                     startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
                 } else {
-                    message = response.getMessage();
-                    PrefsUtils.sendMessage( YodoHandler.INIT_ERROR, handlerMessages, code, message );
+                    YodoHandler.sendMessage( YodoHandler.INIT_ERROR,
+                            mHandlerMessages,
+                            code,
+                            message
+                    );
                 }
 
                 break;
@@ -217,7 +227,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
             switch( requestCode ) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
                     // Google play services installed, start the app again
-                    PrefsUtils.setLegacy( ac, false );
+                    PrefUtils.setLegacy( ac, false );
                     Intent iSplash = new Intent( this, MainActivity.class );
                     iSplash.putExtras( bundle );
                     startActivity( iSplash );
@@ -228,7 +238,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
                     // Get the merchant currency
                     mRequestManager.requestQuery(
                             QUERY_REQ,
-                            hardwareToken,
+                            mHardwareToken,
                             ServerRequest.QueryRecord.MERCHANT_CURRENCY
                     );
                     break;
@@ -244,8 +254,8 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
             switch( requestCode ) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
                     // Denied to install, restart in legacy mode
-                    PrefsUtils.setLegacy( ac, true );
-                    Intent iSplash = new Intent( this, MainActivity.class );
+                    PrefUtils.setLegacy( ac, true );
+                    Intent iSplash = new Intent( ac, MainActivity.class );
                     iSplash.putExtras( bundle );
                     startActivity( iSplash );
                     finish();
@@ -253,8 +263,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
             }
         }
         else if( resultCode == RESULT_FIRST_USER ) {
-            GUIUtils.setLanguage( this );
-            Intent intent = new Intent( MainActivity.this, LauncherActivity.class );
+            Intent intent = new Intent( ac, LauncherActivity.class );
             if( bundle != null ) intent.putExtras( bundle );
             startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
         }

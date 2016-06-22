@@ -51,11 +51,11 @@
 
     <!-- Balance Messages -->
     <string name="yodo_title">Merchant Balance Report</string>
-    <string name="yodo_cash">Yodo Cash</string>
-    <string name="yodo_debits">Yodo Debits</string>
+    <string name="yodo_cash">Yodo Cash:</string>
+    <string name="yodo_debits">Yodo Debits:</string>
     <string name="yodo_cumulative_balance">Cumulative Balance:</string>
-    <string name="to_date">to date:</string>
-    <string name="today">today:</string>
+    <string name="to_date">to date</string>
+    <string name="today">today</string>
     <string name="yodo_today_balance">Today\'s Balance:</string>
 
     <!-- Labels -->

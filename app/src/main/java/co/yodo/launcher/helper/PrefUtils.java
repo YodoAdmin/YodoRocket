@@ -3,21 +3,18 @@ package co.yodo.launcher.helper;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.os.Message;
 import android.telephony.TelephonyManager;
 
 import co.yodo.launcher.component.AES;
-import co.yodo.launcher.component.YodoHandler;
 
 /**
  * Created by luis on 15/12/14.
  * Utilities for the App, Mainly shared preferences
  */
-public class PrefsUtils {
+public class PrefUtils {
     /** DEBUG */
     @SuppressWarnings( "unused" )
-    private static final String TAG = PrefsUtils.class.getSimpleName();
+    private static final String TAG = PrefUtils.class.getSimpleName();
 
     /**
      * A simple check to see if a string is a valid number before inserting
@@ -318,7 +315,7 @@ public class PrefsUtils {
             try {
                 String encryptPip = AES.encrypt( s );
                 writer.putString( AppConfig.SPREF_CURRENT_PASSWORD, encryptPip );
-            } catch (Exception e) {
+            } catch( Exception e ) {
                 e.printStackTrace();
             }
         } else {
@@ -354,7 +351,7 @@ public class PrefsUtils {
      * @return true  The flag was saved successfully.
      *         false The flag was not saved successfully.
      */
-    public static Boolean saveFirstLogin(Context c, Boolean flag) {
+    public static Boolean saveFirstLogin( Context c, Boolean flag ) {
         SharedPreferences config = getSPrefConfig( c );
         SharedPreferences.Editor writer = config.edit();
         writer.putBoolean( AppConfig.SPREF_FIRST_LOGIN, flag );
@@ -367,7 +364,7 @@ public class PrefsUtils {
      * @return true  It is logged in.
      *         false It is not logged in.
      */
-    public static Boolean isFirstLogin(Context c) {
+    public static Boolean isFirstLogin( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
     }
@@ -376,34 +373,4 @@ public class PrefsUtils {
         SharedPreferences config = getSPrefConfig( c );
         return config.getInt( AppConfig.SPREF_CURRENT_BACKGROUND, -0x1 );
     }
-
-    /**
-     * Sends a message to the handler
-     * @param handlerMessages The Handler for the app
-     * @param title The title for the alert
-     * @param message The message for the alert
-     */
-    public static void sendMessage( int messageType, YodoHandler handlerMessages, String title, String message ) {
-        Message msg = new Message();
-        msg.what = messageType;
-
-        Bundle bundle = new Bundle();
-        bundle.putString( YodoHandler.CODE, title );
-        bundle.putString( YodoHandler.MESSAGE, message );
-        msg.setData( bundle );
-
-        handlerMessages.sendMessage( msg );
-    }
-
-    /**
-     * Sends a message to the handler
-     * @param handlerMessages The Handler for the app
-     * @param title The title for the alert
-     * @param message The message for the alert
-     */
-    public static void sendMessage( YodoHandler handlerMessages, String title, String message ) {
-        sendMessage( YodoHandler.SERVER_ERROR, handlerMessages, title, message );
-    }
-
-
 }

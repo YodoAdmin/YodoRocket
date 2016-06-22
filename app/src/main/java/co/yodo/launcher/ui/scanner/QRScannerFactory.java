@@ -1,4 +1,4 @@
-package co.yodo.launcher.scanner;
+package co.yodo.launcher.ui.scanner;
 
 import android.app.Activity;
 

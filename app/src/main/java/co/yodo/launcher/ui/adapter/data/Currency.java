@@ -1,4 +1,4 @@
-package co.yodo.launcher.data;
+package co.yodo.launcher.ui.adapter.data;
 
 import android.graphics.drawable.Drawable;
 

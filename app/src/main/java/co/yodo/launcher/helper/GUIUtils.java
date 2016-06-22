@@ -19,8 +19,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import org.acra.prefs.PrefUtils;
-
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -88,7 +86,7 @@ public class GUIUtils {
     }
 
     public static void setLanguage( Context ac ) {
-        final String language = PrefsUtils.getLanguage( ac );
+        final String language = PrefUtils.getLanguage( ac );
         if( language != null ) {
             Locale appLoc = new Locale( language );
 
@@ -125,7 +123,7 @@ public class GUIUtils {
      */
     public static void setCurrencyIcon( Context c, TextView v ) {
         String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
-        Drawable icon = getDrawableByName( c, icons[ PrefsUtils.getCurrency( c ) ] );
+        Drawable icon = getDrawableByName( c, icons[ PrefUtils.getCurrency( c ) ] );
         icon.setBounds( 3, 0, v.getLineHeight(), (int) ( v.getLineHeight() * 0.9 ) );
         v.setCompoundDrawables( icon, null, null, null );
     }
@@ -159,7 +157,7 @@ public class GUIUtils {
     public static void setMerchantCurrencyIcon( Context c, TextView v ) {
         final String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
         final String[] currencies = c.getResources().getStringArray( R.array.currency_array );
-        final String cur = PrefsUtils.getMerchantCurrency( c );
+        final String cur = PrefUtils.getMerchantCurrency( c );
         final int position = Arrays.asList( currencies ).indexOf( cur );
 
         Drawable icon  = getDrawableByName( c, icons[ position ] );

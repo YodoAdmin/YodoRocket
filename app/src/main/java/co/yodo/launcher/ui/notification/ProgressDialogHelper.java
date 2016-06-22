@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 
 import co.yodo.launcher.R;
+import co.yodo.launcher.ui.component.TransparentProgressDialog;
 
 /**
  * Created by hei on 25/05/16.

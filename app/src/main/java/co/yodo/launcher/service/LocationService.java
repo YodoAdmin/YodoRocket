@@ -15,7 +15,7 @@ import com.google.android.gms.location.LocationServices;
 
 import org.greenrobot.eventbus.EventBus;
 
-import co.yodo.launcher.helper.PrefsUtils;
+import co.yodo.launcher.helper.SystemUtils;
 
 /**
  * Service to obtain the location of the device, this service in particular
@@ -51,7 +51,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
     @Override
     public void onCreate() {
-        PrefsUtils.Logger( TAG, ">> Created" );
+        SystemUtils.Logger( TAG, ">> Created" );
         super.onCreate();
     }
 
@@ -78,7 +78,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     @Override
     public void onDestroy() {
         super.onDestroy();
-        PrefsUtils.Logger( TAG, ">> Destroyed" );
+        SystemUtils.Logger( TAG, ">> Destroyed" );
         // Disconnect from the Google API
         if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
             mGoogleApiClient.disconnect();
@@ -180,13 +180,13 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
     @Override
     public void onConnectionSuspended( int i ) {
-        PrefsUtils.Logger( TAG, "GoogleApiClient connection has been suspended" );
+        SystemUtils.Logger( TAG, "GoogleApiClient connection has been suspended" );
         mGoogleApiClient.connect();
     }
 
     @Override
     public void onConnectionFailed( @NonNull ConnectionResult connectionResult ) {
-        PrefsUtils.Logger( TAG, "GoogleApiClient connection has failed" );
+        SystemUtils.Logger( TAG, "GoogleApiClient connection has failed" );
         stopSelf();
     }
 
@@ -203,7 +203,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             // Save the location as last registered
             lastRegisteredLocation = location;
             // Print location for debugging
-            PrefsUtils.Logger( TAG, location.toString() );
+            SystemUtils.Logger( TAG, location.toString() );
         }
     }
 }

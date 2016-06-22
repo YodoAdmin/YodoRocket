@@ -1,4 +1,4 @@
-package co.yodo.launcher.ui.notification;
+package co.yodo.launcher.ui.component;
 
 import android.app.Dialog;
 import android.content.Context;

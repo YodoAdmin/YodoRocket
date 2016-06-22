@@ -49,7 +49,7 @@ public class SystemUtils {
             if( googleAPI.isUserResolvableError( resultCode ) ) {
                 googleAPI.getErrorDialog( activity, resultCode, code ).show();
             } else {
-                PrefsUtils.setLegacy( activity, true );
+                PrefUtils.setLegacy( activity, true );
             }
             return false;
         }

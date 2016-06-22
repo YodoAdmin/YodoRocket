@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.data.Currency;
+import co.yodo.launcher.ui.adapter.data.Currency;
 
 /**
  * Created by luis on 16/12/14.
@@ -22,13 +22,13 @@ public class CurrencyAdapter extends ArrayAdapter<Currency> {
         TextView nameTxVw;
     }
 
-    public CurrencyAdapter(Context context, Currency[] objects) {
+    public CurrencyAdapter( Context context, Currency[] objects ) {
         super( context, RESOURCE, objects );
         inflater = LayoutInflater.from( context );
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView( int position, View convertView, ViewGroup parent ) {
         ViewHolder holder;
 
         if( convertView == null ) {

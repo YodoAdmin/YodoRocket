@@ -1,4 +1,4 @@
-package co.yodo.launcher.scanner;
+package co.yodo.launcher.ui.scanner;
 
 import android.app.Activity;
 import android.os.Handler;
@@ -14,7 +14,7 @@ import com.scandit.barcodepicker.ScanditLicense;
 import com.scandit.recognition.Barcode;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.PrefsUtils;
+import co.yodo.launcher.helper.SystemUtils;
 
 /**
  * Created by luis on 10/01/16.
@@ -47,7 +47,7 @@ public class ScanditScanner extends QRScanner implements OnScanListener {
 
     public ScanditScanner( Activity activity ) {
         super( activity );
-        PrefsUtils.Logger( TAG, ">> Created" );
+        SystemUtils.Logger( TAG, ">> Created" );
         ScanditLicense.setAppKey( sScanditSdkAppKey );
         // Setup GUI
         opPanel = (TableRow) act.findViewById( R.id.operationsPanel );

@@ -1,14 +1,15 @@
-package co.yodo.launcher.component;
+package co.yodo.launcher.ui.notification;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
 import java.lang.ref.WeakReference;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.ui.notification.AlertDialogHelper;
+import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.restapi.network.model.ServerResponse;
 
 /**
@@ -51,6 +52,7 @@ public class YodoHandler extends Handler {
             };
         }
 
+        GUIUtils.errorSound( main );
         String code     = msg.getData().getString( CODE, ServerResponse.ERROR_FAILED );
         String response = msg.getData().getString( MESSAGE );
 
@@ -67,5 +69,33 @@ public class YodoHandler extends Handler {
             default:
                 AlertDialogHelper.showAlertDialog( main, code, response, clickListener );
         }
+    }
+
+    /**
+     * Sends a message to the handler
+     * @param handlerMessages The Handler for the app
+     * @param title The title for the alert
+     * @param message The message for the alert
+     */
+    public static void sendMessage( int messageType, YodoHandler handlerMessages, String title, String message ) {
+        Message msg = new Message();
+        msg.what = messageType;
+
+        Bundle bundle = new Bundle();
+        bundle.putString( YodoHandler.CODE, title );
+        bundle.putString( YodoHandler.MESSAGE, message );
+        msg.setData( bundle );
+
+        handlerMessages.sendMessage( msg );
+    }
+
+    /**
+     * Sends a message to the handler
+     * @param handlerMessages The Handler for the app
+     * @param title The title for the alert
+     * @param message The message for the alert
+     */
+    public static void sendMessage( YodoHandler handlerMessages, String title, String message ) {
+        sendMessage( YodoHandler.SERVER_ERROR, handlerMessages, title, message );
     }
 }

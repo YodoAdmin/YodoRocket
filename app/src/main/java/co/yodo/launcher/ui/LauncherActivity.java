@@ -9,15 +9,11 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Message;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputFilter;
-import android.text.InputType;
-import android.text.Spanned;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -27,11 +23,9 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -48,25 +42,24 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
-import java.util.HashMap;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.component.YodoHandler;
-import co.yodo.launcher.data.Currency;
 import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.Intents;
-import co.yodo.launcher.helper.PrefsUtils;
+import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
 import co.yodo.launcher.manager.PromotionManager;
-import co.yodo.launcher.scanner.QRScanner;
-import co.yodo.launcher.scanner.QRScannerFactory;
 import co.yodo.launcher.service.LocationService;
-import co.yodo.launcher.ui.adapter.CurrencyAdapter;
-import co.yodo.launcher.ui.component.ClearEditText;
 import co.yodo.launcher.ui.notification.AlertDialogHelper;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.notification.ToastMaster;
+import co.yodo.launcher.ui.notification.YodoHandler;
+import co.yodo.launcher.ui.option.BalanceOption;
+import co.yodo.launcher.ui.option.CurrencyOption;
+import co.yodo.launcher.ui.option.DiscountOption;
+import co.yodo.launcher.ui.scanner.QRScanner;
+import co.yodo.launcher.ui.scanner.QRScannerFactory;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.builder.ServerRequest;
 import co.yodo.restapi.network.handler.XMLHandler;
@@ -77,13 +70,14 @@ public class LauncherActivity extends AppCompatActivity implements
         YodoRequest.RESTListener,
         QRScanner.QRScannerListener {
     /** DEBUG */
+    @SuppressWarnings( "unused" )
     private static final String TAG = LauncherActivity.class.getSimpleName();
 
     /** The context object */
     private Context ac;
 
     /** Hardware Token */
-    private String hardwareToken;
+    private String mHardwareToken;
 
     /** Gui controllers */
     private LinearLayout mRootLayout;
@@ -97,6 +91,11 @@ public class LauncherActivity extends AppCompatActivity implements
     private ImageView mPaymentButton;
     private ProgressBar mBalanceBar;
 
+    /** Options from the navigation window */
+    private CurrencyOption mCurrencyOption;
+    private DiscountOption mDiscountOption;
+    private BalanceOption mBalanceOption;
+
     /** Popup Window for Tips */
     private PopupWindow mPopupMessage;
     private BigDecimal equivalentTender;
@@ -105,17 +104,13 @@ public class LauncherActivity extends AppCompatActivity implements
     private TextView selectedView;
 
     /** Messages Handler */
-    private static YodoHandler handlerMessages;
+    private YodoHandler mHandlerMessages;
 
     /** Manager for the server requests */
     private YodoRequest mRequestManager;
 
     /** Handles the start/stop subscribe/unsubscribe functions of Nearby */
     private PromotionManager mPromotionManager;
-
-    /** Balance Temp */
-    private HashMap<String, String> historyData = null;
-    private HashMap<String, String> todayData = null;
 
     /** Current Scanners */
     private QRScannerFactory mScannerFactory;
@@ -142,17 +137,14 @@ public class LauncherActivity extends AppCompatActivity implements
 
     /** Response codes for the queries */
     private static final int QRY_LOG_REQ  = 0x00;
-    private static final int AUTH_REQ     = 0x01;
-    private static final int QRY_HBAL_REQ = 0x02; // History Balance
-    private static final int QRY_TBAL_REQ = 0x03; // Today Balance
-    private static final int EXCH_REQ     = 0x04;
-    private static final int ALT_REQ      = 0x05;
-    private static final int CURR_REQ     = 0x06;
+    private static final int EXCH_REQ     = 0x02;
+    private static final int ALT_REQ      = 0x03;
+    private static final int CURR_REQ     = 0x04;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        GUIUtils.setLanguage( LauncherActivity.this );
+        GUIUtils.setLanguage( this );
         getWindow().setFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN );
         setContentView( R.layout.activity_launcher );
 
@@ -168,7 +160,7 @@ public class LauncherActivity extends AppCompatActivity implements
         // Setup the required permissions
         setupPermissions();
         // Setup the advertisement service
-        if( PrefsUtils.isAdvertising( ac ) )
+        if( PrefUtils.isAdvertising( ac ) )
             this.mPromotionManager.startService();
     }
 
@@ -185,7 +177,7 @@ public class LauncherActivity extends AppCompatActivity implements
             currentScanner.startScan();
         }
         // Sets Background
-        mRootLayout.setBackgroundColor( PrefsUtils.getCurrentBackground( ac ) );
+        mRootLayout.setBackgroundColor( PrefUtils.getCurrentBackground( ac ) );
     }
 
     @Override
@@ -235,13 +227,13 @@ public class LauncherActivity extends AppCompatActivity implements
     private void setupGUI() {
         // get the context
         ac = LauncherActivity.this;
+        mHandlerMessages = new YodoHandler( LauncherActivity.this );
         mRequestManager = YodoRequest.getInstance( ac );
         mRequestManager.setListener( this );
-        // Loads images from urls
-        //imageCache  = new MemoryBMCache( ac );
-        //imageLoader = new ImageLoader( YodoRequest.getRequestQueue( ac ), imageCache );
+
         // creates the factory for the scanners
         mScannerFactory = new QRScannerFactory( this );
+
         // Globals
         mRootLayout      = (LinearLayout) findViewById( R.id.screenRootView );
         mSlidingLayout   = (SlidingPaneLayout) findViewById( R.id.sliding_panel_layout );
@@ -253,6 +245,12 @@ public class LauncherActivity extends AppCompatActivity implements
         mAvatarImage     = (NetworkImageView) findViewById( R.id.companyLogo );
         mPaymentButton   = (ImageView) findViewById( R.id.ivYodoGear );
         mBalanceBar      = (ProgressBar) findViewById( R.id.progressBarBalance );
+
+        // Global options (navigation window)
+        mCurrencyOption = new CurrencyOption( this );
+        mDiscountOption = new DiscountOption( this, mRequestManager, mHandlerMessages );
+        mBalanceOption = new BalanceOption( this, mRequestManager, mHandlerMessages );
+
         // Logo
         mAvatarImage.setDefaultImageResId( R.drawable.no_image );
         // Popup
@@ -265,13 +263,14 @@ public class LauncherActivity extends AppCompatActivity implements
                 TextView scanner = (TextView) selectedItemView;
                 if( scanner != null )
                     SystemUtils.Logger( TAG, scanner.getText().toString() );
-                PrefsUtils.saveScanner( ac, position );
+                PrefUtils.saveScanner( ac, position );
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
+
         // Create the adapter for the supported qr scanners
         ArrayAdapter<QRScannerFactory.SupportedScanners> adapter = new ArrayAdapter<QRScannerFactory.SupportedScanners>(
                 this,
@@ -286,16 +285,15 @@ public class LauncherActivity extends AppCompatActivity implements
             }
         };
         // Get current selected scanner and verify it exists
-        int position = PrefsUtils.getScanner( ac );
+        int position = PrefUtils.getScanner( ac );
         if( position >= QRScannerFactory.SupportedScanners.length ) {
             position = AppConfig.DEFAULT_SCANNER;
-            PrefsUtils.saveScanner( ac, position );
+            PrefUtils.saveScanner( ac, position );
         }
         // Set the current scanner
         mScannersSpinner.setAdapter( adapter );
-        mScannersSpinner.setSelection( PrefsUtils.getScanner( ac ) );
-        // Start the messages handler
-        handlerMessages   = new YodoHandler( LauncherActivity.this );
+        mScannersSpinner.setSelection( PrefUtils.getScanner( ac ) );
+
         // Set the currency icon
         GUIUtils.setCurrencyIcon( ac, mCashTenderView );
         // Set selected view as the total
@@ -306,7 +304,7 @@ public class LauncherActivity extends AppCompatActivity implements
             @Override
             public boolean onLongClick( View v ) {
                 // Get subtotal with discount
-                BigDecimal discount = new BigDecimal( PrefsUtils.getDiscount( ac ) ).movePointLeft( 2 );
+                BigDecimal discount = new BigDecimal( PrefUtils.getDiscount( ac ) ).movePointLeft( 2 );
                 BigDecimal subTotal = new BigDecimal( mTotalView.getText().toString() ).multiply(
                         BigDecimal.ONE.subtract( discount )
                 );
@@ -357,13 +355,13 @@ public class LauncherActivity extends AppCompatActivity implements
             }
         } );
         // Set an icon there is a discount
-        if( !PrefsUtils.getDiscount( ac ).equals( AppConfig.DEFAULT_DISCOUNT ) ) {
+        if( !PrefUtils.getDiscount( ac ).equals( AppConfig.DEFAULT_DISCOUNT ) ) {
             GUIUtils.setViewIcon( ac, mTotalView, R.drawable.discount );
         }
         // If it is the first login, show the navigation panel
-        if( PrefsUtils.isFirstLogin( ac ) ) {
+        if( PrefUtils.isFirstLogin( ac ) ) {
             mSlidingLayout.openPane();
-            PrefsUtils.saveFirstLogin( ac, false );
+            PrefUtils.saveFirstLogin( ac, false );
         }
 
         // Setup promotion manager
@@ -374,19 +372,17 @@ public class LauncherActivity extends AppCompatActivity implements
      * Set-up the basic information
      */
     private void updateData() {
-        /** Handle external Requests */
+        /********************************* Handle external Requests ****************************************/
+        /***************************************************************************************************/
         externBundle = getIntent().getExtras();
         if( externBundle != null ) {
             BigDecimal total = new BigDecimal( externBundle.getString( Intents.TOTAL, "0.00" ) );
             BigDecimal cashTender = new BigDecimal( externBundle.getString( Intents.CASH_TENDER, "0.00" ) );
             BigDecimal cashBack = new BigDecimal( externBundle.getString( Intents.CASH_BACK, "0.00" ) );
-            //String currency = externBundle.getString( Intents.CURRENCY );
+            //final String currency = externBundle.getString( Intents.TENDER_CURRENCY );
 
             // Checks a positive total value
             if( total.signum() > 0 ) {
-                //BigDecimal tip = new BigDecimal( PrefsUtils.getCurrentTip( ac ) );
-                //tip = tip.scaleByPowerOfTen( -2 ).multiply( total );
-                //mTotalView.setText( total.add( tip ).setScale( 2, RoundingMode.DOWN ).toString() );
                 final String tvTotal = total.setScale( 2, RoundingMode.DOWN ).toString();
                 mTotalView.setText( tvTotal );
             }
@@ -408,19 +404,24 @@ public class LauncherActivity extends AppCompatActivity implements
             // Handle the prompt of the response message from the server
             prompt_response = externBundle.getBoolean( Intents.PROMPT_RESPONSE, true );
         }
-        /*****************************/
+        /***************************************************************************************************/
 
-        hardwareToken = PrefsUtils.getHardwareToken( ac );
-        String logo_url = PrefsUtils.getLogoUrl( ac );
-        SystemUtils.Logger( TAG, logo_url );
+        mHardwareToken = PrefUtils.getHardwareToken( ac );
+        if( mHardwareToken == null ) {
+            ToastMaster.makeText( ac, R.string.message_no_hardware, Toast.LENGTH_LONG ).show();
+            finish();
+        }
+
+        String logo_url = PrefUtils.getLogoUrl( ac );
         if( logo_url.equals( "" ) ) {
             mRequestManager.requestQuery(
                     QRY_LOG_REQ,
-                    hardwareToken,
+                    mHardwareToken,
                     ServerRequest.QueryRecord.MERCHANT_LOGO );
         } else {
             mAvatarImage.setImageUrl( logo_url, mRequestManager.getImageLoader() );
         }
+
         // Mock location
         mLocation = new Location( "flp" );
         mLocation.setLatitude( 0.00 );
@@ -431,7 +432,7 @@ public class LauncherActivity extends AppCompatActivity implements
      * Request the necessary permissions for this activity
      */
     private void setupPermissions() {
-        if( PrefsUtils.isLegacy( ac ) )
+        if( PrefUtils.isLegacy( ac ) )
             return;
 
         boolean locationPermission = SystemUtils.requestPermission(
@@ -509,142 +510,56 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     /**
-     * Creates a dialog to show the balance information
-     */
-    private void balanceDialog() {
-        if( historyData.size() == 1 || todayData.size() == 1 ) {
-            ToastMaster.makeText( ac, R.string.no_balance, Toast.LENGTH_SHORT ).show();
-            return;
-        }
-
-        LayoutInflater inflater = getLayoutInflater();
-        LinearLayout root = (LinearLayout) findViewById( R.id.layoutDialogRoot );
-        View layout = inflater.inflate( R.layout.dialog_balance, root, false );
-
-        TextView todayCreditsText = ( (TextView) layout.findViewById( R.id.yodoTodayCashTextView ) );
-        TextView todayDebitsText  = ( (TextView) layout.findViewById( R.id.yodoTodayDebitsTextView ) );
-        TextView todayBalanceText = ( (TextView) layout.findViewById( R.id.yodoTodayBalanceTextView ) );
-
-        TextView creditsText = ( (TextView) layout.findViewById( R.id.yodoCashTextView ) );
-        TextView debitsText  = ( (TextView) layout.findViewById( R.id.yodoDebitsTextView ) );
-        TextView balanceText = ( (TextView) layout.findViewById( R.id.yodoBalanceTextView ) );
-
-        BigDecimal total = BigDecimal.ZERO;
-
-        BigDecimal result = new BigDecimal( historyData.get( ServerResponse.DEBIT ) );
-        final String tvResult = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
-        debitsText.setText( tvResult );
-        total = total.subtract( result );
-
-        result = new BigDecimal( historyData.get( ServerResponse.CREDIT ) );
-        final String tvCredits = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
-        creditsText.setText( tvCredits );
-        total = total.add( result );
-
-        final String tvBalance = total.negate().setScale( 2, RoundingMode.DOWN ).toString();
-        balanceText.setText( tvBalance );
-        total = BigDecimal.ZERO;
-
-        result = new BigDecimal( todayData.get( ServerResponse.DEBIT ) );
-        final String tvTodayDebit = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
-        todayDebitsText.setText( tvTodayDebit );
-        total = total.subtract( result );
-
-        result = new BigDecimal( todayData.get( ServerResponse.CREDIT ) );
-        final String tvTodayCredit = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
-        todayCreditsText.setText( tvTodayCredit );
-        total = total.add( result );
-
-        final String tvTodayBalance = total.negate().setScale( 2, RoundingMode.DOWN ).toString();
-        todayBalanceText.setText( tvTodayBalance );
-
-        AlertDialogHelper.showAlertDialog( ac, getString( R.string.yodo_title ), layout );
-        todayData = historyData = null;
-    }
-
-    /**
      * Gets the used currencies (merchant and tender) and requests their rates from the
      * server or cache
      */
     private void requestCurrencies() {
         String[] currencies = ac.getResources().getStringArray( R.array.currency_array );
-        String merchantCurr = PrefsUtils.getMerchantCurrency( ac );
-        String tenderCurr   = currencies[ PrefsUtils.getCurrency( ac ) ];
+        String merchantCurr = PrefUtils.getMerchantCurrency( ac );
+        String tenderCurr   = currencies[ PrefUtils.getCurrency( ac ) ];
         mRequestManager.requestCurrencies( CURR_REQ, merchantCurr, tenderCurr );
     }
 
     /**
-     * Changes the current currency
+     * Button Actions.
+     * {{ ==============================================
+     */
+
+    /**
+     * Sets the currency for a transaction
      * @param v View, used to get the title
      */
     public void setCurrencyClick(View v) {
         mSlidingLayout.closePane();
-
-        final String[] currency = getResources().getStringArray( R.array.currency_array );
-        final String[] icons    = getResources().getStringArray( R.array.currency_icon_array );
-
-        Currency[] currencyList = new Currency[currency.length];
-        for( int i = 0; i < currency.length; i++ )
-            currencyList[i] = new Currency( currency[i], GUIUtils.getDrawableByName( ac, icons[i] ) );
-
-        final String title        = ((Button) v).getText().toString();
-        final ListAdapter adapter = new CurrencyAdapter( ac, currencyList );
-        final int current         = PrefsUtils.getCurrency( ac );
-
-        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-            public void onClick( DialogInterface dialog, int item ) {
-                PrefsUtils.saveCurrency( ac, item );
-
-                Drawable icon = GUIUtils.getDrawableByName( ac, icons[ item ] );
-                icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int) ( mCashTenderView.getLineHeight() * 0.9 ) );
-                mCashTenderView.setCompoundDrawables( icon, null, null, null );
-                // Request the tender value in the rate of the merchant currency
-                requestCurrencies();
-
-                dialog.dismiss();
-            }
-        };
-
-        AlertDialogHelper.showAlertDialog(
-                ac,
-                title,
-                adapter,
-                current,
-                onClick
-        );
+        mCurrencyOption.execute();
     }
 
+    public void currency( Drawable icon ) {
+        icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int) ( mCashTenderView.getLineHeight() * 0.9 ) );
+        mCashTenderView.setCompoundDrawables( icon, null, null, null );
+        // Request the tender value in the rate of the merchant currency
+        requestCurrencies();
+    }
+
+    /**
+     * Sets a discount for all the transactions
+     * @param v The view is not used
+     */
     public void setDiscountClick( View v ) {
         mSlidingLayout.closePane();
+        mDiscountOption.execute();
+    }
 
-        final String title      = getString( R.string.input_pip );
-        final EditText inputBox = new ClearEditText( ac );
-
-        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick( DialogInterface dialog, int item ) {
-                String pip = inputBox.getText().toString();
-                GUIUtils.hideSoftKeyboard( LauncherActivity.this );
-
-                ProgressDialogHelper.getInstance().createProgressDialog(
-                        ac,
-                        ProgressDialogHelper.ProgressDialogType.NORMAL
-                );
-                mRequestManager.requestMerchAuth(
-                        AUTH_REQ,
-                        hardwareToken,
-                        pip
-                );
-            }
-        };
-
-        AlertDialogHelper.showAlertDialog(
-                ac,
-                title,
-                inputBox, true, false,
-                null,
-                onClick
-        );
+    public void discount( EditText inputBox ) {
+        final String discount = inputBox.getText().toString();
+        if( discount.length() > 0 ) {
+            PrefUtils.saveDiscount( ac, discount );
+            GUIUtils.setViewIcon( ac, mTotalView, R.drawable.discount );
+        } else {
+            PrefUtils.saveDiscount( ac, AppConfig.DEFAULT_DISCOUNT );
+            GUIUtils.setViewIcon( ac, mTotalView, null );
+        }
+        requestCurrencies();
     }
 
     /**
@@ -653,7 +568,6 @@ public class LauncherActivity extends AppCompatActivity implements
      */
     public void settingsClick( View v ) {
         mSlidingLayout.closePane();
-
         Intent intent = new Intent( ac, SettingsActivity.class );
         startActivityForResult( intent, REQUEST_SETTINGS );
     }
@@ -662,66 +576,23 @@ public class LauncherActivity extends AppCompatActivity implements
      * Gets the balance of the POS
      * @param v View, not used
      */
-    public void getBalanceClick(View v) {
+    public void getBalanceClick( View v ) {
         mSlidingLayout.closePane();
-
-        final String title      = getString( R.string.input_pip );
-        final EditText inputBox = new ClearEditText( ac );
-        final CheckBox remember = new CheckBox( ac );
-        remember.setText( R.string.remember_pass );
-
-        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int item) {
-                String pip = inputBox.getText().toString();
-                GUIUtils.hideSoftKeyboard( LauncherActivity.this );
-
-                if( remember.isChecked() )
-                    PrefsUtils.savePassword( ac, pip );
-                else
-                    PrefsUtils.savePassword( ac, null );
-
-                ProgressDialogHelper.getInstance().createProgressDialog(
-                        LauncherActivity.this,
-                        ProgressDialogHelper.ProgressDialogType.NORMAL
-                );
-
-                mRequestManager.requestQuery(
-                        QRY_HBAL_REQ,
-                        hardwareToken,
-                        pip,
-                        ServerRequest.QueryRecord.HISTORY_BALANCE
-                );
-
-                mRequestManager.requestQuery(
-                        QRY_TBAL_REQ,
-                        hardwareToken,
-                        pip,
-                        ServerRequest.QueryRecord.TODAY_BALANCE
-                );
-            }
-        };
-
-        AlertDialogHelper.showAlertDialog(
-                ac,
-                title,
-                inputBox, false, true,
-                remember,
-                onClick
-        );
+        mBalanceOption.execute();
     }
 
     /**
      * Shows some basic information about the POS
      * @param v View, not used
      */
-    public void aboutClick(View v) {
+    public void aboutClick( View v ) {
         mSlidingLayout.closePane();
 
         final String title   = ((Button) v).getText().toString();
         final String message = getString( R.string.imei )    + " " +
-                               PrefsUtils.getHardwareToken( ac ) + "\n" +
+                               PrefUtils.getHardwareToken( ac ) + "\n" +
                                getString( R.string.label_currency )    + " " +
-                               PrefsUtils.getMerchantCurrency( ac ) + "\n" +
+                               PrefUtils.getMerchantCurrency( ac ) + "\n" +
                                getString( R.string.version_label ) + " " +
                                getString( R.string.version_value ) + "/" +
                                YodoRequest.getSwitch();
@@ -738,10 +609,9 @@ public class LauncherActivity extends AppCompatActivity implements
      * Logout the user
      * @param v View, not used
      */
-    public void logoutClick(View v) {
-        //imageCache.clear();
-        PrefsUtils.saveLoginStatus( ac, false );
-        PrefsUtils.saveLogoUrl( ac, "" );
+    public void logoutClick( View v ) {
+        PrefUtils.saveLoginStatus( ac, false );
+        PrefUtils.saveLogoUrl( ac, "" );
         finish();
     }
 
@@ -816,7 +686,7 @@ public class LauncherActivity extends AppCompatActivity implements
      * Handles on back pressed
      * @param v View, not used
      */
-    public void backClick(View v) {
+    public void backClick( View v ) {
         onBackPressed();
     }
 
@@ -861,109 +731,6 @@ public class LauncherActivity extends AppCompatActivity implements
 
         switch( responseCode ) {
 
-            case AUTH_REQ:
-                code = response.getCode();
-
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    final String title      = getString( R.string.text_set_discount ) + " (%)";
-                    final EditText inputBox = new ClearEditText( ac );
-                    inputBox.setInputType( InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL );
-
-                    InputFilter filter = new InputFilter() {
-                        final int maxDigitsBeforeDecimalPoint = 2;
-                        final int maxDigitsAfterDecimalPoint  = 2;
-
-                        @Override
-                        public CharSequence filter( CharSequence source, int start, int end, Spanned dest, int dstart, int dend ) {
-                            StringBuilder builder = new StringBuilder( dest );
-                            builder.replace( dstart, dend, source.subSequence( start, end ).toString() );
-                            if( !builder.toString().matches(
-                                    "(([" +( maxDigitsBeforeDecimalPoint - 1 ) +
-                                    "-9])([0-9]?)?)?(\\.[0-9]{0," + maxDigitsAfterDecimalPoint + "})?"
-
-                            )) {
-                                if( source.length() == 0 )
-                                    return dest.subSequence( dstart, dend );
-                                return "";
-                            }
-
-                            return null;
-                        }
-                    };
-                    inputBox.setFilters( new InputFilter[] { filter } );
-                    inputBox.setText( PrefsUtils.getDiscount( ac ) );
-
-                    DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int item) {
-                            String discount = inputBox.getText().toString();
-                            GUIUtils.hideSoftKeyboard( LauncherActivity.this );
-                            if( discount.length() > 0 ) {
-                                PrefsUtils.saveDiscount( ac, discount );
-                                GUIUtils.setViewIcon( ac, mTotalView, R.drawable.discount );
-                            } else {
-                                PrefsUtils.saveDiscount( ac, AppConfig.DEFAULT_DISCOUNT );
-                                GUIUtils.setViewIcon( ac, mTotalView, null );
-                            }
-                            requestCurrencies();
-                        }
-                    };
-
-                    AlertDialogHelper.showAlertDialog(
-                            ac,
-                            title,
-                            inputBox,
-                            onClick
-                    );
-                } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
-                    GUIUtils.errorSound( ac );
-
-                    Message msg = new Message();
-                    msg.what = YodoHandler.SERVER_ERROR;
-                    message  = getString( R.string.message_incorrect_pip );
-
-                    Bundle bundle = new Bundle();
-                    bundle.putString( YodoHandler.CODE, code );
-                    bundle.putString( YodoHandler.MESSAGE, message );
-                    msg.setData( bundle );
-
-                    handlerMessages.sendMessage( msg );
-                }
-                break;
-
-            case QRY_HBAL_REQ:
-                code = response.getCode();
-
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    historyData = response.getParams();
-                    if( todayData != null )
-                        balanceDialog();
-                } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
-                    GUIUtils.errorSound( ac );
-
-                    Message msg = new Message();
-                    msg.what = YodoHandler.SERVER_ERROR;
-                    message  = response.getMessage();
-
-                    Bundle bundle = new Bundle();
-                    bundle.putString( YodoHandler.CODE, code );
-                    bundle.putString( YodoHandler.MESSAGE, message );
-                    msg.setData( bundle );
-
-                    handlerMessages.sendMessage( msg );
-                    todayData = historyData = null;
-                }
-                break;
-
-            case QRY_TBAL_REQ:
-                code = response.getCode();
-
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    todayData = response.getParams();
-                    if( historyData != null )
-                        balanceDialog();
-                }
-                break;
-
             case QRY_LOG_REQ:
                 code = response.getCode();
 
@@ -972,7 +739,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
                     if( logoName != null ) {
                         String logo_url = AppConfig.LOGO_PATH + logoName;
-                        PrefsUtils.saveLogoUrl( ac, logo_url );
+                        PrefUtils.saveLogoUrl( ac, logo_url );
                         mAvatarImage.setImageUrl( logo_url, mRequestManager.getImageLoader() );
                     }
                 }
@@ -995,14 +762,14 @@ public class LauncherActivity extends AppCompatActivity implements
                     BigDecimal temp_tender = new BigDecimal( mCashTenderView.getText().toString() );
 
                     // Transform the currencies using the rate
-                    if( AppConfig.URL_CURRENCY.equals( currencies[ PrefsUtils.getCurrency( ac ) ] ) ) {
+                    if( AppConfig.URL_CURRENCY.equals( currencies[ PrefUtils.getCurrency( ac ) ] ) ) {
                         equivalentTender = temp_tender.multiply( merchRate );
                     } else {
                         BigDecimal currency_rate = merchRate.divide( fareRate, 2, RoundingMode.DOWN );
                         equivalentTender = temp_tender.multiply( currency_rate );
                     }
                     // Get subtotal with discount
-                    BigDecimal discount = new BigDecimal( PrefsUtils.getDiscount( ac ) ).movePointLeft( 2 );
+                    BigDecimal discount = new BigDecimal( PrefUtils.getDiscount( ac ) ).movePointLeft( 2 );
                     BigDecimal subTotal = new BigDecimal( totalPurchase ).multiply(
                             BigDecimal.ONE.subtract( discount )
                     );
@@ -1064,11 +831,11 @@ public class LauncherActivity extends AppCompatActivity implements
                     final String[] currency = getResources().getStringArray( R.array.currency_array );
 
                     // Gets the merchant currency and its position in the array of currencies
-                    final String merchCurrency = PrefsUtils.getMerchantCurrency( ac );
+                    final String merchCurrency = PrefUtils.getMerchantCurrency( ac );
                     if( merchCurrency != null ) {
                         final int currPosition = Arrays.asList( currency ).indexOf( merchCurrency );
                         // Saves the currency and sets the icon
-                        PrefsUtils.saveCurrency( ac, currPosition );
+                        PrefUtils.saveCurrency( ac, currPosition );
                         GUIUtils.setCurrencyIcon( ac, mCashTenderView );
                     }
 
@@ -1078,7 +845,7 @@ public class LauncherActivity extends AppCompatActivity implements
                 } else {
                     GUIUtils.errorSound( ac );
                     message  = response.getMessage() + "\n" + response.getParam( XMLHandler.PARAMS );
-                    PrefsUtils.sendMessage( handlerMessages, code, message );
+                    YodoHandler.sendMessage( mHandlerMessages, code, message );
                 }
                 break;
         }
@@ -1089,7 +856,7 @@ public class LauncherActivity extends AppCompatActivity implements
         final String[] currency = getResources().getStringArray( R.array.currency_array );
 
         // Get subtotal with discount
-        BigDecimal discount = new BigDecimal( PrefsUtils.getDiscount( ac ) ).movePointLeft( 2 );
+        BigDecimal discount = new BigDecimal( PrefUtils.getDiscount( ac ) ).movePointLeft( 2 );
         BigDecimal subTotal = new BigDecimal( mTotalView.getText().toString() ).multiply(
                 BigDecimal.ONE.subtract( discount )
         );
@@ -1107,14 +874,14 @@ public class LauncherActivity extends AppCompatActivity implements
 
                 mRequestManager.requestExchange(
                         EXCH_REQ,
-                        hardwareToken,
+                        mHardwareToken,
                         data,
                         totalPurchase,
                         cashTender,
                         cashBack,
                         mLocation.getLatitude(),
                         mLocation.getLongitude(),
-                        currency[ PrefsUtils.getCurrency( ac ) ]
+                        currency[ PrefUtils.getCurrency( ac ) ]
                 );
                 break;
 
@@ -1130,14 +897,14 @@ public class LauncherActivity extends AppCompatActivity implements
                 mRequestManager.requestAlternate(
                         ALT_REQ,
                         accountType,
-                        hardwareToken,
+                        mHardwareToken,
                         clientData,
                         totalPurchase,
                         cashTender,
                         cashBack,
                         mLocation.getLatitude(),
                         mLocation.getLongitude(),
-                        currency[ PrefsUtils.getCurrency( ac ) ]
+                        currency[ PrefUtils.getCurrency( ac ) ]
                 );
                 break;
 

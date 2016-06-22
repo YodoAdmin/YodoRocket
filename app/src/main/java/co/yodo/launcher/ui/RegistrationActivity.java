@@ -14,9 +14,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.component.YodoHandler;
+import co.yodo.launcher.helper.PrefUtils;
+import co.yodo.launcher.ui.notification.YodoHandler;
 import co.yodo.launcher.helper.GUIUtils;
-import co.yodo.launcher.helper.PrefsUtils;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.restapi.network.YodoRequest;
@@ -93,11 +93,11 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     }
 
     private void updateData() {
-        if( PrefsUtils.isLoggedIn( ac ) )
+        if( PrefUtils.isLoggedIn( ac ) )
             finish();
 
         // Gets the hardware token - account identifier
-        hardwareToken = PrefsUtils.getHardwareToken( ac );
+        hardwareToken = PrefUtils.getHardwareToken( ac );
         if( hardwareToken == null ) {
             ToastMaster.makeText( ac, R.string.message_no_hardware, Toast.LENGTH_LONG ).show();
             finish();
@@ -146,7 +146,7 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
                     finish();
                 } else {
                     String message = response.getMessage();
-                    PrefsUtils.sendMessage( handlerMessages, code, message );
+                    YodoHandler.sendMessage( handlerMessages, code, message );
                 }
                 break;
         }

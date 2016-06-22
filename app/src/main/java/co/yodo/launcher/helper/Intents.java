@@ -5,17 +5,17 @@ package co.yodo.launcher.helper;
  * Handle the external applications
  */
 public class Intents {
-    /* Action */
+    /** Action */
     public static final String ACTION = "co.yodo.launcher.POS";
 
-    /* Values */
+    /** Values */
     public static final String TOTAL           = "TOTAL";
     public static final String CASH_TENDER     = "CASH_TENDER";
     public static final String CASH_BACK       = "CASH_BACK";
-    public static final String CURRENCY        = "CURRENCY";
+    public static final String TENDER_CURRENCY = "TENDER_CURRENCY";
     public static final String PROMPT_RESPONSE = "PROMPT_RESPONSE";
 
-    /* Return */
+    /** Return */
     public static final String RESULT_CODE = "RESULT_CODE";
     public static final String RESULT_AUTH = "RESULT_AUTH";
     public static final String RESULT_MSG  = "RESULT_MSG";

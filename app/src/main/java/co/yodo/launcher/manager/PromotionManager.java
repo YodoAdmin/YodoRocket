@@ -17,7 +17,7 @@ import com.google.android.gms.nearby.messages.PublishOptions;
 import com.google.android.gms.nearby.messages.Strategy;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.PrefsUtils;
+import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
 
 
@@ -75,7 +75,7 @@ public class PromotionManager {
     }
 
     public void startService() {
-        if( PrefsUtils.isLegacy( ac ) )
+        if( PrefUtils.isLegacy( ac ) )
             return;
 
         // We are going to start publishing
@@ -117,7 +117,7 @@ public class PromotionManager {
                 mGoogleApiClient.connect();
             }
         } else {
-            String message = PrefsUtils.getBeaconName( ac );
+            String message = PrefUtils.getBeaconName( ac );
             mActiveMessage = new Message( message.getBytes() );
 
             PublishOptions options = new PublishOptions.Builder()
