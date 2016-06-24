@@ -122,8 +122,13 @@ public class GUIUtils {
      * @param v The view to modify the drawable
      */
     public static void setCurrencyIcon( Context c, TextView v ) {
+        // Get currencies and icons
+        String[] currencies = c.getResources().getStringArray( R.array.currency_array );
         String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
-        Drawable icon = getDrawableByName( c, icons[ PrefUtils.getCurrency( c ) ] );
+
+        // Set the drawable to the TextView
+        final int current = Arrays.asList( currencies ).indexOf( PrefUtils.getTenderCurrency( c ) );
+        Drawable icon = getDrawableByName( c, icons[current] );
         icon.setBounds( 3, 0, v.getLineHeight(), (int) ( v.getLineHeight() * 0.9 ) );
         v.setCompoundDrawables( icon, null, null, null );
     }

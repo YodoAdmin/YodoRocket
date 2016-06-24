@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.telephony.TelephonyManager;
 
+import java.util.Arrays;
+
+import co.yodo.launcher.R;
 import co.yodo.launcher.component.AES;
 
 /**
@@ -24,6 +27,7 @@ public class PrefUtils {
      * @return true  It is a number.
      *         false It is not a number.
      */
+    @SuppressWarnings( "all" )
     public static Boolean isNumber(String s) {
         try {
             Integer.parseInt(s);
@@ -110,14 +114,38 @@ public class PrefUtils {
     }
 
     /**
-     * Returns if the device is leagacy (doesn't support Google Service)
+     * Returns if the device is advertising
      * @param c The Android application context
-     * @return True if legacy
-     *         False if not
+     * @return True if it is advertising
+     *         False if it is not
      */
     public static Boolean isAdvertising( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getBoolean( AppConfig.SPREF_ADVERTISING_SERVICE, false );
+    }
+
+    /**
+     * Returns if the device is getting the location
+     * @param c The Android application context
+     * @return True if it is getting the location
+     *         False if it is not
+     */
+    public static Boolean isLocating( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getBoolean( AppConfig.SPREF_LOCATION_SERVICE, false );
+    }
+
+    /**
+     * Save the current state of the location service
+     * @param c The Android application context
+     * @return true  The flag was saved successfully.
+     *         false The flag was not saved successfully.
+     */
+    public static Boolean saveLocating( Context c, Boolean flag ) {
+        SharedPreferences config = getSPrefConfig( c );
+        SharedPreferences.Editor writer = config.edit();
+        writer.putBoolean( AppConfig.SPREF_LOCATION_SERVICE, flag );
+        return writer.commit();
     }
 
     /**
@@ -127,7 +155,7 @@ public class PrefUtils {
      * @return true  The flag was saved successfully.
      *         false The flag was not saved successfully.
      */
-    public static Boolean saveLoginStatus(Context c, Boolean flag) {
+    public static Boolean saveLoginStatus( Context c, Boolean flag ) {
         SharedPreferences config = getSPrefConfig( c );
         SharedPreferences.Editor writer = config.edit();
         writer.putBoolean( AppConfig.SPREF_LOGIN_STATE, flag );
@@ -182,30 +210,37 @@ public class PrefUtils {
     /**
      * It saves the currency array position to the preferences.
      * @param c The Context of the Android system.
-     * @param n The currency position on the array.
+     * @param currency The currency name
      * @return true  If it was saved.
      *         false If it was not saved.
      */
-    public static Boolean saveCurrency( Context c, int n ) {
+    public static Boolean saveTenderCurrency( Context c, String currency ) {
+        // Supported currencies
+        final String[] currencies = c.getResources().getStringArray( R.array.currency_array );
         SharedPreferences config = getSPrefConfig( c );
         SharedPreferences.Editor writer = config.edit();
-        writer.putInt( AppConfig.SPREF_CURRENT_CURRENCY, n );
+        if( Arrays.asList( currencies ).contains( currency ) )
+            writer.putString( AppConfig.SPREF_CURRENT_CURRENCY, currency );
+        else
+            writer.putString( AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY );
         return writer.commit();
     }
 
     /**
      * It gets the currency position.
      * @param c The Context of the Android system.
-     * @return int It returns the currency position.
+     * @return int It returns the currency name.
      */
-    public static int getCurrency( Context c ) {
+    public static String getTenderCurrency( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
-        int position = config.getInt( AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY );
-        if( position < 0 ) {
-            position = AppConfig.DEFAULT_CURRENCY;
-            saveCurrency( c, position );
+        // Looks for any problem in previous preferences
+        try {
+            config.getString( AppConfig.SPREF_CURRENT_CURRENCY, null );
+        } catch( ClassCastException e ) {
+            e.printStackTrace();
+            return null;
         }
-        return position;
+        return config.getString( AppConfig.SPREF_CURRENT_CURRENCY, null );
     }
 
     /**
@@ -264,16 +299,6 @@ public class PrefUtils {
     public static String getBeaconName( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getString( AppConfig.SPREF_CURRENT_BEACON, "" );
-    }
-
-    /**
-     * It gets the current tip (%).
-     * @param c The Context of the Android system.
-     * @return int It returns the tip percentage.
-     */
-    public static String getCurrentTip( Context c ) {
-        SharedPreferences config = getSPrefConfig( c );
-        return config.getString( AppConfig.SPREF_CURRENT_TIP, AppConfig.DEFAULT_TIP );
     }
 
     /**

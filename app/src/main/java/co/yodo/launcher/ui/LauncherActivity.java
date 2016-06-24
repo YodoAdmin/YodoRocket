@@ -41,7 +41,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.AppConfig;
@@ -55,6 +54,7 @@ import co.yodo.launcher.ui.notification.AlertDialogHelper;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.launcher.ui.notification.YodoHandler;
+import co.yodo.launcher.ui.option.AboutOption;
 import co.yodo.launcher.ui.option.BalanceOption;
 import co.yodo.launcher.ui.option.CurrencyOption;
 import co.yodo.launcher.ui.option.DiscountOption;
@@ -95,6 +95,7 @@ public class LauncherActivity extends AppCompatActivity implements
     private CurrencyOption mCurrencyOption;
     private DiscountOption mDiscountOption;
     private BalanceOption mBalanceOption;
+    private AboutOption mAboutOption;
 
     /** Popup Window for Tips */
     private PopupWindow mPopupMessage;
@@ -148,8 +149,13 @@ public class LauncherActivity extends AppCompatActivity implements
         getWindow().setFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN );
         setContentView( R.layout.activity_launcher );
 
-        setupGUI();
-        updateData();
+        try {
+            setupGUI();
+            updateData();
+        } catch( Exception e ) {
+            e.printStackTrace();
+            PrefUtils.saveLoginStatus( ac, false );
+        }
     }
 
     @Override
@@ -157,8 +163,9 @@ public class LauncherActivity extends AppCompatActivity implements
         super.onStart();
         // register to event bus
         EventBus.getDefault().register( this );
-        // Setup the required permissions
-        setupPermissions();
+        // Setup the required permissions for location
+        if( PrefUtils.isLocating( ac ) )
+            setupLocation();
         // Setup the advertisement service
         if( PrefUtils.isAdvertising( ac ) )
             this.mPromotionManager.startService();
@@ -250,6 +257,7 @@ public class LauncherActivity extends AppCompatActivity implements
         mCurrencyOption = new CurrencyOption( this );
         mDiscountOption = new DiscountOption( this, mRequestManager, mHandlerMessages );
         mBalanceOption = new BalanceOption( this, mRequestManager, mHandlerMessages );
+        mAboutOption = new AboutOption( this );
 
         // Logo
         mAvatarImage.setDefaultImageResId( R.drawable.no_image );
@@ -429,9 +437,9 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     /**
-     * Request the necessary permissions for this activity
+     * Request the necessary permissions for the location
      */
-    private void setupPermissions() {
+    private void setupLocation() {
         if( PrefUtils.isLegacy( ac ) )
             return;
 
@@ -447,15 +455,10 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     /**
-     * Asks the user to enable the location services, otherwise it
-     * closes the application
+     * Asks the user to enable the location services
      */
     private void enableLocation() {
-        // If the device doesn't support the Location service, just finish the app
-        if( !SystemUtils.hasLocationService( ac ) ) {
-            ToastMaster.makeText( ac, R.string.message_no_gps_support, Toast.LENGTH_SHORT ).show();
-            finish();
-        } else if( SystemUtils.isLocationEnabled( ac ) ) {
+        if( SystemUtils.isLocationEnabled( ac ) ) {
             // Start the location service
             Intent iLoc = new Intent( ac, LocationService.class );
             if( !SystemUtils.isMyServiceRunning( ac, LocationService.class.getName() ) )
@@ -471,7 +474,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
             DialogInterface.OnClickListener onCancel = new DialogInterface.OnClickListener() {
                 public void onClick( DialogInterface dialog, int item ) {
-                    finish();
+                    PrefUtils.saveLocating( ac, false );
                 }
             };
 
@@ -514,9 +517,8 @@ public class LauncherActivity extends AppCompatActivity implements
      * server or cache
      */
     private void requestCurrencies() {
-        String[] currencies = ac.getResources().getStringArray( R.array.currency_array );
         String merchantCurr = PrefUtils.getMerchantCurrency( ac );
-        String tenderCurr   = currencies[ PrefUtils.getCurrency( ac ) ];
+        String tenderCurr = PrefUtils.getTenderCurrency( ac );
         mRequestManager.requestCurrencies( CURR_REQ, merchantCurr, tenderCurr );
     }
 
@@ -587,22 +589,7 @@ public class LauncherActivity extends AppCompatActivity implements
      */
     public void aboutClick( View v ) {
         mSlidingLayout.closePane();
-
-        final String title   = ((Button) v).getText().toString();
-        final String message = getString( R.string.imei )    + " " +
-                               PrefUtils.getHardwareToken( ac ) + "\n" +
-                               getString( R.string.label_currency )    + " " +
-                               PrefUtils.getMerchantCurrency( ac ) + "\n" +
-                               getString( R.string.version_label ) + " " +
-                               getString( R.string.version_value ) + "/" +
-                               YodoRequest.getSwitch();
-
-        AlertDialogHelper.showAlertDialog(
-                ac,
-                title,
-                message,
-                null
-        );
+        mAboutOption.execute();
     }
 
     /**
@@ -619,7 +606,7 @@ public class LauncherActivity extends AppCompatActivity implements
      * Change the selected view (purchase, cash tender, or cash back)
      * @param v The selected view
      */
-    public void viewClick(View v) {
+    public void viewClick( View v ) {
         if( selectedView != null )
             selectedView.setBackgroundResource( R.drawable.show_text_field );
 
@@ -641,14 +628,15 @@ public class LauncherActivity extends AppCompatActivity implements
         mBalanceView.setText( zero );
     }
 
-    /** Handle numeric button clicked
-     *  @param v View, used to get the number
+    /**
+     * Handle numeric button clicked
+     * @param v View, used to get the number
      */
     @SuppressWarnings( "unused" )
     public void valueClick( View v ) {
-        final String value   = ((Button)v).getText().toString();
+        final String value = ((Button)v).getText().toString();
 
-        // This button is not working
+        // This button is not working value_.
         if( value.equals( getString( R.string.value__ ) ) )
             return;
 
@@ -691,6 +679,22 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     /**
+     * Opens the scanner to realize a payment
+     * @param v The View, not used
+     */
+    public void yodoPayClick(View v) {
+        boolean cameraPermission = SystemUtils.requestPermission(
+                LauncherActivity.this,
+                R.string.message_permission_camera,
+                Manifest.permission.CAMERA,
+                PERMISSIONS_REQUEST_CAMERA
+        );
+
+        if( cameraPermission )
+            showCamera();
+    }
+
+    /**
      * Request the permission for the camera
      */
     private void showCamera() {
@@ -706,22 +710,6 @@ public class LauncherActivity extends AppCompatActivity implements
 
         if( currentScanner != null )
             currentScanner.startScan();
-    }
-
-    /**
-     * Opens the scanner to realize a payment
-     * @param v The View, not used
-     */
-    public void yodoPayClick(View v) {
-        boolean cameraPermission = SystemUtils.requestPermission(
-                LauncherActivity.this,
-                R.string.message_permission_camera,
-                Manifest.permission.CAMERA,
-                PERMISSIONS_REQUEST_CAMERA
-        );
-
-        if( cameraPermission )
-            showCamera();
     }
 
     @Override
@@ -750,19 +738,17 @@ public class LauncherActivity extends AppCompatActivity implements
                 final String sFareRate  = response.getParam( ServerResponse.TENDER_RATE );
 
                 if( sMerchRate != null && sFareRate != null ) {
-                    // List of Currencies
-                    String[] currencies = ac.getResources().getStringArray( R.array.currency_array );
                     // Get the rates in BigDecimals
                     BigDecimal merchRate = new BigDecimal( sMerchRate );
                     BigDecimal fareRate = new BigDecimal( sFareRate );
                     // Get the values of the total and cashback
-                    String totalPurchase   = mTotalView.getText().toString();
-                    String cashBack        = mCashBackView.getText().toString();
+                    String totalPurchase = mTotalView.getText().toString();
+                    String cashBack      = mCashBackView.getText().toString();
                     // Get raw value, in order to transform
                     BigDecimal temp_tender = new BigDecimal( mCashTenderView.getText().toString() );
 
                     // Transform the currencies using the rate
-                    if( AppConfig.URL_CURRENCY.equals( currencies[ PrefUtils.getCurrency( ac ) ] ) ) {
+                    if( AppConfig.URL_CURRENCY.equals( PrefUtils.getTenderCurrency( ac ) ) ) {
                         equivalentTender = temp_tender.multiply( merchRate );
                     } else {
                         BigDecimal currency_rate = merchRate.divide( fareRate, 2, RoundingMode.DOWN );
@@ -799,14 +785,14 @@ public class LauncherActivity extends AppCompatActivity implements
             case ALT_REQ:
                 code = response.getCode();
                 final String ex_code       = response.getCode();
-                final String ex_authNumber = response.getAuthNumber();
+                final String ex_authbumber = response.getAuthNumber();
                 final String ex_message    = response.getMessage();
                 final String ex_account    = response.getParam( ServerResponse.ACCOUNT );
                 final String ex_purchase   = response.getParam( ServerResponse.PURCHASE );
-                final String ex_amount     = response.getParam( ServerResponse.AMOUNT_DELTA );
+                final String ex_delta      = response.getParam( ServerResponse.AMOUNT_DELTA );
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    message = getString( R.string.exchange_auth ) + " " + ex_authNumber + "\n" +
+                    message = getString( R.string.exchange_auth ) + " " + ex_authbumber + "\n" +
                               getString( R.string.exchange_message ) + " " + ex_message;
 
                     DialogInterface.OnClickListener onClick = null;
@@ -814,11 +800,11 @@ public class LauncherActivity extends AppCompatActivity implements
                     if( externBundle != null ) {
                         final Intent data = new Intent();
                         data.putExtra( Intents.RESULT_CODE, ex_code );
-                        data.putExtra( Intents.RESULT_AUTH, ex_authNumber );
+                        data.putExtra( Intents.RESULT_AUTH, ex_authbumber );
                         data.putExtra( Intents.RESULT_MSG, ex_message );
                         data.putExtra( Intents.RESULT_ACC, ex_account );
                         data.putExtra( Intents.RESULT_PUR, ex_purchase );
-                        data.putExtra( Intents.RESULT_DEL, ex_amount );
+                        data.putExtra( Intents.RESULT_DEL, ex_delta );
                         setResult( RESULT_OK, data );
 
                         onClick = new DialogInterface.OnClickListener() {
@@ -828,14 +814,11 @@ public class LauncherActivity extends AppCompatActivity implements
                         };
                     }
 
-                    final String[] currency = getResources().getStringArray( R.array.currency_array );
-
                     // Gets the merchant currency and its position in the array of currencies
                     final String merchCurrency = PrefUtils.getMerchantCurrency( ac );
                     if( merchCurrency != null ) {
-                        final int currPosition = Arrays.asList( currency ).indexOf( merchCurrency );
                         // Saves the currency and sets the icon
-                        PrefUtils.saveCurrency( ac, currPosition );
+                        PrefUtils.saveTenderCurrency( ac, merchCurrency );
                         GUIUtils.setCurrencyIcon( ac, mCashTenderView );
                     }
 
@@ -853,8 +836,6 @@ public class LauncherActivity extends AppCompatActivity implements
 
     @Override
     public void onNewData( String data ) {
-        final String[] currency = getResources().getStringArray( R.array.currency_array );
-
         // Get subtotal with discount
         BigDecimal discount = new BigDecimal( PrefUtils.getDiscount( ac ) ).movePointLeft( 2 );
         BigDecimal subTotal = new BigDecimal( mTotalView.getText().toString() ).multiply(
@@ -881,7 +862,7 @@ public class LauncherActivity extends AppCompatActivity implements
                         cashBack,
                         mLocation.getLatitude(),
                         mLocation.getLongitude(),
-                        currency[ PrefUtils.getCurrency( ac ) ]
+                        PrefUtils.getTenderCurrency( ac )
                 );
                 break;
 
@@ -904,7 +885,7 @@ public class LauncherActivity extends AppCompatActivity implements
                         cashBack,
                         mLocation.getLatitude(),
                         mLocation.getLongitude(),
-                        currency[ PrefUtils.getCurrency( ac ) ]
+                        PrefUtils.getTenderCurrency( ac )
                 );
                 break;
 
@@ -930,7 +911,7 @@ public class LauncherActivity extends AppCompatActivity implements
             case REQUEST_CODE_LOCATION_SERVICES:
                 // The user didn't enable the GPS
                 if( !SystemUtils.isLocationEnabled( ac ) )
-                    finish();
+                    PrefUtils.saveLocating( ac, false );
                 break;
 
             case REQUEST_SETTINGS:

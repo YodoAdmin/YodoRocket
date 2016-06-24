@@ -5,7 +5,7 @@
     <string name="app_name" translatable="false">YodoRocket</string>
     <string name="action_settings">Settings</string>
     <string name="version.label">Version:</string>
-    <string name="version.value" translatable="false">0.3.7</string>
+    <string name="version.value" translatable="false">0.4.0</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTER</string>
     <string name="loading">Loading</string>
@@ -41,6 +41,8 @@
     <string name="barcode_scanner">Scan the code</string>
     <string name="message.gps_enable">GPS is not enabled. Do you want to go to settings menu?</string>
     <string name="register_hint">Enter your activation code. You must be registered as a merchant prior to activation. Contact: support@yodo.co</string>
+    <string name="about_message">Please use the email below to contact us. We\'ll do everything we can to respond quickly. We will never sell or distribute personal information you provide.</string>
+    <string name="about_email" translatable="false">support@yodo.co</string>
 
     <!-- Exchange Response -->
     <string name="exchange_code">Code:</string>
@@ -147,6 +149,7 @@
         <item>INR</item>
         <item>EUR</item>
         <item>PHP</item>
+        <item>RUB</item>
     </string-array>
 
     <!-- Currency Icon -->
@@ -160,6 +163,7 @@
         <item>india</item>
         <item>euro</item>
         <item>philippine</item>
+        <item>russian</item>
     </string-array>
 
     <!-- Preferences Categories -->
@@ -170,8 +174,12 @@
     <string name="config_pref_username">Y-Beacon Name</string>
     <string name="config_pref_tip">Tip (%)</string>
     <string name="config_pref_advertising">Promotion Service</string>
+    <string name="config_pref_location">Location Service</string>
     <string name="config_pref_background">Background Color</string>
+
+    <!-- Preferences Summary -->
     <string name="config_pref_advertising_summary">Send promotions to nearby clients</string>
+    <string name="config_pref_location_summary">Send the location of transactions</string>
 
     <!-- Tutorial Instructions -->
     <string name="tutorial_title">Navigator &amp; action items</string>

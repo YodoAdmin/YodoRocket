@@ -38,6 +38,7 @@
     <string name="barcode_scanner">Сканировать код</string>
     <string name="message.gps_enable">GPS не включен. Хотите перейти в Настройки?</string>
     <string name="register_hint">Введите Ваш код активации. Вы должны быть зарегистрированы в качестве продавца до активации. Связаться: support@yodo.co</string>
+    <string name="about_message">Чтобы связаться с нами, используйте адрес электронной почты, который указан ниже. Мы сделаем все возможное, чтобы ответить быстро. Будьте уверены, мы никогда не продаем и не распространяем личную информацию, предоставленную Вами.</string>
 
     <!-- Exchange Response -->
     <string name="exchange_code">Код:</string>
@@ -112,8 +113,12 @@
     <string name="config_pref_username">Y-Beacon Имя</string>
     <string name="config_pref_tip">Наконечник (%)</string>
     <string name="config_pref_advertising">Промо-сервис</string>
+    <string name="config_pref_location">Служба определения местоположения</string>
     <string name="config_pref_background">Цвет фона</string>
+
+    <!-- Preferences Summary -->
     <string name="config_pref_advertising_summary">Отправить промо-акций ближайшим клиентам</string>
+    <string name="config_pref_location_summary">Отправить расположение сделок</string>
 
     <!-- Tutorial Instructions -->
     <string name="tutorial_title">Навигация; пошаговые действия</string>

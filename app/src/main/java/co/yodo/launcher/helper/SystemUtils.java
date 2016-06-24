@@ -73,7 +73,7 @@ public class SystemUtils {
      */
     public static boolean isLocationEnabled( Context c ) {
         LocationManager lm = (LocationManager) c.getSystemService( Context.LOCATION_SERVICE );
-        String provider    = lm.getBestProvider( new Criteria(), true );
+        String provider = lm.getBestProvider( new Criteria(), true );
         return ( ( !provider.isEmpty() ) && !LocationManager.PASSIVE_PROVIDER.equals( provider ) );
     }
 

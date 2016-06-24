@@ -1,11 +1,15 @@
 package co.yodo.launcher.service;
 
+import android.Manifest;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -15,6 +19,7 @@ import com.google.android.gms.location.LocationServices;
 
 import org.greenrobot.eventbus.EventBus;
 
+import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
 
 /**
@@ -42,9 +47,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     private static final int TIME_DIFFERENCE_THRESHOLD = 60 * 1000; // 1 minute(s)
 
     /** Location updates intervals in sec */
-    private static final int UPDATE_INTERVAL  = 30 * 1000; // 30 second(s)
+    private static final int UPDATE_INTERVAL = 30 * 1000; // 30 second(s)
     private static final int FASTEST_INTERVAL = 20 * 1000; // 20 second(s)
-    private static final float DISPLACEMENT   = 10.0F;     // 10 meter(s)
+    private static final float DISPLACEMENT = 10.0F;     // 10 meter(s)
 
     /** Accuracy requirements */
     private static final int BAD_ACCURACY = 100; // 100 meters
@@ -86,7 +91,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     }
 
     @Override
-    public IBinder onBind(Intent arg0) {
+    public IBinder onBind( Intent arg0 ) {
         throw new UnsupportedOperationException( "Not yet implemented" );
     }
 
@@ -141,7 +146,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             return false;
 
         // Check whether the new location fix is more or less accurate
-        int accuracyDelta = (int) ( newLocation.getAccuracy() - oldLocation.getAccuracy() );
+        int accuracyDelta = ( int ) ( newLocation.getAccuracy() - oldLocation.getAccuracy() );
         boolean isLessAccurate = accuracyDelta > 0;
         boolean isMoreAccurate = accuracyDelta < 0;
         boolean isSignificantlyLessAccurate = accuracyDelta > BAD_ACCURACY; // 100 meters
@@ -169,8 +174,14 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
     @Override
     public void onConnected( Bundle bundle ) {
-        createLocationRequest();
+        int permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_FINE_LOCATION );
+        if( permissionCheck != PackageManager.PERMISSION_GRANTED ) {
+            PrefUtils.saveLocating( this, false );
+            stopSelf();
+            return;
+        }
 
+        createLocationRequest();
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient,
                 mLocationRequest,

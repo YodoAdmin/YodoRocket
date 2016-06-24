@@ -4,9 +4,9 @@ import android.app.Activity;
 
 public class QRScannerFactory {
 	public enum SupportedScanners {
-		Hardware   ( "Barcode Scanner" ),
-		CameraFront( "Camera Front" ),
-		CameraBack ( "Camera Back" );
+		Hardware    ( "Barcode Scanner" ),
+		CameraFront ( "Camera Front" ),
+		CameraBack  ( "Camera Back" );
 
 		private String value;
 		public static final long length = values().length;
@@ -25,7 +25,7 @@ public class QRScannerFactory {
 	private final HardwareScanner hardwareScanner;
 	private final ScanditScanner softwareScanner;
 
-	public QRScannerFactory( Activity activity ) throws ClassCastException{
+	public QRScannerFactory( Activity activity ) throws ClassCastException {
 		if( activity instanceof QRScanner.QRScannerListener ) {
 			hardwareScanner = new HardwareScanner( activity );
 			softwareScanner = new ScanditScanner( activity );

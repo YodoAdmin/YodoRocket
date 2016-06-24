@@ -75,11 +75,6 @@ public class AppConfig {
     */
     public static final String SPREF_DISCOUNT = "SPDiscount";
 
-    /* The current tip to the purchase.
-    * type -- Integer
-    */
-    public static final String SPREF_CURRENT_TIP = "SPCurrentTip";
-
     /* The current password, in case of remember option selected.
     * type -- String
     */
@@ -109,6 +104,15 @@ public class AppConfig {
 	 */
     public static final String SPREF_ADVERTISING_SERVICE = "SPAdvertisingService";
 
+    /* Location service status.
+	 * type -- Boolean
+	 *
+	 * __Values__
+	 * true  -- Service is running
+	 * false -- Service not running
+	 */
+    public static final String SPREF_LOCATION_SERVICE = "SPLocationService";
+
     /* The current background of the Rocket.
     * type -- Integer
     */
@@ -127,21 +131,14 @@ public class AppConfig {
     public static final String DEFAULT_LANGUAGE = "en";
 
     /*
-	 * Default value position for the currency
-	 *
-	 * Default: position 1 (Canada Dollar)
-	 */
-    public static final Integer DEFAULT_CURRENCY = 1;
-
-    /*
 	 * Default value for the discount (%)
 	 */
     public static final String DEFAULT_DISCOUNT = "0";
 
     /*
-	 * Default value for the tip (%)
+	 * Default value for the tender currencies Canadian Dollar
 	 */
-    public static final String DEFAULT_TIP = "0";
+    public static final String DEFAULT_CURRENCY = "CAD";
 
     /*
 	 * Default value position for the scanner

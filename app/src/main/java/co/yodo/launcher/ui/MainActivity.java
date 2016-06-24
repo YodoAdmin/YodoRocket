@@ -9,15 +9,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
 
-import java.util.Arrays;
-
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.GUIUtils;
+import co.yodo.launcher.helper.Intents;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
 import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.launcher.ui.notification.YodoHandler;
-import co.yodo.launcher.helper.Intents;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.builder.ServerRequest;
 import co.yodo.restapi.network.model.ServerResponse;
@@ -93,19 +91,24 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
         }
         /**************************************************/
 
-        // Get the main booleans
+        // Get the main system booleans
         boolean hasServices = SystemUtils.isGooglePlayServicesAvailable(
                 MainActivity.this,
                 REQUEST_CODE_RECOVER_PLAY_SERVICES
         );
         boolean isLegacy = PrefUtils.isLegacy( ac );
 
+        // Get the main user booleans
+        boolean isLoggedIn = PrefUtils.isLoggedIn( ac );
+        boolean hasMerchCurr = PrefUtils.getMerchantCurrency( ac ) != null;
+        boolean hasTenderCurr = PrefUtils.getTenderCurrency( ac ) != null;
+
         // Verify Google Play Services
         if( hasServices || isLegacy ) {
             mHardwareToken = PrefUtils.getHardwareToken( ac );
             if( mHardwareToken == null ) {
                 setupPermissions();
-            } else if( !PrefUtils.isLoggedIn( ac ) || PrefUtils.getMerchantCurrency( ac ) == null ) {
+            } else if( !isLoggedIn || !hasMerchCurr || !hasTenderCurr ) {
                 mRequestManager.requestMerchAuth(
                         AUTH_REQ,
                         mHardwareToken
@@ -192,13 +195,11 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
             case QUERY_REQ:
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    // Merchant Currency
-                    String merchCurr = response.getParam( ServerResponse.CURRENCY );
-                    PrefUtils.saveMerchantCurrency( ac, merchCurr );
-                    // POS Currency
-                    final String[] currencies = getResources().getStringArray( R.array.currency_array );
-                    int position = Arrays.asList( currencies ).indexOf( merchCurr );
-                    PrefUtils.saveCurrency( ac, position );
+                    // Set currencies
+                    String currency = response.getParam( ServerResponse.CURRENCY );
+                    PrefUtils.saveMerchantCurrency( ac, currency );
+                    PrefUtils.saveTenderCurrency( ac, currency );
+
                     // Start the app
                     PrefUtils.saveLoginStatus( ac, true );
                     Intent intent = new Intent( ac, LauncherActivity.class );

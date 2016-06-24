@@ -115,6 +115,32 @@ public class AlertDialogHelper {
 
     /**
      * Shows an alert dialog with an EditText
+     * @param c The context of the application
+     * @param title The title of the dialog
+     * @param layout The view of the dialog
+     */
+    public static void showAlertDialog( final Context c, final String title, final View layout ) {
+        // Remove the parent if already has one
+        if( layout != null && layout.getParent() != null )
+            ( (ViewGroup ) layout.getParent() ).removeView( layout );
+
+        // Builds the Alert Dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder( c, R.style.AppCompatAlertDialogStyle );
+        builder.setIcon( R.drawable.ic_launcher );
+        builder.setTitle( title );
+        builder.setCancelable( false );
+        builder.setPositiveButton( c.getString( R.string.ok ), null );
+
+        // Sets a layout if exists
+        if( layout != null )
+            builder.setView( layout );
+
+        // Create the AlertDialog
+        builder.show();
+    }
+
+    /**
+     * Shows an alert dialog with an EditText
      * @param ac The context of the application
      * @param title The title of the dialog
      * @param input The edit text for the password

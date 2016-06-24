@@ -39,6 +39,7 @@
     <string name="barcode_scanner">Escanee el código</string>
     <string name="message.gps_enable">El GPS no está habilitado. Desea ir a configuraciones?</string>
     <string name="register_hint">Ingrese su código de activación. Debe estar registrado como un merchant. Contact: support@yodo.co</string>
+    <string name="about_message">Utilice el correo electrónico para ponerse en contacto con nosotros. Nosotros haremos todo lo posible para responder con rapidez. Tenga la seguridad, nunca vamos a vender o distribuir información personal que proporcione.</string>
 
     <!-- Exchange Response -->
     <string name="exchange_code">Código:</string>
@@ -113,8 +114,12 @@
     <string name="config_pref_username">Nombre Y-Beacon</string>
     <string name="config_pref_tip">Propina (%)</string>
     <string name="config_pref_advertising">Servicio de Promoción</string>
+    <string name="config_pref_location">Servicio de Ubicación</string>
     <string name="config_pref_background">Color de Fondo</string>
+
+    <!-- Preferences Summary -->
     <string name="config_pref_advertising_summary">Enviar promociones a clientes cercanos</string>
+    <string name="config_pref_location_summary">Envía la ubicación de las transacciones</string>
 
     <!-- Tutorial Instructions -->
     <string name="tutorial_title">Navegador &amp; items</string>

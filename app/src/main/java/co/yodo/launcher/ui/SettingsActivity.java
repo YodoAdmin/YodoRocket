@@ -11,11 +11,14 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
+import co.yodo.launcher.helper.SystemUtils;
+import co.yodo.launcher.ui.notification.ToastMaster;
 
 /**
  * Created by luis on 3/08/15.
@@ -63,8 +66,9 @@ public class SettingsActivity extends AppCompatActivity {
         private Context c;
 
         /** GUI Controllers */
-        private CheckBoxPreference ETP_ADVERTISING;
         private EditTextPreference ETP_SPREF_USERNAME;
+        private CheckBoxPreference ETP_ADVERTISING;
+        private CheckBoxPreference ETP_LOCATING;
 
         @Override
         public void onCreate( final Bundle savedInstanceState ) {
@@ -89,8 +93,14 @@ public class SettingsActivity extends AppCompatActivity {
             ETP_ADVERTISING = (CheckBoxPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_ADVERTISING_SERVICE );
 
+            ETP_LOCATING = (CheckBoxPreference) getPreferenceScreen()
+                    .findPreference( AppConfig.SPREF_LOCATION_SERVICE );
+
             if( PrefUtils.isLegacy( c ) )
                 ETP_ADVERTISING.setEnabled( false );
+
+            if( !SystemUtils.hasLocationService( c ) )
+                ETP_LOCATING.setEnabled( false );
         }
 
         private void updateStatus( String key ) {
