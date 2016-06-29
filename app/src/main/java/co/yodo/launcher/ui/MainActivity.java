@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.GUIUtils;
-import co.yodo.launcher.helper.Intents;
+import co.yodo.launcher.component.Intents;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
 import co.yodo.launcher.ui.notification.ToastMaster;

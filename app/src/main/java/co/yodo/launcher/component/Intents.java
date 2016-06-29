@@ -1,4 +1,4 @@
-package co.yodo.launcher.helper;
+package co.yodo.launcher.component;
 
 /**
  * Created by luis on 31/12/14.

@@ -2,21 +2,26 @@ package co.yodo.launcher.ui.scanner;
 
 import android.app.Activity;
 
-public class QRScannerFactory {
-	public enum SupportedScanners {
-		Hardware    ( "Barcode Scanner" ),
-		CameraFront ( "Camera Front" ),
-		CameraBack  ( "Camera Back" );
+import co.yodo.launcher.R;
 
-		private String value;
+public class QRScannerFactory {
+	/** SKS Sizes */
+	public static final int SKS_SIZE = 256;
+	public static final int ALT_SIZE = 257;
+
+	public enum SupportedScanner {
+		Hardware    ( R.string.name_scanner_hardware ),
+		CameraFront ( R.string.name_scanner_software_front ),
+		CameraBack  ( R.string.name_scanner_software_back );
+
+		private int value;
 		public static final long length = values().length;
 
-		SupportedScanners( String value ) {
+		SupportedScanner( int value ) {
 			this.value = value;
 		}
 
-		@Override
-		public String toString() {
+		public int getValue() {
 			return value;
 		}
 	}
@@ -41,7 +46,7 @@ public class QRScannerFactory {
 	 * @param scanner Could be hardware, front and back software
 	 * @return The QR scanner
 	 */
-	public QRScanner getScanner( SupportedScanners scanner ) {
+	public QRScanner getScanner( SupportedScanner scanner ) {
 		switch( scanner ) {
 			case CameraFront:
 				softwareScanner.setFrontFaceCamera( true );

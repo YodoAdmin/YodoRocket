@@ -1,14 +1,16 @@
 package co.yodo.launcher.service;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Service;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -19,8 +21,10 @@ import com.google.android.gms.location.LocationServices;
 
 import org.greenrobot.eventbus.EventBus;
 
+import co.yodo.launcher.R;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
+import co.yodo.launcher.ui.notification.AlertDialogHelper;
 
 /**
  * Service to obtain the location of the device, this service in particular
@@ -215,6 +219,62 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             lastRegisteredLocation = location;
             // Print location for debugging
             SystemUtils.Logger( TAG, location.toString() );
+        }
+    }
+
+    /**
+     * Request the necessary permissions for the location
+     * @param activity The activity that needs the location permission
+     * @param requestCode The code to request the permission
+     * @param resultCode The code to respond to the activity - REQUEST_CODE_LOCATION_SERVICES
+     */
+    public static void setup( Activity activity, int requestCode, int resultCode ) {
+        if( PrefUtils.isLegacy( activity ) )
+            return;
+
+        boolean locationPermission = SystemUtils.requestPermission(
+                activity,
+                R.string.message_permission_location,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                requestCode
+        );
+        // We have permission, it is time to see if location is enabled, if not just request
+        if( locationPermission )
+            enable( activity, resultCode );
+    }
+
+    /**
+     * Asks the user to enable the location services
+     * @param activity The activity that requests to enable location
+     * @param resultCode The code to respond to the activity - REQUEST_CODE_LOCATION_SERVICES
+     */
+    public static void enable( final Activity activity, final int resultCode ) {
+        if( SystemUtils.isLocationEnabled( activity ) ) {
+            // Start the location service
+            Intent iLoc = new Intent( activity, LocationService.class );
+            if( !SystemUtils.isMyServiceRunning( activity, LocationService.class.getName() ) )
+                activity.startService( iLoc );
+        } else {
+            // If location not enabled, then request
+            DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dialog, int item ) {
+                    Intent intent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS );
+                    activity.startActivityForResult( intent, resultCode );
+                }
+            };
+
+            DialogInterface.OnClickListener onCancel = new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dialog, int item ) {
+                    PrefUtils.saveLocating( activity, false );
+                }
+            };
+
+            AlertDialogHelper.showAlertDialog(
+                    activity,
+                    R.string.message_gps_enable,
+                    onClick,
+                    onCancel
+            );
         }
     }
 }

@@ -110,8 +110,7 @@ public class DiscountOption extends IOption implements YodoRequest.RESTListener 
                                 StringBuilder builder = new StringBuilder( dest );
                                 builder.replace( dstart, dend, source.subSequence( start, end ).toString() );
                                 if( !builder.toString().matches(
-                                        "(([" + ( maxDigitsBeforeDecimalPoint - 1 ) +
-                                                "-9])([0-9]?)?)?(\\.[0-9]{0," + maxDigitsAfterDecimalPoint + "})?"
+                                        "(([" + ( maxDigitsBeforeDecimalPoint - 1 ) + "-9])([0-9]?)?)?(\\.[0-9]{0," + maxDigitsAfterDecimalPoint + "})?"
 
                                 ) ) {
                                     if( source.length() == 0 )

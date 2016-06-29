@@ -44,7 +44,6 @@ public class CurrencyAdapter extends ArrayAdapter<Currency> {
         }
 
         Currency cat = getItem( position );
-        assert cat != null;
 
         holder.nameTxVw.setText( cat.getName() );
         holder.nameTxVw.setCompoundDrawables( cat.getImg(), null, null, null );

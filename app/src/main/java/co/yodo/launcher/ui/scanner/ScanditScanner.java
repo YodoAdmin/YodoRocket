@@ -138,7 +138,7 @@ public class ScanditScanner extends QRScanner implements OnScanListener {
     public void didScan( ScanSession session ) throws NullPointerException {
         for( Barcode code : session.getAllRecognizedCodes() ) {
             String trimmed = code.getData().replaceAll( "\\s+", "" );
-            listener.onNewData( trimmed );
+            listener.onScanResult( trimmed );
         }
         handler.post( runnable );
     }

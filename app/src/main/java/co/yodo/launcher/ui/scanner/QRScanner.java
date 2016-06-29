@@ -12,7 +12,7 @@ public abstract class QRScanner {
 		 * Listener for the data of the scanner
 		 * @param data String data received
 		 */
-		void onNewData( String data );
+		void onScanResult( String data );
 	}
 
 	/** Activity (GUI) and Listener (data) */

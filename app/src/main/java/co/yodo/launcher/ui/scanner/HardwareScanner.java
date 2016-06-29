@@ -41,7 +41,7 @@ public class HardwareScanner extends QRScanner {
 					GUIUtils.hideSoftKeyboard( act );
 
 					if( listener != null )
-						listener.onNewData( scanData );
+						listener.onScanResult( scanData );
 
 					input.setText( "" );
 					return true;

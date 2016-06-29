@@ -147,13 +147,6 @@ public class AppConfig {
 	 */
     public static final Integer DEFAULT_SCANNER = 0;
 
-    /* Currency of the URL where we are getting the rates */
-    public static final String URL_CURRENCY  = "EUR";
-
     /* Logo URL */
     public static final String LOGO_PATH = YodoRequest.getRoot() + "/yodo-merch/uploads/img/logo/";
-
-    /* SKS Sizes */
-    public static final int SKS_SIZE = 256;
-    public static final int ALT_SIZE = 257;
 }

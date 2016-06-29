@@ -5,7 +5,7 @@
     <string name="app_name" translatable="false">YodoRocket</string>
     <string name="action_settings">Settings</string>
     <string name="version.label">Version:</string>
-    <string name="version.value" translatable="false">0.4.0</string>
+    <string name="version.value" translatable="false">0.4.2</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTER</string>
     <string name="loading">Loading</string>
@@ -94,13 +94,18 @@
     <string name="place_qrcode">Place your SKS code entirely in this window</string>
 
     <!-- Values Labels -->
-    <string name="total_purchase">Purchase: </string>
+    <string name="text.total_purchase">Purchase: </string>
     <string name="cash_tender">Cash Tender: </string>
     <string name="cash_back">Cash Back: </string>
     <string name="balance">Balance: </string>
     <string name="zero">0.00</string>
     <string name="no_item">- no item -</string>
 
+    <!-- Supported scanners -->
+    <string name="name.scanner.hardware">Barcode Scanner</string>
+    <string name="name.scanner.software_front">Camera Front</string>
+    <string name="name.scanner.software_back">Camera Back</string>
+    
     <!-- Input Labels -->
     <string name="clear"     translatable="false">C</string>
     <string name="coins_0"   translatable="false">00</string>

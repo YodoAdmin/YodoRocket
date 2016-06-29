@@ -91,12 +91,17 @@
     <string name="place_qrcode">Ubique el código SKS en esta ventana</string>
 
     <!-- Values Labels -->
-    <string name="total_purchase">Total: </string>
+    <string name="text.total_purchase">Total: </string>
     <string name="cash_tender">Efectivo: </string>
     <string name="cash_back">Vuelto: </string>
     <string name="balance">Balance: </string>
     <string name="zero">0.00</string>
     <string name="no_item">- no item -</string>
+
+    <!-- Supported scanners -->
+    <string name="name.scanner.hardware">Barcode Escaner</string>
+    <string name="name.scanner.software_front">Cámara Frontal</string>
+    <string name="name.scanner.software_back">Cámara Trasera</string>
 
     <!-- Languages -->
     <string-array name="languages_array">

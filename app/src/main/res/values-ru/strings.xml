@@ -90,12 +90,17 @@
     <string name="place_qrcode">Разместите Ваш SKS код полностью в этом окне.</string>
 
     <!-- Values Labels -->
-    <string name="total_purchase">Покупка: </string>
+    <string name="text.total_purchase">Покупка: </string>
     <string name="cash_tender">За наличные: </string>
     <string name="cash_back">Возврат: </string>
     <string name="balance">Остаток: </string>
     <string name="zero">0.00</string>
     <string name="no_item">- нет пункта -</string>
+
+    <!-- Supported scanners -->
+    <string name="name.scanner.hardware">Сканер Штрих-кода</string>
+    <string name="name.scanner.software_front">Фронтальная камера</string>
+    <string name="name.scanner.software_back">Задняя камера</string>
 
     <!-- Languages -->
     <string-array name="languages_array">

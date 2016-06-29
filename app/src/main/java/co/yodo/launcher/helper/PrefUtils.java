@@ -9,6 +9,7 @@ import java.util.Arrays;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.component.AES;
+import co.yodo.launcher.ui.scanner.QRScannerFactory;
 
 /**
  * Created by luis on 15/12/14.
@@ -288,7 +289,12 @@ public class PrefUtils {
      */
     public static int getScanner( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getInt( AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER );
+        int position = config.getInt( AppConfig.SPREF_CURRENT_SCANNER, AppConfig.DEFAULT_SCANNER );
+        if( position >= QRScannerFactory.SupportedScanner.length ) {
+            position = AppConfig.DEFAULT_SCANNER;
+            PrefUtils.saveScanner( c, position );
+        }
+        return position;
     }
 
     /**

@@ -42,7 +42,7 @@
                     style="@style/LabelTextView"
                     android:textStyle="bold|italic"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/total_purchase"/>
+                    android:text="@string/text.total_purchase"/>
 
                 <TextView
                     style="@style/LabelTextView"
@@ -120,7 +120,6 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginStart="10dp"
                 android:textSize="@dimen/text_size_values"
-                android:textAppearance="?android:attr/textAppearanceLarge"
                 android:visibility="gone"/>
 
         </LinearLayout>
