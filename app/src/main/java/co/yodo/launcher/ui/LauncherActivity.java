@@ -845,7 +845,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     message = getString( R.string.exchange_auth ) + " " + ex_authbumber + "\n" +
                               getString( R.string.exchange_message ) + " " + ex_message;
 
-                    DialogInterface.OnClickListener onClick = null;
+                    DialogInterface.OnClickListener onClick;
 
                     if( externBundle != null ) {
                         final Intent data = new Intent();

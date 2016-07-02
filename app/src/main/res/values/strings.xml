@@ -5,7 +5,7 @@
     <string name="app_name" translatable="false">YodoRocket</string>
     <string name="action_settings">Settings</string>
     <string name="version.label">Version:</string>
-    <string name="version.value" translatable="false">0.4.2</string>
+    <string name="version.value" translatable="false">0.4.3</string>
     <string name="desc">Desc</string>
     <string name="register">REGISTER</string>
     <string name="loading">Loading</string>
