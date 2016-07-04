@@ -3,6 +3,7 @@ package co.yodo.launcher.manager;
 import android.app.Activity;
 import android.content.IntentSender;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -31,7 +32,7 @@ public class PromotionManager {
     private static final String TAG = PromotionManager.class.getSimpleName();
 
     /** The Activity object */
-    private Activity ac;
+    private AppCompatActivity ac;
 
     /** Implements all the GoogleApi callbacks */
     private IPromotionListener mActivity;
@@ -69,13 +70,19 @@ public class PromotionManager {
         if( !( activity instanceof Activity ) )
             throw new ExceptionInInitializerError( "The class has to be an activity" );
 
-        this.ac = (Activity) activity;
+        this.ac = (AppCompatActivity) activity;
         this.mActivity = activity;
         this.REQUEST_RESOLVE_ERROR = errorCode;
     }
 
+    /**
+     * Starts the GoogleClient for Nearby
+     */
     public void startService() {
         if( PrefUtils.isLegacy( ac ) )
+            return;
+
+        if( mGoogleApiClient != null )
             return;
 
         // We are going to start publishing
@@ -83,19 +90,22 @@ public class PromotionManager {
 
         // Connect to the service
         mGoogleApiClient = new GoogleApiClient.Builder( ac )
-                .addConnectionCallbacks( mActivity )
-                .addOnConnectionFailedListener( mActivity )
                 .addApi( Nearby.MESSAGES_API )
+                .addConnectionCallbacks( mActivity )
+                //.enableAutoManage( this.ac, mActivity )
                 .build();
         mGoogleApiClient.connect();
     }
 
+    /**
+     * Stops the publish and disconnects the GoogleClient
+     */
     public void stopService() {
         // We are going to unpublish
         mUnpublishing = true;
 
         // Disconnect the api client if there is a connection
-        if( mGoogleApiClient != null && mGoogleApiClient.isConnected() && !ac.isChangingConfigurations() ) {
+        if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
             // Using Nearby is battery intensive. To preserve battery, stop subscribing or
             // publishing when the fragment is inactive.
             unpublish();
@@ -127,8 +137,9 @@ public class PromotionManager {
                         public void onExpired() {
                             super.onExpired();
                             SystemUtils.Logger( TAG, "no longer publishing" );
-                            if( !mUnpublishing )
+                            if( !mUnpublishing ) {
                                 publish();
+                            }
                         }
                     }).build();
 

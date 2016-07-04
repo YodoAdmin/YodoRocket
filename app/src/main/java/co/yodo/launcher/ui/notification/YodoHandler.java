@@ -58,17 +58,20 @@ public class YodoHandler extends Handler {
 
         switch( code ) {
             case ServerResponse.ERROR_DUP_AUTH:
-                AlertDialogHelper.showAlertDialog(
-                        main,
-                        code,
-                        main.getString( R.string.message_error_amount_exceed ),
-                        clickListener
-                );
+                response = main.getString( R.string.message_error_amount_exceed );
                 break;
 
-            default:
-                AlertDialogHelper.showAlertDialog( main, code, response, clickListener );
+            case ServerResponse.ERROR_INSUFF_FUNDS:
+                response = main.getString( R.string.message_error_insufficient_funds );
+                break;
         }
+
+        AlertDialogHelper.showAlertDialog(
+                main,
+                code,
+                response,
+                clickListener
+        );
     }
 
     /**

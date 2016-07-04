@@ -28,6 +28,8 @@
     <string name="message.error.timeout">Сервер перегружен. Попробуйте еще раз позже</string>
     <string name="message.error.server">Сервер ответил с ошибкой. Попробуйте еще раз позже</string>
     <string name="message.error.transaction">Неверный тип транзакции. Попробуйте еще раз позже</string>
+    <string name="message.error.amount_exceed">Сделка не допускается. Превышение максимального количества.</string>
+    <string name="message.error.insufficient_funds">Недостаток средств в первичном связанном аккаунте</string>
 
     <!-- General Messages -->
     <string name="input_pip">Кодовая фраза продавца (MIP)</string>
@@ -131,6 +133,5 @@
 
     <!-- ACRA -->
     <string name="crash_toast_text">Упс! Неудача. Чтобы помочь исправить проблему, отчет был отправлен разработчикам!</string>
-    <string name="message.error.amount_exceed">Сделка не допускается. Превышение максимального количества.</string>
 
 </resources>

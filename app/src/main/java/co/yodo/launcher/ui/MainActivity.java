@@ -157,6 +157,10 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
     }
 
     @Override
+    public void onPrepare() {
+    }
+
+    @Override
     public void onResponse( int responseCode, ServerResponse response ) {
         // Get response values
         String code    = response.getCode();

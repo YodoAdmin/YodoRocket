@@ -29,6 +29,7 @@
     <string name="message.error.server">Lo sentimos, el servidor respondió con un error. Intente de nuevo luegor</string>
     <string name="message.error.transaction">Lo sentimos, el tipo de transacción no es válido. Intente de nuevo luegor</string>
     <string name="message.error.amount_exceed">Transacción no permitida. Excedido el límite máximo.</string>
+    <string name="message.error.insufficient_funds">Fondos insuficientes en la cuenta primaria</string>
 
     <!-- General Messages -->
     <string name="input_pip">Merch Identity Phrase (MIP)</string>

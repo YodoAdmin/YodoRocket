@@ -120,6 +120,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
     /** Handles the start/stop subscribe/unsubscribe functions of Nearby */
     private PromotionManager mPromotionManager;
+    private boolean isPublishing = false;
 
     /** Current Scanners */
     private QRScannerFactory mScannerFactory;
@@ -210,7 +211,6 @@ public class LauncherActivity extends AppCompatActivity implements
 
     @Override
     public void onStop() {
-        super.onStop();
         // Unregister from event bus
         EventBus.getDefault().unregister( this );
 
@@ -222,6 +222,8 @@ public class LauncherActivity extends AppCompatActivity implements
 
         // Disconnect the advertise service
         this.mPromotionManager.stopService();
+
+        super.onStop();
     }
 
     @Override
@@ -270,8 +272,8 @@ public class LauncherActivity extends AppCompatActivity implements
 
         // Global options (navigation window)
         mCurrencyOption = new CurrencyOption( this );
-        mDiscountOption = new DiscountOption( this, mRequestManager, mHandlerMessages );
-        mBalanceOption  = new BalanceOption( this, mRequestManager, mHandlerMessages );
+        mDiscountOption = new DiscountOption( this, mRequestManager, mHandlerMessages, mPromotionManager );
+        mBalanceOption  = new BalanceOption( this, mRequestManager, mHandlerMessages, mPromotionManager );
         mAboutOption    = new AboutOption( this );
 
         // Sliding Panel Configurations
@@ -768,9 +770,23 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onPrepare() {
+        if( PrefUtils.isAdvertising( ac ) ) {
+            isPublishing = true;
+            mPromotionManager.unpublish();
+        }
+    }
+
+    @Override
     public void onResponse( int responseCode, ServerResponse response ) {
         ProgressDialogHelper.getInstance().destroyProgressDialog();
         String code, message;
+
+        // If it was publishing before the request
+        if( isPublishing ) {
+            isPublishing = false;
+            mPromotionManager.publish();
+        }
 
         switch( responseCode ) {
 

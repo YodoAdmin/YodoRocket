@@ -9,6 +9,7 @@ import android.widget.EditText;
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
+import co.yodo.launcher.manager.PromotionManager;
 import co.yodo.launcher.ui.LauncherActivity;
 import co.yodo.launcher.ui.component.ClearEditText;
 import co.yodo.launcher.ui.notification.AlertDialogHelper;
@@ -26,6 +27,7 @@ public class DiscountOption extends IOption implements YodoRequest.RESTListener 
     /** Elements for the request */
     private final YodoRequest mRequestManager;
     private final YodoHandler mHandlerMessages;
+    private final PromotionManager mPromotionManager;
     private final String mHardwareToken;
 
     /** Elements for the AlertDialog */
@@ -34,16 +36,20 @@ public class DiscountOption extends IOption implements YodoRequest.RESTListener 
     /** Response codes for the server requests */
     private static final int AUTH_REQ = 0x00;
 
+    /** Handles the promotions */
+    private boolean isPublishing = false;
+
     /**
      * Sets up the main elements of the options
      * @param activity The Activity to handle
      */
-    public DiscountOption( LauncherActivity activity,  YodoRequest requestManager, YodoHandler handlerMessages ) {
+    public DiscountOption( LauncherActivity activity, YodoRequest requestManager, YodoHandler handlerMessages, PromotionManager promotionManager ) {
         super( activity );
         // Request
-        this.mRequestManager  = requestManager;
-        this.mHandlerMessages = handlerMessages;
-        this.mHardwareToken   = PrefUtils.getHardwareToken( this.mActivity );
+        this.mRequestManager   = requestManager;
+        this.mHandlerMessages  = handlerMessages;
+        this.mPromotionManager = promotionManager;
+        this.mHardwareToken    = PrefUtils.getHardwareToken( this.mActivity );
 
         // AlertDialog
         this.mTitle = this.mActivity.getString( R.string.input_pip );
@@ -83,10 +89,22 @@ public class DiscountOption extends IOption implements YodoRequest.RESTListener 
     }
 
     @Override
+    public void onPrepare() {
+        if( PrefUtils.isAdvertising( this.mActivity ) ) {
+            mPromotionManager.unpublish();
+            isPublishing = true;
+        }
+    }
+
+    @Override
     public void onResponse( int responseCode, ServerResponse response ) {
         // Set listener to the principal activity
         ProgressDialogHelper.getInstance().destroyProgressDialog();
         mRequestManager.setListener( ( (LauncherActivity) this.mActivity ) );
+
+        // If it was publishing before the request
+        if( isPublishing )
+            mPromotionManager.publish();
 
         String code    = response.getCode();
         String message = response.getMessage();

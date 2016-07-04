@@ -134,6 +134,10 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     }
 
     @Override
+    public void onPrepare() {
+    }
+
+    @Override
     public void onResponse( int responseCode, ServerResponse response ) {
         ProgressDialogHelper.getInstance().destroyProgressDialog();
 
