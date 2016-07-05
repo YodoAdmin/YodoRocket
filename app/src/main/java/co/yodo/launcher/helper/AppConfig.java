@@ -1,5 +1,7 @@
 package co.yodo.launcher.helper;
 
+import com.android.volley.VolleyLog;
+
 import co.yodo.restapi.network.YodoRequest;
 
 /**
@@ -8,12 +10,7 @@ import co.yodo.restapi.network.YodoRequest;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = true;
-
-    /** Sets the log flag for the restapi */
-    static {
-        co.yodo.restapi.helper.AppConfig.DEBUG = true;
-    }
+    public static final boolean DEBUG = true; // Should be false for release.
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoRocketSharedPref";
