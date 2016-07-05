@@ -4,21 +4,16 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Message;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputFilter;
-import android.text.InputType;
-import android.text.Spanned;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -28,11 +23,9 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -41,14 +34,6 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.nearby.Nearby;
-import com.google.android.gms.nearby.messages.NearbyMessagesStatusCodes;
-import com.google.android.gms.nearby.messages.PublishCallback;
-import com.google.android.gms.nearby.messages.PublishOptions;
-import com.google.android.gms.nearby.messages.Strategy;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -56,73 +41,86 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
+import java.util.Arrays;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.component.ClearEditText;
-import co.yodo.launcher.component.YodoHandler;
-import co.yodo.launcher.data.Currency;
 import co.yodo.launcher.helper.AppConfig;
-import co.yodo.launcher.helper.AppUtils;
-import co.yodo.launcher.helper.Intents;
-import co.yodo.launcher.scanner.QRScanner;
-import co.yodo.launcher.scanner.QRScannerFactory;
+import co.yodo.launcher.helper.FormatUtils;
+import co.yodo.launcher.helper.GUIUtils;
+import co.yodo.launcher.component.Intents;
+import co.yodo.launcher.helper.PrefUtils;
+import co.yodo.launcher.helper.SystemUtils;
+import co.yodo.launcher.manager.PromotionManager;
 import co.yodo.launcher.service.LocationService;
-import co.yodo.launcher.ui.adapter.CurrencyAdapter;
-import co.yodo.launcher.ui.component.AlertDialogHelper;
-import co.yodo.launcher.ui.component.ProgressDialogHelper;
-import co.yodo.launcher.ui.component.ToastMaster;
+import co.yodo.launcher.ui.adapter.ScannerAdapter;
+import co.yodo.launcher.ui.notification.AlertDialogHelper;
+import co.yodo.launcher.ui.notification.ProgressDialogHelper;
+import co.yodo.launcher.ui.notification.ToastMaster;
+import co.yodo.launcher.ui.notification.YodoHandler;
+import co.yodo.launcher.ui.option.AboutOption;
+import co.yodo.launcher.ui.option.BalanceOption;
+import co.yodo.launcher.ui.option.CurrencyOption;
+import co.yodo.launcher.ui.option.DiscountOption;
+import co.yodo.launcher.ui.scanner.QRScanner;
+import co.yodo.launcher.ui.scanner.QRScannerFactory;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.builder.ServerRequest;
 import co.yodo.restapi.network.handler.XMLHandler;
 import co.yodo.restapi.network.model.ServerResponse;
 
 public class LauncherActivity extends AppCompatActivity implements
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
+        PromotionManager.IPromotionListener,
         YodoRequest.RESTListener,
         QRScanner.QRScannerListener {
     /** DEBUG */
+    @SuppressWarnings( "unused" )
     private static final String TAG = LauncherActivity.class.getSimpleName();
 
     /** The context object */
     private Context ac;
 
-    /** Hardware Token */
-    private String hardwareToken;
+    /** POS Data */
+    private String mHardwareToken;
 
-    /** Gui controllers */
+    /** GUI controllers */
     private LinearLayout mRootLayout;
     private SlidingPaneLayout mSlidingLayout;
-    private TextView mBalanceView;
     private Spinner mScannersSpinner;
-    private TextView mTotalView;
-    private TextView mCashTenderView;
-    private TextView mCashBackView;
     private NetworkImageView mAvatarImage;
     private ImageView mPaymentButton;
-    private ProgressBar mBalanceBar;
+    private ProgressBar pgBalance;
+    private TextView tvTotal;
+    private TextView tvCashtender;
+    private TextView tvCashback;
+    private TextView tvBalance;
 
-    /** Popup Window for Tips */
-    private PopupWindow mPopupMessage;
-    private BigDecimal equivalentTender;
+    /** Popup Window and GUI for tender */
+    private PopupWindow mPopupTender;
+    private ProgressBar pbpTender;
+    private TextView tvpTender;
 
-    /** Selected Text View */
-    private TextView selectedView;
+    /** Popup Window and GUI for discount */
+    private PopupWindow mPopupDiscount;
+    private TextView tvpDiscount;
+
+    /** Selected Text View (total, cashtender, cashback) */
+    private TextView tvSelected;
+
+    /** Options from the navigation window */
+    private CurrencyOption mCurrencyOption;
+    private DiscountOption mDiscountOption;
+    private BalanceOption mBalanceOption;
+    private AboutOption mAboutOption;
 
     /** Messages Handler */
-    private static YodoHandler handlerMessages;
+    private YodoHandler mHandlerMessages;
 
     /** Manager for the server requests */
     private YodoRequest mRequestManager;
 
-    /** Image Loader */
-    /*private ImageLoader imageLoader;
-    private MemoryBMCache imageCache;*/
-
-    /** Balance Temp */
-    private HashMap<String, String> historyData = null;
-    private HashMap<String, String> todayData = null;
+    /** Handles the start/stop subscribe/unsubscribe functions of Nearby */
+    private PromotionManager mPromotionManager;
+    private boolean isPublishing = false;
 
     /** Current Scanners */
     private QRScannerFactory mScannerFactory;
@@ -130,19 +128,7 @@ public class LauncherActivity extends AppCompatActivity implements
     private boolean isScanning = false;
 
     /** Location */
-    private Location mLocation;
-
-    /** Provides an entry point for Google Play services. */
-    private GoogleApiClient mGoogleApiClient;
-
-    /** The {@link Message} object used to broadcast information about the device to nearby devices. */
-    private com.google.android.gms.nearby.messages.Message mActiveMessage;
-
-    /** Sets the time in seconds for a published message or a subscription to live.*/
-    private static final Strategy PUB_SUB_STRATEGY = new Strategy.Builder()
-            .setTtlSeconds( Strategy.TTL_SECONDS_MAX ).build();
-
-    private boolean mUnpublishing = false;
+    private Location mLocation =  new Location( "flp" );
 
     /** Code for the error dialog */
     private static final int REQUEST_CODE_LOCATION_SERVICES = 0;
@@ -155,30 +141,20 @@ public class LauncherActivity extends AppCompatActivity implements
     /** Request code to use when launching the resolution activity */
     public static final int REQUEST_RESOLVE_ERROR = 1001;
 
-    /**
-     * Tracks if we are currently resolving an error related to Nearby permissions. Used to avoid
-     * duplicate Nearby permission dialogs if the user initiates both subscription and publication
-     * actions without having opted into Nearby.
-     */
-    private boolean mResolvingNearbyPermissionError = false;
-
     /** External data */
     private Bundle externBundle;
     private boolean prompt_response = true;
 
     /** Response codes for the queries */
     private static final int QRY_LOG_REQ  = 0x00;
-    private static final int AUTH_REQ     = 0x01;
-    private static final int QRY_HBAL_REQ = 0x02; // History Balance
-    private static final int QRY_TBAL_REQ = 0x03; // Today Balance
-    private static final int EXCH_REQ     = 0x04;
-    private static final int ALT_REQ      = 0x05;
-    private static final int CURR_REQ     = 0x06;
+    private static final int EXCH_REQ     = 0x01;
+    private static final int ALT_REQ      = 0x02;
+    private static final int CURR_REQ     = 0x03;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        AppUtils.setLanguage( LauncherActivity.this );
+        GUIUtils.setLanguage( this );
         getWindow().setFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN );
         setContentView( R.layout.activity_launcher );
 
@@ -191,12 +167,20 @@ public class LauncherActivity extends AppCompatActivity implements
         super.onStart();
         // register to event bus
         EventBus.getDefault().register( this );
-        // We are going to start publishing
-        mUnpublishing = false;
-        // Setup the required permissions
-        setupPermissions();
+
+        // Setup the required permissions for location
+        if( PrefUtils.isLocating( ac ) ) {
+            LocationService.setup(
+                    this,
+                    PERMISSIONS_REQUEST_LOCATION,
+                    REQUEST_CODE_LOCATION_SERVICES
+            );
+        }
+
         // Setup the advertisement service
-        setupAdvertisement();
+        if( PrefUtils.isAdvertising( ac ) ) {
+            this.mPromotionManager.startService();
+        }
     }
 
     @Override
@@ -204,15 +188,15 @@ public class LauncherActivity extends AppCompatActivity implements
         super.onResume();
         // Register listener for requests and  broadcast receivers
         mRequestManager.setListener( this );
-        // Request the fare value in the rate of the merchant currency
-        requestCurrencies();
+
         // Start the scanner if necessary
         if( currentScanner != null && isScanning ) {
             isScanning = false;
             currentScanner.startScan();
         }
+
         // Sets Background
-        mRootLayout.setBackgroundColor( AppUtils.getCurrentBackground( ac ) );
+        mRootLayout.setBackgroundColor( PrefUtils.getCurrentBackground( ac ) );
     }
 
     @Override
@@ -227,23 +211,19 @@ public class LauncherActivity extends AppCompatActivity implements
 
     @Override
     public void onStop() {
-        super.onStop();
         // Unregister from event bus
         EventBus.getDefault().unregister( this );
-        // We are going to unpublish
-        mUnpublishing = true;
+
         // Stop location service while app is in background
-        if( AppUtils.isMyServiceRunning( ac, LocationService.class.getName() ) ) {
+        if( SystemUtils.isMyServiceRunning( ac, LocationService.class.getName() ) ) {
             Intent iLoc = new Intent( ac, LocationService.class );
             stopService( iLoc );
         }
 
-        if( mGoogleApiClient != null && mGoogleApiClient.isConnected() && !isChangingConfigurations() ) {
-            // Using Nearby is battery intensive. To preserve battery, stop subscribing or
-            // publishing when the fragment is inactive.
-            unpublish();
-            mGoogleApiClient.disconnect();
-        }
+        // Disconnect the advertise service
+        this.mPromotionManager.stopService();
+
+        super.onStop();
     }
 
     @Override
@@ -267,135 +247,56 @@ public class LauncherActivity extends AppCompatActivity implements
     private void setupGUI() {
         // get the context
         ac = LauncherActivity.this;
-        mRequestManager = YodoRequest.getInstance( ac );
+        mHandlerMessages = new YodoHandler( LauncherActivity.this );
+        mRequestManager  = YodoRequest.getInstance( ac );
         mRequestManager.setListener( this );
-        // Loads images from urls
-        //imageCache  = new MemoryBMCache( ac );
-        //imageLoader = new ImageLoader( YodoRequest.getRequestQueue( ac ), imageCache );
-        // creates the factory for the scanners
-        mScannerFactory = new QRScannerFactory( this );
-        // Globals
+
+        // Setup promotion manager and factory for scanners
+        mPromotionManager = new PromotionManager( this, REQUEST_RESOLVE_ERROR );
+        mScannerFactory   = new QRScannerFactory( this );
+
+        // GUI Globals
         mRootLayout      = (LinearLayout) findViewById( R.id.screenRootView );
         mSlidingLayout   = (SlidingPaneLayout) findViewById( R.id.sliding_panel_layout );
-        mBalanceView     = (TextView) findViewById( R.id.balanceText );
         mScannersSpinner = (Spinner) findViewById(R.id.scannerSpinner);
-        mTotalView       = (TextView) findViewById( R.id.totalText );
-        mCashTenderView  = (TextView) findViewById( R.id.cashTenderText );
-        mCashBackView    = (TextView) findViewById( R.id.cashBackText );
         mAvatarImage     = (NetworkImageView) findViewById( R.id.companyLogo );
         mPaymentButton   = (ImageView) findViewById( R.id.ivYodoGear );
-        mBalanceBar      = (ProgressBar) findViewById( R.id.progressBarBalance );
-        // Logo
-        mAvatarImage.setDefaultImageResId( R.drawable.no_image );
-        // Popup
-        mPopupMessage  = new PopupWindow( ac );
+        pgBalance        = (ProgressBar) findViewById( R.id.progressBarBalance );
+        tvTotal          = (TextView) findViewById( R.id.totalText );
+        tvCashtender     = (TextView) findViewById( R.id.cashTenderText );
+        tvCashback       = (TextView) findViewById( R.id.cashBackText );
+        tvBalance        = (TextView) findViewById( R.id.balanceText );
+
+        // Set selected view as the total
+        selectClick( tvTotal );
+
+        // Global options (navigation window)
+        mCurrencyOption = new CurrencyOption( this );
+        mDiscountOption = new DiscountOption( this, mRequestManager, mHandlerMessages, mPromotionManager );
+        mBalanceOption  = new BalanceOption( this, mRequestManager, mHandlerMessages, mPromotionManager );
+        mAboutOption    = new AboutOption( this );
+
         // Sliding Panel Configurations
         mSlidingLayout.setParallaxDistance( 30 );
-        mScannersSpinner.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected( AdapterView<?> parentView, View selectedItemView, int position, long id ) {
-                TextView scanner = (TextView) selectedItemView;
-                if( scanner != null )
-                    AppUtils.Logger( TAG, scanner.getText().toString() );
-                AppUtils.saveScanner( ac, position );
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-        // Create the adapter for the supported qr scanners
-        ArrayAdapter<QRScannerFactory.SupportedScanners> adapter = new ArrayAdapter<QRScannerFactory.SupportedScanners>(
-                this,
-                android.R.layout.simple_list_item_1,
-                QRScannerFactory.SupportedScanners.values()
-        ){
-            @Override
-            public View getView( int position, View convertView, ViewGroup parent ) {
-                TextView textView = (TextView) super.getView(position, convertView, parent);
-                textView.setTextColor(Color.WHITE);
-                return textView;
-            }
-        };
-        // Get current selected scanner and verify it exists
-        int position = AppUtils.getScanner( ac );
-        if( position >= QRScannerFactory.SupportedScanners.length ) {
-            position = AppConfig.DEFAULT_SCANNER;
-            AppUtils.saveScanner( ac, position );
-        }
-        // Set the current scanner
-        mScannersSpinner.setAdapter( adapter );
-        mScannersSpinner.setSelection( AppUtils.getScanner( ac ) );
-        // Start the messages handler
-        handlerMessages   = new YodoHandler( LauncherActivity.this );
-        // Set the currency icon
-        AppUtils.setCurrencyIcon( ac, mCashTenderView, false );
-        // Set selected view as the total
-        selectedView = mTotalView;
-        selectedView.setBackgroundResource( R.drawable.selected_text_field );
-        // Setup the preview of the Total with discount
-        mTotalView.setOnLongClickListener( new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick( View v ) {
-                // Get subtotal with discount
-                BigDecimal discount = new BigDecimal( AppUtils.getDiscount( ac ) ).movePointLeft( 2 );
-                BigDecimal subTotal = new BigDecimal( mTotalView.getText().toString() ).multiply(
-                        BigDecimal.ONE.subtract( discount )
-                );
-                setupPopup( v, subTotal.setScale( 2, RoundingMode.DOWN ).toString() );
-                return false;
-            }
-        } );
-        // Setup the dismiss of the preview
-        mTotalView.setOnTouchListener( new View.OnTouchListener() {
-            @Override
-            public boolean onTouch( View v, MotionEvent event ) {
-                switch( event.getAction() ) {
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_CANCEL:
-                        if( mPopupMessage != null ) {
-                            mPopupMessage.dismiss();
-                            equivalentTender = null;
-                        }
-                        break;
-                }
-                return false;
-            }
-        } );
-        // Setup the preview of the Tender in the current currency
-        mCashTenderView.setOnLongClickListener( new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick( View v ) {
-                setupPopup( v, null );
-                // Request the fare value in the rate of the merchant currency
-                requestCurrencies();
-                return false;
-            }
-        } );
-        // Setup the dismiss of the preview
-        mCashTenderView.setOnTouchListener( new View.OnTouchListener() {
-            @Override
-            public boolean onTouch( View v, MotionEvent event ) {
-                switch( event.getAction() ) {
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_CANCEL:
-                        if( mPopupMessage != null ) {
-                            mPopupMessage.dismiss();
-                            equivalentTender = null;
-                        }
-                        break;
-                }
-                return false;
-            }
-        } );
+        // Sets up the spinner, listeners, popup, and set currency
+        initializeScannerSpinner();
+        initializeTextListeners();
+        initializePopups();
+        setDefaultCurrency();
+
+        // Set default Logo
+        mAvatarImage.setDefaultImageResId( R.drawable.no_image );
+
         // Set an icon there is a discount
-        if( !AppUtils.getDiscount( ac ).equals( AppConfig.DEFAULT_DISCOUNT ) ) {
-            AppUtils.setViewIcon( ac, mTotalView, R.drawable.discount );
+        if( !PrefUtils.getDiscount( ac ).equals( AppConfig.DEFAULT_DISCOUNT ) ) {
+            GUIUtils.setViewIcon( ac, tvTotal, R.drawable.discount );
         }
+
         // If it is the first login, show the navigation panel
-        if( AppUtils.isFirstLogin( ac ) ) {
+        if( PrefUtils.isFirstLogin( ac ) ) {
             mSlidingLayout.openPane();
-            AppUtils.saveFirstLogin( ac, false );
+            PrefUtils.saveFirstLogin( ac, false );
         }
     }
 
@@ -403,405 +304,265 @@ public class LauncherActivity extends AppCompatActivity implements
      * Set-up the basic information
      */
     private void updateData() {
-        /** Handle external Requests */
+        /********************************* Handle external Requests ****************************************/
+        /***************************************************************************************************/
         externBundle = getIntent().getExtras();
         if( externBundle != null ) {
             BigDecimal total = new BigDecimal( externBundle.getString( Intents.TOTAL, "0.00" ) );
             BigDecimal cashTender = new BigDecimal( externBundle.getString( Intents.CASH_TENDER, "0.00" ) );
             BigDecimal cashBack = new BigDecimal( externBundle.getString( Intents.CASH_BACK, "0.00" ) );
-            //String currency = externBundle.getString( Intents.CURRENCY );
+            final String currency = externBundle.getString( Intents.TENDER_CURRENCY );
 
             // Checks a positive total value
             if( total.signum() > 0 ) {
-                //BigDecimal tip = new BigDecimal( AppUtils.getCurrentTip( ac ) );
-                //tip = tip.scaleByPowerOfTen( -2 ).multiply( total );
-                //mTotalView.setText( total.add( tip ).setScale( 2, RoundingMode.DOWN ).toString() );
-                final String tvTotal = total.setScale( 2, RoundingMode.DOWN ).toString();
-                mTotalView.setText( tvTotal );
+                final String totalValue = total.setScale( 2, RoundingMode.DOWN ).toString();
+                tvTotal.setText( totalValue );
             }
 
             // Checks a positive cash tender value
             if( cashTender.signum() > 0 ) {
-                final String tvCashTender = cashTender.setScale( 2, RoundingMode.DOWN ).toString();
-                mCashTenderView.setText( tvCashTender );
+                final String cashtenderValue = cashTender.setScale( 2, RoundingMode.DOWN ).toString();
+                tvCashtender.setText( cashtenderValue );
             }
 
             // Checks a positive cash back value
             if( cashBack.signum() > 0 ) {
-                final String tvCashBack = cashBack.setScale( 2, RoundingMode.DOWN ).toString();
-                mCashBackView.setText( tvCashBack );
+                final String cashbackValue = cashBack.setScale( 2, RoundingMode.DOWN ).toString();
+                tvCashback.setText( cashbackValue );
             }
 
-            viewClick( mCashTenderView );
+            // Check if the currency is supported
+            final String[] currencies = getResources().getStringArray( R.array.currency_array );
+            if( Arrays.asList( currencies ).contains( currency ) ) {
+                PrefUtils.saveTenderCurrency( ac, currency );
+                GUIUtils.setTenderCurrencyIcon( ac, tvCashtender );
+            }
+
+            selectClick( tvCashtender );
 
             // Handle the prompt of the response message from the server
             prompt_response = externBundle.getBoolean( Intents.PROMPT_RESPONSE, true );
         }
-        /*****************************/
+        /***************************************************************************************************/
 
-        hardwareToken = AppUtils.getHardwareToken( ac );
-        String logo_url = AppUtils.getLogoUrl( ac );
-        AppUtils.Logger( TAG, logo_url );
+        // Get the device hardware token
+        mHardwareToken = PrefUtils.getHardwareToken( ac );
+        if( mHardwareToken == null ) {
+            ToastMaster.makeText( ac, R.string.message_no_hardware, Toast.LENGTH_LONG ).show();
+            finish();
+        }
+
+        // Get the Logo now that we have the hardware token
+        String logo_url = PrefUtils.getLogoUrl( ac );
         if( logo_url.equals( "" ) ) {
             mRequestManager.requestQuery(
                     QRY_LOG_REQ,
-                    hardwareToken,
+                    mHardwareToken,
                     ServerRequest.QueryRecord.MERCHANT_LOGO );
         } else {
             mAvatarImage.setImageUrl( logo_url, mRequestManager.getImageLoader() );
         }
-        // Mock location
-        mLocation = new Location( "flp" );
-        mLocation.setLatitude( 0.00 );
-        mLocation.setLongitude( 0.00 );
     }
 
     /**
-     * Request the necessary permissions for this activity
+     * Initializes the spinner for the scanners
      */
-    private void setupPermissions() {
-        if( AppUtils.isLegacy( ac ) )
-            return;
+    private void initializeScannerSpinner() {
+        // Add item listener to the spinner
+        mScannersSpinner.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected( AdapterView<?> parentView, View selectedItemView, int position, long id ) {
+                TextView scanner = (TextView) selectedItemView;
+                if( scanner != null )
+                    SystemUtils.Logger( TAG, scanner.getText().toString() );
+                PrefUtils.saveScanner( ac, position );
+            }
 
-        boolean locationPermission = AppUtils.requestPermission(
-                LauncherActivity.this,
-                R.string.message_permission_location,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                PERMISSIONS_REQUEST_LOCATION
+            @Override
+            public void onNothingSelected( AdapterView<?> parent ) {
+            }
+        });
+
+        // Create the adapter for the supported qr scanners
+        ArrayAdapter<QRScannerFactory.SupportedScanner> adapter = new ScannerAdapter(
+                this,
+                android.R.layout.simple_list_item_1,
+                QRScannerFactory.SupportedScanner.values()
         );
-        // We have permission, it is time to see if location is enabled, if not just request
-        if( locationPermission )
-            enableLocation();
+
+        // Set the current scanner
+        mScannersSpinner.setAdapter( adapter );
+        mScannersSpinner.setSelection( PrefUtils.getScanner( ac ) );
     }
 
     /**
-     * Enables the advertisement services using nearby
+     * It re-calculates the balance every time the value TextViews change
      */
-    private void setupAdvertisement() {
-        if( AppUtils.isLegacy( ac ) )
-            return;
+    private void initializeTextListeners() {
+        TextWatcher onChange = new TextWatcher() {
+            @Override
+            public void beforeTextChanged( CharSequence s, int start, int count, int after ) {}
 
-        if( !AppUtils.isAdvertising( ac ) )
-            return;
+            @Override
+            public void onTextChanged( CharSequence s, int start, int before, int count ) {}
 
-        mGoogleApiClient = new GoogleApiClient.Builder( this )
-                .addApi( Nearby.MESSAGES_API )
-                .addConnectionCallbacks( this )
-                .addOnConnectionFailedListener( this )
-                .build();
-        mGoogleApiClient.connect();
-    }
-
-    /**
-     * Asks the user to enable the location services, otherwise it
-     * closes the application
-     */
-    private void enableLocation() {
-        // If the device doesn't support the Location service, just finish the app
-        if( !AppUtils.hasLocationService( ac ) ) {
-            ToastMaster.makeText( ac, R.string.message_no_gps_support, Toast.LENGTH_SHORT ).show();
-            finish();
-        } else if( AppUtils.isLocationEnabled( ac ) ) {
-            // Start the location service
-            Intent iLoc = new Intent( ac, LocationService.class );
-            if( !AppUtils.isMyServiceRunning( ac, LocationService.class.getName() ) )
-                startService( iLoc );
-        } else {
-            // If location not enabled, then request
-            DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dialog, int item ) {
-                    Intent intent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS );
-                    startActivityForResult( intent, REQUEST_CODE_LOCATION_SERVICES );
-                }
-            };
-
-            DialogInterface.OnClickListener onCancel = new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dialog, int item ) {
-                    finish();
-                }
-            };
-
-            AlertDialogHelper.showAlertDialog( ac, R.string.message_gps_enable, onClick, onCancel );
-        }
-    }
-
-    /**
-     * Publishes device information to nearby devices. If not successful, attempts to resolve any
-     * error related to Nearby permissions by displaying an opt-in dialog. Registers a callback
-     * that updates the UI when the publication expires.
-     */
-    private void publish() {
-        AppUtils.Logger( TAG, "trying to publish" );
-        // Cannot proceed without a connected GoogleApiClient. Reconnect and execute the pending
-        // task in onConnected().
-        if( !mGoogleApiClient.isConnected() ) {
-            if( !mGoogleApiClient.isConnecting() ) {
-                mGoogleApiClient.connect();
+            @Override
+            public void afterTextChanged( Editable s ) {
+                requestBalance();
             }
-        } else {
-            String message = AppUtils.getBeaconName( ac );
-            mActiveMessage = new com.google.android.gms.nearby.messages.Message(
-                    message.getBytes()
-            );
-            
-            PublishOptions options = new PublishOptions.Builder()
-                .setStrategy( PUB_SUB_STRATEGY )
-                .setCallback( new PublishCallback() {
-                    @Override
-                    public void onExpired() {
-                        super.onExpired();
-                        AppUtils.Logger( TAG, "no longer publishing" );
-                        if( !mUnpublishing )
-                            publish();
-                    }
-                }).build();
+        };
 
-            Nearby.Messages.publish( mGoogleApiClient, mActiveMessage, options )
-                .setResultCallback( new ResultCallback<Status>() {
-                    @Override
-                    public void onResult( @NonNull Status status ) {
-                        if( status.isSuccess() ) {
-                            AppUtils.Logger( TAG, "published successfully" );
-                        } else {
-                            AppUtils.Logger( TAG, "could not publish" );
-                            handleUnsuccessfulNearbyResult( status );
-                        }
-                    }
-                });
-        }
+        tvTotal.addTextChangedListener( onChange );
+        tvCashtender.addTextChangedListener( onChange );
+        tvCashback.addTextChangedListener( onChange );
     }
 
     /**
-     * Stops publishing device information to nearby devices. If successful, resets state. If not
-     * successful, attempts to resolve any error related to Nearby permissions by displaying an
-     * opt-in dialog.
+     * Generates the main layout of the popups
      */
-    private void unpublish() {
-        AppUtils.Logger( TAG, "trying to unpublish" );
-        // Cannot proceed without a connected GoogleApiClient. Reconnect and execute the pending
-        // task in onConnected().
-        if( !mGoogleApiClient.isConnected() ) {
-            if( !mGoogleApiClient.isConnecting() ) {
-                mGoogleApiClient.connect();
-            }
-        } else {
-            Nearby.Messages.unpublish( mGoogleApiClient, mActiveMessage )
-                .setResultCallback( new ResultCallback<Status>() {
-                    @Override
-                    public void onResult( @NonNull Status status ) {
-                        if( status.isSuccess() ) {
-                            AppUtils.Logger( TAG, "unpublished successfully" );
-                        } else {
-                            AppUtils.Logger( TAG, "could not unpublish" );
-                            handleUnsuccessfulNearbyResult(status);
-                        }
-                    }
-                });
-        }
-    }
-
-    /**
-     * Handles errors generated when performing a subscription or publication action. Uses
-     * {@link Status#startResolutionForResult} to display an opt-in dialog to handle the case
-     * where a device is not opted into using Nearby.
-     */
-    private void handleUnsuccessfulNearbyResult( Status status ) {
-        AppUtils.Logger( TAG, "processing error, status = " + status );
-        if( status.getStatusCode() == NearbyMessagesStatusCodes.APP_NOT_OPTED_IN ) {
-            if( !mResolvingNearbyPermissionError ) {
-                try {
-                    mResolvingNearbyPermissionError = true;
-                    status.startResolutionForResult( this, REQUEST_RESOLVE_ERROR );
-
-                } catch( IntentSender.SendIntentException e ) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            if( status.getStatusCode() == ConnectionResult.NETWORK_ERROR ) {
-                ToastMaster.makeText(
-                        ac,
-                        "No connectivity, cannot proceed. Fix in 'Settings' and try again.",
-                        Toast.LENGTH_LONG
-                ).show();
-            } else {
-                // To keep things simple, pop a toast for all other error messages.
-                Toast.makeText(
-                        ac,
-                        "Unsuccessful: " + status.getStatusMessage(),
-                        Toast.LENGTH_LONG
-                ).show();
-            }
-        }
-    }
-
-    /**
-     * Setup a PopupWindow below a View (tender)
-     * @param v The view for te popup
-     */
-    private void setupPopup( View v, String value ) {
+    private void initializePopups() {
         LinearLayout viewGroup = (LinearLayout) findViewById( R.id.popup_window );
         LayoutInflater layoutInflater = (LayoutInflater) getSystemService( Context.LAYOUT_INFLATER_SERVICE );
-        View layout = layoutInflater.inflate( R.layout.popup_window, viewGroup );
 
-        TextView cashTender     = (TextView) layout.findViewById( R.id.cashTenderText );
-        ProgressBar progressBar = (ProgressBar) layout.findViewById( R.id.progressBarPopUp );
+        // Popup for discount
+        mPopupDiscount = new PopupWindow( ac );
+        View lDiscount = layoutInflater.inflate( R.layout.popup_window, viewGroup );
 
-        // If there is no value to set, then start the progress bar
-        if( value == null ) {
-            AppUtils.setMerchantCurrencyIcon( ac, cashTender );
+        tvpDiscount = (TextView) lDiscount.findViewById( R.id.cashTenderText );
+        GUIUtils.setMerchantCurrencyIcon( ac, tvpDiscount );
 
-            cashTender.setVisibility( View.GONE );
-            progressBar.setVisibility( View.VISIBLE );
-        } else {
-            cashTender.setCompoundDrawables( null, null, null, null );
-            cashTender.setText( value );
-        }
+        mPopupDiscount.setWidth( ViewGroup.LayoutParams.WRAP_CONTENT );
+        mPopupDiscount.setHeight( ViewGroup.LayoutParams.WRAP_CONTENT );
+        mPopupDiscount.setContentView( lDiscount );
 
-        //mPopupMessage.setWidth( mCashTenderView.getWidth() );
-        mPopupMessage.setWidth( LinearLayout.LayoutParams.WRAP_CONTENT );
-        mPopupMessage.setHeight( LinearLayout.LayoutParams.WRAP_CONTENT );
-        mPopupMessage.setContentView( layout );
-        mPopupMessage.showAtLocation( v, Gravity.CENTER, 0, 0 );
-    }
+        // Popup for tender
+        mPopupTender = new PopupWindow( ac );
+        View lTender = layoutInflater.inflate( R.layout.popup_window, viewGroup );
 
-    /**
-     * Creates a dialog to show the balance information
-     */
-    private void balanceDialog() {
-        if( historyData.size() == 1 || todayData.size() == 1 ) {
-            ToastMaster.makeText( ac, R.string.no_balance, Toast.LENGTH_SHORT ).show();
-            return;
-        }
+        tvpTender = (TextView) lTender.findViewById( R.id.cashTenderText );
+        pbpTender = (ProgressBar) lTender.findViewById( R.id.progressBarPopUp );
+        GUIUtils.setMerchantCurrencyIcon( ac, tvpTender );
 
-        LayoutInflater inflater = getLayoutInflater();
-        LinearLayout root = (LinearLayout) findViewById( R.id.layoutDialogRoot );
-        View layout = inflater.inflate( R.layout.dialog_balance, root, false );
+        mPopupTender.setWidth( ViewGroup.LayoutParams.WRAP_CONTENT );
+        mPopupTender.setHeight( ViewGroup.LayoutParams.WRAP_CONTENT );
+        mPopupTender.setContentView( lTender );
 
-        TextView todayCreditsText = ( (TextView) layout.findViewById( R.id.yodoTodayCashTextView ) );
-        TextView todayDebitsText  = ( (TextView) layout.findViewById( R.id.yodoTodayDebitsTextView ) );
-        TextView todayBalanceText = ( (TextView) layout.findViewById( R.id.yodoTodayBalanceTextView ) );
+        // Setup the preview of the Total with discount
+        tvTotal.setOnLongClickListener( new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick( View v ) {
+                mPopupDiscount.showAtLocation( v, Gravity.CENTER, 0, 0 );
+                return false;
+            }
+        } );
 
-        TextView creditsText = ( (TextView) layout.findViewById( R.id.yodoCashTextView ) );
-        TextView debitsText  = ( (TextView) layout.findViewById( R.id.yodoDebitsTextView ) );
-        TextView balanceText = ( (TextView) layout.findViewById( R.id.yodoBalanceTextView ) );
+        // Setup the dismiss of the preview
+        tvTotal.setOnTouchListener( new View.OnTouchListener() {
+            @Override
+            public boolean onTouch( View v, MotionEvent event ) {
+                switch( event.getAction() ) {
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        if( mPopupDiscount != null )
+                            mPopupDiscount.dismiss();
+                        break;
+                }
+                return false;
+            }
+        } );
 
-        BigDecimal total = BigDecimal.ZERO;
+        // Setup the preview of the Tender in the current currency
+        tvCashtender.setOnLongClickListener( new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick( View v ) {
+                mPopupTender.showAtLocation( v, Gravity.CENTER, 0, 0 );
+                return false;
+            }
+        } );
 
-        BigDecimal result = new BigDecimal( historyData.get( ServerResponse.DEBIT ) );
-        final String tvResult = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
-        debitsText.setText( tvResult );
-        total = total.subtract( result );
-
-        result = new BigDecimal( historyData.get( ServerResponse.CREDIT ) );
-        final String tvCredits = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
-        creditsText.setText( tvCredits );
-        total = total.add( result );
-
-        final String tvBalance = total.negate().setScale( 2, RoundingMode.DOWN ).toString();
-        balanceText.setText( tvBalance );
-        total = BigDecimal.ZERO;
-
-        result = new BigDecimal( todayData.get( ServerResponse.DEBIT ) );
-        final String tvTodayDebit = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
-        todayDebitsText.setText( tvTodayDebit );
-        total = total.subtract( result );
-
-        result = new BigDecimal( todayData.get( ServerResponse.CREDIT ) );
-        final String tvTodayCredit = result.setScale( 2, RoundingMode.HALF_DOWN ).toString();
-        todayCreditsText.setText( tvTodayCredit );
-        total = total.add( result );
-
-        final String tvTodayBalance = total.negate().setScale( 2, RoundingMode.DOWN ).toString();
-        todayBalanceText.setText( tvTodayBalance );
-
-        AlertDialogHelper.showAlertDialog( ac, getString( R.string.yodo_title ), layout );
-        todayData = historyData = null;
+        // Setup the dismiss of the preview
+        tvCashtender.setOnTouchListener( new View.OnTouchListener() {
+            @Override
+            public boolean onTouch( View v, MotionEvent event ) {
+                switch( event.getAction() ) {
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        if( mPopupTender != null )
+                            mPopupTender.dismiss();
+                        break;
+                }
+                return false;
+            }
+        } );
     }
 
     /**
      * Gets the used currencies (merchant and tender) and requests their rates from the
      * server or cache
      */
-    private void requestCurrencies() {
-        String[] currencies = ac.getResources().getStringArray( R.array.currency_array );
-        String merchantCurr = AppUtils.getMerchantCurrency( ac );
-        String tenderCurr   = currencies[ AppUtils.getCurrency( ac ) ];
+    private void requestBalance() {
+        // Balance GUI
+        tvBalance.setVisibility( View.GONE );
+        pgBalance.setVisibility( View.VISIBLE );
+
+        // Popup GUI
+        tvpTender.setVisibility( View.GONE );
+        pbpTender.setVisibility( View.VISIBLE );
+
+        String merchantCurr = PrefUtils.getMerchantCurrency( ac );
+        String tenderCurr = PrefUtils.getTenderCurrency( ac );
         mRequestManager.requestCurrencies( CURR_REQ, merchantCurr, tenderCurr );
     }
 
     /**
-     * Changes the current currency
+     * Sets the default currency and sets the icon
+     */
+    private void setDefaultCurrency() {
+        PrefUtils.saveTenderCurrency( ac, PrefUtils.getMerchantCurrency( ac ) );
+        GUIUtils.setTenderCurrencyIcon( ac, tvCashtender );
+        requestBalance();
+    }
+
+    /**
+     * Button Actions.
+     * {{ ==============================================
+     */
+
+    /**
+     * Sets the currency for a transaction
      * @param v View, used to get the title
      */
     public void setCurrencyClick(View v) {
         mSlidingLayout.closePane();
-
-        final String[] currency = getResources().getStringArray( R.array.currency_array );
-        final String[] icons    = getResources().getStringArray( R.array.currency_icon_array );
-
-        Currency[] currencyList = new Currency[currency.length];
-        for( int i = 0; i < currency.length; i++ )
-            currencyList[i] = new Currency( currency[i], AppUtils.getDrawableByName( ac, icons[i] ) );
-
-        final String title        = ((Button) v).getText().toString();
-        final ListAdapter adapter = new CurrencyAdapter( ac, currencyList );
-        final int current         = AppUtils.getCurrency( ac );
-
-        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-            public void onClick( DialogInterface dialog, int item ) {
-                AppUtils.saveCurrency( ac, item );
-
-                Drawable icon = AppUtils.getDrawableByName( ac, icons[ item ] );
-                icon.setBounds( 0, 0, mCashTenderView.getLineHeight(), (int) ( mCashTenderView.getLineHeight() * 0.9 ) );
-                mCashTenderView.setCompoundDrawables( icon, null, null, null );
-                // Request the tender value in the rate of the merchant currency
-                requestCurrencies();
-
-                dialog.dismiss();
-            }
-        };
-
-        AlertDialogHelper.showAlertDialog(
-                ac,
-                title,
-                adapter,
-                current,
-                onClick
-        );
+        mCurrencyOption.execute();
     }
 
+    public void currency( Drawable icon ) {
+        icon.setBounds( 0, 0, tvCashtender.getLineHeight(), (int) ( tvCashtender.getLineHeight() * 0.9 ) );
+        tvCashtender.setCompoundDrawables( icon, null, null, null );
+        // Request the tender value in the rate of the merchant currency
+        requestBalance();
+    }
+
+    /**
+     * Sets a discount for all the transactions
+     * @param v The view is not used
+     */
     public void setDiscountClick( View v ) {
         mSlidingLayout.closePane();
+        mDiscountOption.execute();
+    }
 
-        final String title      = getString( R.string.input_pip );
-        final EditText inputBox = new ClearEditText( ac );
-
-        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick( DialogInterface dialog, int item ) {
-                String pip = inputBox.getText().toString();
-                AppUtils.hideSoftKeyboard( LauncherActivity.this );
-
-                ProgressDialogHelper.getInstance().createProgressDialog(
-                        ac,
-                        ProgressDialogHelper.ProgressDialogType.NORMAL
-                );
-                mRequestManager.requestMerchAuth(
-                        AUTH_REQ,
-                        hardwareToken,
-                        pip
-                );
-            }
-        };
-
-        AlertDialogHelper.showAlertDialog(
-                ac,
-                title,
-                inputBox, true, false,
-                null,
-                onClick
-        );
+    public void discount( EditText inputBox ) {
+        final String discount = inputBox.getText().toString();
+        if( discount.length() > 0 ) {
+            PrefUtils.saveDiscount( ac, discount );
+            GUIUtils.setViewIcon( ac, tvTotal, R.drawable.discount );
+        } else {
+            PrefUtils.saveDiscount( ac, AppConfig.DEFAULT_DISCOUNT );
+            GUIUtils.setViewIcon( ac, tvTotal, null );
+        }
+        requestBalance();
     }
 
     /**
@@ -810,7 +571,6 @@ public class LauncherActivity extends AppCompatActivity implements
      */
     public void settingsClick( View v ) {
         mSlidingLayout.closePane();
-
         Intent intent = new Intent( ac, SettingsActivity.class );
         startActivityForResult( intent, REQUEST_SETTINGS );
     }
@@ -819,86 +579,27 @@ public class LauncherActivity extends AppCompatActivity implements
      * Gets the balance of the POS
      * @param v View, not used
      */
-    public void getBalanceClick(View v) {
+    public void getBalanceClick( View v ) {
         mSlidingLayout.closePane();
-
-        final String title      = getString( R.string.input_pip );
-        final EditText inputBox = new ClearEditText( ac );
-        final CheckBox remember = new CheckBox( ac );
-        remember.setText( R.string.remember_pass );
-
-        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int item) {
-                String pip = inputBox.getText().toString();
-                AppUtils.hideSoftKeyboard( LauncherActivity.this );
-
-                if( remember.isChecked() )
-                    AppUtils.savePassword( ac, pip );
-                else
-                    AppUtils.savePassword( ac, null );
-
-                ProgressDialogHelper.getInstance().createProgressDialog(
-                        LauncherActivity.this,
-                        ProgressDialogHelper.ProgressDialogType.NORMAL
-                );
-
-                mRequestManager.requestQuery(
-                        QRY_HBAL_REQ,
-                        hardwareToken,
-                        pip,
-                        ServerRequest.QueryRecord.HISTORY_BALANCE
-                );
-
-                mRequestManager.requestQuery(
-                        QRY_TBAL_REQ,
-                        hardwareToken,
-                        pip,
-                        ServerRequest.QueryRecord.TODAY_BALANCE
-                );
-            }
-        };
-
-        AlertDialogHelper.showAlertDialog(
-                ac,
-                title,
-                inputBox, false, true,
-                remember,
-                onClick
-        );
+        mBalanceOption.execute();
     }
 
     /**
      * Shows some basic information about the POS
      * @param v View, not used
      */
-    public void aboutClick(View v) {
+    public void aboutClick( View v ) {
         mSlidingLayout.closePane();
-
-        final String title   = ((Button) v).getText().toString();
-        final String message = getString( R.string.imei )    + " " +
-                               AppUtils.getHardwareToken( ac ) + "\n" +
-                               getString( R.string.label_currency )    + " " +
-                               AppUtils.getMerchantCurrency( ac ) + "\n" +
-                               getString( R.string.version_label ) + " " +
-                               getString( R.string.version_value ) + "/" +
-                               YodoRequest.getSwitch();
-
-        AlertDialogHelper.showAlertDialog(
-                ac,
-                title,
-                message,
-                null
-        );
+        mAboutOption.execute();
     }
 
     /**
      * Logout the user
      * @param v View, not used
      */
-    public void logoutClick(View v) {
-        //imageCache.clear();
-        AppUtils.saveLoginStatus( ac, false );
-        AppUtils.saveLogoUrl( ac, "" );
+    public void logoutClick( View v ) {
+        PrefUtils.saveLoginStatus( ac, false );
+        PrefUtils.saveLogoUrl( ac, "" );
         finish();
     }
 
@@ -906,12 +607,12 @@ public class LauncherActivity extends AppCompatActivity implements
      * Change the selected view (purchase, cash tender, or cash back)
      * @param v The selected view
      */
-    public void viewClick(View v) {
-        if( selectedView != null )
-            selectedView.setBackgroundResource( R.drawable.show_text_field );
+    public void selectClick( View v ) {
+        if( tvSelected != null )
+            tvSelected.setBackgroundResource( R.drawable.show_text_field );
 
-        selectedView = ((TextView) v);
-        selectedView.setBackgroundResource( R.drawable.selected_text_field );
+        tvSelected = ( (TextView) v );
+        tvSelected.setBackgroundResource( R.drawable.selected_text_field );
     }
 
     /**
@@ -921,33 +622,31 @@ public class LauncherActivity extends AppCompatActivity implements
     public void resetClick(View v) {
         String zero = getString( R.string.zero );
 
-        mTotalView.setText( zero );
-        mCashTenderView.setText( zero );
-        mCashBackView.setText( zero );
-
-        mBalanceView.setText( zero );
+        tvTotal.setText( zero );
+        tvCashtender.setText( zero );
+        tvCashback.setText( zero );
+        tvBalance.setText( zero );
     }
 
-    /** Handle numeric button clicked
-     *  @param v View, used to get the number
+    /**
+     * Handle numeric button clicked
+     * @param v View, used to get the number
      */
     @SuppressWarnings( "unused" )
     public void valueClick( View v ) {
-        final String value   = ((Button)v).getText().toString();
+        final String value = ( (Button)v ).getText().toString();
 
-        // This button is not working
+        // This button is not working value_.
         if( value.equals( getString( R.string.value__ ) ) )
             return;
 
         for( int i = 0; i < value.length(); i++ ) {
-            final String current = selectedView.getText().toString();
+            final String current = tvSelected.getText().toString();
 
             BigDecimal temp = new BigDecimal( current + value );
             final String tvNewValue = temp.multiply( BigDecimal.TEN ).setScale( 2, RoundingMode.DOWN ).toString();
-            selectedView.setText( tvNewValue );
+            tvSelected.setText( tvNewValue );
         }
-        // Request the fare value in the rate of the merchant currency
-        requestCurrencies();
     }
 
     /** Handle numeric add clicked
@@ -956,25 +655,39 @@ public class LauncherActivity extends AppCompatActivity implements
     @SuppressWarnings( "unused" )
     public void addClick( View v ) {
         final String amount  = ((Button)v).getText().toString();
-        final String current = selectedView.getText().toString();
+        final String current = tvSelected.getText().toString();
 
         if( amount.equals( getString( R.string.coins_0 ) ) ) {
-            selectedView.setText( getString( R.string.zero ) );
+            tvSelected.setText( getString( R.string.zero ) );
         } else {
             BigDecimal value = new BigDecimal( current ).add( new BigDecimal( amount ) );
             final String tvNewValue = value.setScale( 2, RoundingMode.DOWN ).toString();
-            selectedView.setText( tvNewValue );
+            tvSelected.setText( tvNewValue );
         }
-        // Request the fare value in the rate of the merchant currency
-        requestCurrencies();
     }
 
     /**
      * Handles on back pressed
      * @param v View, not used
      */
-    public void backClick(View v) {
+    public void backClick( View v ) {
         onBackPressed();
+    }
+
+    /**
+     * Opens the scanner to realize a payment
+     * @param v The View, not used
+     */
+    public void yodoPayClick(View v) {
+        boolean cameraPermission = SystemUtils.requestPermission(
+                LauncherActivity.this,
+                R.string.message_permission_camera,
+                Manifest.permission.CAMERA,
+                PERMISSIONS_REQUEST_CAMERA
+        );
+
+        if( cameraPermission )
+            showCamera();
     }
 
     /**
@@ -986,266 +699,29 @@ public class LauncherActivity extends AppCompatActivity implements
             return;
         }
 
-        AppUtils.rotateImage( mPaymentButton );
+        GUIUtils.rotateImage( mPaymentButton );
         currentScanner = mScannerFactory.getScanner(
-                (QRScannerFactory.SupportedScanners) mScannersSpinner.getSelectedItem()
+                (QRScannerFactory.SupportedScanner) mScannersSpinner.getSelectedItem()
         );
 
         if( currentScanner != null )
             currentScanner.startScan();
     }
 
-    /**
-     * Opens the scanner to realize a payment
-     * @param v The View, not used
-     */
-    public void yodoPayClick(View v) {
-        boolean cameraPermission = AppUtils.requestPermission(
-                LauncherActivity.this,
-                R.string.message_permission_camera,
-                Manifest.permission.CAMERA,
-                PERMISSIONS_REQUEST_CAMERA
-        );
-
-        if( cameraPermission )
-            showCamera();
-    }
-
     @Override
-    public void onResponse( int responseCode, ServerResponse response ) {
-        ProgressDialogHelper.getInstance().destroyProgressDialog();
-        String code, message;
-
-        switch( responseCode ) {
-
-            case AUTH_REQ:
-                code = response.getCode();
-
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    final String title      = getString( R.string.text_set_discount ) + " (%)";
-                    final EditText inputBox = new ClearEditText( ac );
-                    inputBox.setInputType( InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL );
-
-                    InputFilter filter = new InputFilter() {
-                        final int maxDigitsBeforeDecimalPoint = 2;
-                        final int maxDigitsAfterDecimalPoint  = 2;
-
-                        @Override
-                        public CharSequence filter( CharSequence source, int start, int end, Spanned dest, int dstart, int dend ) {
-                            StringBuilder builder = new StringBuilder( dest );
-                            builder.replace( dstart, dend, source.subSequence( start, end ).toString() );
-                            if( !builder.toString().matches(
-                                    "(([" +( maxDigitsBeforeDecimalPoint - 1 ) +
-                                    "-9])([0-9]?)?)?(\\.[0-9]{0," + maxDigitsAfterDecimalPoint + "})?"
-
-                            )) {
-                                if( source.length() == 0 )
-                                    return dest.subSequence( dstart, dend );
-                                return "";
-                            }
-
-                            return null;
-                        }
-                    };
-                    inputBox.setFilters( new InputFilter[] { filter } );
-                    inputBox.setText( AppUtils.getDiscount( ac ) );
-
-                    DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int item) {
-                            String discount = inputBox.getText().toString();
-                            AppUtils.hideSoftKeyboard( LauncherActivity.this );
-                            if( discount.length() > 0 ) {
-                                AppUtils.saveDiscount( ac, discount );
-                                AppUtils.setViewIcon( ac, mTotalView, R.drawable.discount );
-                            } else {
-                                AppUtils.saveDiscount( ac, AppConfig.DEFAULT_DISCOUNT );
-                                AppUtils.setViewIcon( ac, mTotalView, null );
-                            }
-                            requestCurrencies();
-                        }
-                    };
-
-                    AlertDialogHelper.showAlertDialog(
-                            ac,
-                            title,
-                            inputBox,
-                            onClick
-                    );
-                } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
-                    AppUtils.errorSound( ac );
-
-                    Message msg = new Message();
-                    msg.what = YodoHandler.SERVER_ERROR;
-                    message  = getString( R.string.message_incorrect_pip );
-
-                    Bundle bundle = new Bundle();
-                    bundle.putString( YodoHandler.CODE, code );
-                    bundle.putString( YodoHandler.MESSAGE, message );
-                    msg.setData( bundle );
-
-                    handlerMessages.sendMessage( msg );
-                }
-                break;
-
-            case QRY_HBAL_REQ:
-                code = response.getCode();
-
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    historyData = response.getParams();
-                    if( todayData != null )
-                        balanceDialog();
-                } else if( code.equals( ServerResponse.ERROR_FAILED ) ) {
-                    AppUtils.errorSound( ac );
-
-                    Message msg = new Message();
-                    msg.what = YodoHandler.SERVER_ERROR;
-                    message  = response.getMessage();
-
-                    Bundle bundle = new Bundle();
-                    bundle.putString( YodoHandler.CODE, code );
-                    bundle.putString( YodoHandler.MESSAGE, message );
-                    msg.setData( bundle );
-
-                    handlerMessages.sendMessage( msg );
-                    todayData = historyData = null;
-                }
-                break;
-
-            case QRY_TBAL_REQ:
-                code = response.getCode();
-
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    todayData = response.getParams();
-                    if( historyData != null )
-                        balanceDialog();
-                }
-                break;
-
-            case QRY_LOG_REQ:
-                code = response.getCode();
-
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    String logoName = response.getParam( ServerResponse.LOGO );
-
-                    if( logoName != null ) {
-                        String logo_url = AppConfig.LOGO_PATH + logoName;
-                        AppUtils.saveLogoUrl( ac, logo_url );
-                        mAvatarImage.setImageUrl( logo_url, mRequestManager.getImageLoader() );
-                    }
-                }
-                break;
-
-            case CURR_REQ:
-                final String sMerchRate = response.getParam( ServerResponse.MERCH_RATE );
-                final String sFareRate  = response.getParam( ServerResponse.TENDER_RATE );
-
-                if( sMerchRate != null && sFareRate != null ) {
-                    // List of Currencies
-                    String[] currencies = ac.getResources().getStringArray( R.array.currency_array );
-                    // Get the rates in BigDecimals
-                    BigDecimal merchRate = new BigDecimal( sMerchRate );
-                    BigDecimal fareRate = new BigDecimal( sFareRate );
-                    // Get the values of the total and cashback
-                    String totalPurchase   = mTotalView.getText().toString();
-                    String cashBack        = mCashBackView.getText().toString();
-                    // Get raw value, in order to transform
-                    BigDecimal temp_tender = new BigDecimal( mCashTenderView.getText().toString() );
-
-                    // Transform the currencies using the rate
-                    if( AppConfig.URL_CURRENCY.equals( currencies[ AppUtils.getCurrency( ac ) ] ) ) {
-                        equivalentTender = temp_tender.multiply( merchRate );
-                    } else {
-                        BigDecimal currency_rate = merchRate.divide( fareRate, 2, RoundingMode.DOWN );
-                        equivalentTender = temp_tender.multiply( currency_rate );
-                    }
-                    // Get subtotal with discount
-                    BigDecimal discount = new BigDecimal( AppUtils.getDiscount( ac ) ).movePointLeft( 2 );
-                    BigDecimal subTotal = new BigDecimal( totalPurchase ).multiply(
-                            BigDecimal.ONE.subtract( discount )
-                    );
-                    // Get total balance
-                    BigDecimal total = equivalentTender.subtract(
-                            subTotal.add( new BigDecimal( cashBack ) )
-                    );
-
-                    final String tvBalance = total.setScale( 2, RoundingMode.DOWN ).toString();
-                    mBalanceView.setText( tvBalance );
-                    mBalanceView.setVisibility( View.VISIBLE );
-                    mBalanceBar.setVisibility( View.GONE );
-                    // If the popup is showing, then use the new value
-                    if( mPopupMessage.isShowing() ) {
-                        // Disappear the progress bar and show the value
-                        mPopupMessage.getContentView().findViewById( R.id.progressBarPopUp ).setVisibility( View.GONE );
-                        TextView value = (TextView) mPopupMessage.getContentView().findViewById( R.id.cashTenderText );
-                        value.setVisibility( View.VISIBLE );
-                        final String tvTender = equivalentTender.setScale( 2, RoundingMode.DOWN ).toString();
-                        value.setText( tvTender );
-                    }
-                }
-
-                break;
-
-            case EXCH_REQ:
-            case ALT_REQ:
-                code = response.getCode();
-                final String ex_code       = response.getCode();
-                final String ex_authNumber = response.getAuthNumber();
-                final String ex_message    = response.getMessage();
-                final String ex_account    = response.getParam( ServerResponse.ACCOUNT );
-                final String ex_purchase   = response.getParam( ServerResponse.PURCHASE );
-                final String ex_amount     = response.getParam( ServerResponse.AMOUNT_DELTA );
-
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    message = getString( R.string.exchange_auth ) + " " + ex_authNumber + "\n" +
-                              getString( R.string.exchange_message ) + " " + ex_message;
-
-                    DialogInterface.OnClickListener onClick = null;
-
-                    if( externBundle != null ) {
-                        final Intent data = new Intent();
-                        data.putExtra( Intents.RESULT_CODE, ex_code );
-                        data.putExtra( Intents.RESULT_AUTH, ex_authNumber );
-                        data.putExtra( Intents.RESULT_MSG, ex_message );
-                        data.putExtra( Intents.RESULT_ACC, ex_account );
-                        data.putExtra( Intents.RESULT_PUR, ex_purchase );
-                        data.putExtra( Intents.RESULT_DEL, ex_amount );
-                        setResult( RESULT_OK, data );
-
-                        onClick = new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int item) {
-                                finish();
-                            }
-                        };
-                    }
-
-                    if( prompt_response )
-                        AlertDialogHelper.showAlertDialog( ac, response.getCode(), message , onClick );
-                    else finish();
-                } else {
-                    AppUtils.errorSound( ac );
-                    message  = response.getMessage() + "\n" + response.getParam( XMLHandler.PARAMS );
-                    AppUtils.sendMessage( handlerMessages, code, message );
-                }
-                break;
-        }
-    }
-
-    @Override
-    public void onNewData( String data ) {
-        final String[] currency = getResources().getStringArray( R.array.currency_array );
-
+    public void onScanResult( String data ) {
         // Get subtotal with discount
-        BigDecimal discount = new BigDecimal( AppUtils.getDiscount( ac ) ).movePointLeft( 2 );
-        BigDecimal subTotal = new BigDecimal( mTotalView.getText().toString() ).multiply(
+        BigDecimal discount = new BigDecimal( PrefUtils.getDiscount( ac ) ).movePointLeft( 2 );
+        BigDecimal subTotal = new BigDecimal( tvTotal.getText().toString() ).multiply(
                 BigDecimal.ONE.subtract( discount )
         );
 
-        String totalPurchase = subTotal.setScale( 2, RoundingMode.DOWN ).toString();
-        String cashTender    = mCashTenderView.getText().toString();
-        String cashBack      = mCashBackView.getText().toString();
+        final String total      = subTotal.setScale( 2, RoundingMode.DOWN ).toString();
+        final String cashtender = tvCashtender.getText().toString();
+        final String cashback   = tvCashback.getText().toString();
 
         switch( data.length() ) {
-            case AppConfig.SKS_SIZE:
+            case QRScannerFactory.SKS_SIZE:
                 ProgressDialogHelper.getInstance().createProgressDialog(
                         LauncherActivity.this,
                         ProgressDialogHelper.ProgressDialogType.TRANSPARENT
@@ -1253,18 +729,18 @@ public class LauncherActivity extends AppCompatActivity implements
 
                 mRequestManager.requestExchange(
                         EXCH_REQ,
-                        hardwareToken,
+                        mHardwareToken,
                         data,
-                        totalPurchase,
-                        cashTender,
-                        cashBack,
+                        total,
+                        cashtender,
+                        cashback,
                         mLocation.getLatitude(),
                         mLocation.getLongitude(),
-                        currency[ AppUtils.getCurrency( ac ) ]
+                        PrefUtils.getTenderCurrency( ac )
                 );
                 break;
 
-            case AppConfig.ALT_SIZE:
+            case QRScannerFactory.ALT_SIZE:
                 String clientData  = data.substring( 0, data.length() - 1 );
                 String accountType = data.substring( data.length() - 1 );
 
@@ -1276,19 +752,149 @@ public class LauncherActivity extends AppCompatActivity implements
                 mRequestManager.requestAlternate(
                         ALT_REQ,
                         accountType,
-                        hardwareToken,
+                        mHardwareToken,
                         clientData,
-                        totalPurchase,
-                        cashTender,
-                        cashBack,
+                        total,
+                        cashtender,
+                        cashback,
                         mLocation.getLatitude(),
                         mLocation.getLongitude(),
-                        currency[ AppUtils.getCurrency( ac ) ]
+                        PrefUtils.getTenderCurrency( ac )
                 );
                 break;
 
             default:
                 ToastMaster.makeText( LauncherActivity.this, R.string.exchange_error, Toast.LENGTH_LONG ).show();
+                break;
+        }
+    }
+
+    @Override
+    public void onPrepare() {
+        if( PrefUtils.isAdvertising( ac ) ) {
+            isPublishing = true;
+            mPromotionManager.unpublish();
+        }
+    }
+
+    @Override
+    public void onResponse( int responseCode, ServerResponse response ) {
+        ProgressDialogHelper.getInstance().destroyProgressDialog();
+        String code, message;
+
+        // If it was publishing before the request
+        if( isPublishing ) {
+            isPublishing = false;
+            mPromotionManager.publish();
+        }
+
+        switch( responseCode ) {
+
+            case QRY_LOG_REQ:
+                code = response.getCode();
+
+                if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                    String logoName = response.getParam( ServerResponse.LOGO );
+
+                    if( logoName != null ) {
+                        String logo_url = AppConfig.LOGO_PATH + logoName;
+                        PrefUtils.saveLogoUrl( ac, logo_url );
+                        mAvatarImage.setImageUrl( logo_url, mRequestManager.getImageLoader() );
+                    }
+                }
+                break;
+
+            case CURR_REQ:
+                final String sMerchRate  = response.getParam( ServerResponse.MERCH_RATE );
+                final String sTenderRate = response.getParam( ServerResponse.TENDER_RATE );
+
+                if( sMerchRate != null && sTenderRate != null ) {
+                    // Get the rates in BigDecimals
+                    BigDecimal merchRate  = new BigDecimal( sMerchRate );
+                    BigDecimal tenderRate = new BigDecimal( sTenderRate );
+
+                    // Get the values of the money TextViews
+                    BigDecimal total      = new BigDecimal( tvTotal.getText().toString() );
+                    BigDecimal cashtender = new BigDecimal( tvCashtender.getText().toString() );
+                    BigDecimal cashback   = new BigDecimal( tvCashback.getText().toString() );
+
+                    // Get the tender in merchant currency
+                    BigDecimal merchTender = cashtender.multiply(
+                            merchRate.divide( tenderRate, 2, RoundingMode.DOWN )
+                    );
+
+                    tvpTender.setText( FormatUtils.truncateDecimal( merchTender.toString() ) );
+                    pbpTender.setVisibility( View.GONE );
+                    tvpTender.setVisibility( View.VISIBLE );
+
+                    // Get subtotal with discount
+                    BigDecimal discount = new BigDecimal( PrefUtils.getDiscount( ac ) ).movePointLeft( 2 );
+                    BigDecimal subTotal = total.multiply(
+                            BigDecimal.ONE.subtract( discount )
+                    );
+
+                    tvpDiscount.setText( FormatUtils.truncateDecimal( subTotal.toString() ) );
+
+                    // Get balance
+                    BigDecimal balance = merchTender.subtract(
+                            subTotal.add( cashback )
+                    );
+
+                    tvBalance.setText( FormatUtils.truncateDecimal( balance.toString() ) );
+                    tvBalance.setVisibility( View.VISIBLE );
+                    pgBalance.setVisibility( View.GONE );
+                }
+
+                break;
+
+            case EXCH_REQ:
+            case ALT_REQ:
+                code = response.getCode();
+                final String ex_code       = response.getCode();
+                final String ex_authbumber = response.getAuthNumber();
+                final String ex_message    = response.getMessage();
+                final String ex_account    = response.getParam( ServerResponse.ACCOUNT );
+                final String ex_purchase   = response.getParam( ServerResponse.PURCHASE );
+                final String ex_delta      = response.getParam( ServerResponse.AMOUNT_DELTA );
+
+                if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                    message = getString( R.string.exchange_auth ) + " " + ex_authbumber + "\n" +
+                              getString( R.string.exchange_message ) + " " + ex_message;
+
+                    DialogInterface.OnClickListener onClick;
+
+                    if( externBundle != null ) {
+                        final Intent data = new Intent();
+                        data.putExtra( Intents.RESULT_CODE, ex_code );
+                        data.putExtra( Intents.RESULT_AUTH, ex_authbumber );
+                        data.putExtra( Intents.RESULT_MSG, ex_message );
+                        data.putExtra( Intents.RESULT_ACC, ex_account );
+                        data.putExtra( Intents.RESULT_PUR, ex_purchase );
+                        data.putExtra( Intents.RESULT_DEL, ex_delta );
+                        setResult( RESULT_OK, data );
+
+                        onClick = new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int item) {
+                                finish();
+                            }
+                        };
+                    } else {
+                        onClick = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick( DialogInterface dialog, int which ) {
+                                setDefaultCurrency();
+                                resetClick( null );
+                            }
+                        };
+                    }
+
+                    if( prompt_response )
+                        AlertDialogHelper.showAlertDialog( ac, response.getCode(), message , onClick );
+                    else finish();
+                } else {
+                    message  = response.getMessage() + "\n" + response.getParam( XMLHandler.PARAMS );
+                    YodoHandler.sendMessage( mHandlerMessages, code, message );
+                }
                 break;
         }
     }
@@ -1303,28 +909,19 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onActivityResult( int requestCode, int resultCode, Intent data ) {
-        super.onActivityResult( requestCode, resultCode, data );
-        switch( requestCode ) {
-            case REQUEST_CODE_LOCATION_SERVICES:
-                // The user didn't enable the GPS
-                if( !AppUtils.isLocationEnabled( ac ) )
-                    finish();
-                break;
+    public void onConnected( @Nullable Bundle bundle ) {
+        SystemUtils.Logger( TAG, "GoogleApiClient connected" );
+        this.mPromotionManager.publish();
+    }
 
-            case REQUEST_SETTINGS:
-                if( resultCode == RESULT_FIRST_USER ) {
-                    setResult( RESULT_FIRST_USER );
-                    finish();
-                }
-                break;
+    @Override
+    public void onConnectionSuspended( int i ) {
+        SystemUtils.Logger( TAG, "GoogleApiClient connection suspended" );
+    }
 
-            case REQUEST_RESOLVE_ERROR:
-                mResolvingNearbyPermissionError = false;
-                if( resultCode == RESULT_OK )
-                    publish();
-                break;
-        }
+    @Override
+    public void onConnectionFailed( @NonNull ConnectionResult result ) {
+        SystemUtils.Logger( TAG, "connection to GoogleApiClient failed" );
     }
 
     @Override
@@ -1342,10 +939,10 @@ public class LauncherActivity extends AppCompatActivity implements
                 // If request is cancelled, the result arrays are empty.
                 if( grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
                     // Permission Granted
-                    enableLocation();
+                    LocationService.enable( this, REQUEST_CODE_LOCATION_SERVICES );
                 } else {
                     // Permission Denied
-                    finish();
+                    PrefUtils.saveLocating( ac, false );
                 }
                 break;
 
@@ -1355,18 +952,27 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onConnected( @Nullable Bundle bundle ) {
-        AppUtils.Logger( TAG, "GoogleApiClient connected" );
-        publish();
-    }
+    protected void onActivityResult( int requestCode, int resultCode, Intent data ) {
+        super.onActivityResult( requestCode, resultCode, data );
+        switch( requestCode ) {
+            case REQUEST_CODE_LOCATION_SERVICES:
+                // The user didn't enable the GPS
+                if( !SystemUtils.isLocationEnabled( ac ) )
+                    PrefUtils.saveLocating( ac, false );
+                break;
 
-    @Override
-    public void onConnectionSuspended( int i ) {
-        AppUtils.Logger( TAG, "GoogleApiClient connection suspended" );
-    }
+            case REQUEST_SETTINGS:
+                if( resultCode == RESULT_FIRST_USER ) {
+                    setResult( RESULT_FIRST_USER );
+                    finish();
+                }
+                break;
 
-    @Override
-    public void onConnectionFailed( @NonNull ConnectionResult result ) {
-        AppUtils.Logger( TAG, "connection to GoogleApiClient failed" );
+            case REQUEST_RESOLVE_ERROR:
+                this.mPromotionManager.onResolutionResult();
+                if( resultCode == RESULT_OK )
+                    this.mPromotionManager.publish();
+                break;
+        }
     }
 }

@@ -28,6 +28,8 @@
     <string name="message.error.timeout">Сервер перегружен. Попробуйте еще раз позже</string>
     <string name="message.error.server">Сервер ответил с ошибкой. Попробуйте еще раз позже</string>
     <string name="message.error.transaction">Неверный тип транзакции. Попробуйте еще раз позже</string>
+    <string name="message.error.amount_exceed">Сделка не допускается. Превышение максимального количества.</string>
+    <string name="message.error.insufficient_funds">Недостаток средств в первичном связанном аккаунте</string>
 
     <!-- General Messages -->
     <string name="input_pip">Кодовая фраза продавца (MIP)</string>
@@ -38,6 +40,7 @@
     <string name="barcode_scanner">Сканировать код</string>
     <string name="message.gps_enable">GPS не включен. Хотите перейти в Настройки?</string>
     <string name="register_hint">Введите Ваш код активации. Вы должны быть зарегистрированы в качестве продавца до активации. Связаться: support@yodo.co</string>
+    <string name="about_message">Чтобы связаться с нами, используйте адрес электронной почты, который указан ниже. Мы сделаем все возможное, чтобы ответить быстро. Будьте уверены, мы никогда не продаем и не распространяем личную информацию, предоставленную Вами.</string>
 
     <!-- Exchange Response -->
     <string name="exchange_code">Код:</string>
@@ -89,12 +92,17 @@
     <string name="place_qrcode">Разместите Ваш SKS код полностью в этом окне.</string>
 
     <!-- Values Labels -->
-    <string name="total_purchase">Покупка: </string>
+    <string name="text.total_purchase">Покупка: </string>
     <string name="cash_tender">За наличные: </string>
     <string name="cash_back">Возврат: </string>
     <string name="balance">Остаток: </string>
     <string name="zero">0.00</string>
     <string name="no_item">- нет пункта -</string>
+
+    <!-- Supported scanners -->
+    <string name="name.scanner.hardware">Сканер Штрих-кода</string>
+    <string name="name.scanner.software_front">Фронтальная камера</string>
+    <string name="name.scanner.software_back">Задняя камера</string>
 
     <!-- Languages -->
     <string-array name="languages_array">
@@ -112,8 +120,12 @@
     <string name="config_pref_username">Y-Beacon Имя</string>
     <string name="config_pref_tip">Наконечник (%)</string>
     <string name="config_pref_advertising">Промо-сервис</string>
+    <string name="config_pref_location">Служба определения местоположения</string>
     <string name="config_pref_background">Цвет фона</string>
+
+    <!-- Preferences Summary -->
     <string name="config_pref_advertising_summary">Отправить промо-акций ближайшим клиентам</string>
+    <string name="config_pref_location_summary">Отправить расположение сделок</string>
 
     <!-- Tutorial Instructions -->
     <string name="tutorial_title">Навигация; пошаговые действия</string>
@@ -121,6 +133,5 @@
 
     <!-- ACRA -->
     <string name="crash_toast_text">Упс! Неудача. Чтобы помочь исправить проблему, отчет был отправлен разработчикам!</string>
-    <string name="message.error.amount_exceed">Сделка не допускается. Превышение максимального количества.</string>
 
 </resources>

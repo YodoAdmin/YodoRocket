@@ -4,13 +4,15 @@
     android:id="@+id/layoutDialogRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="5dp"
+	android:padding="10dp"
     android:orientation="vertical" >
 
+	<!-- Today -->
+
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/today"
+		style="@style/DialogLabel"
+		android:text="@string/today"
+		android:textStyle="bold"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <LinearLayout 
@@ -19,16 +21,13 @@
         android:orientation="horizontal" >
 	    
 	    <TextView
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
+			style="@style/DialogLabel"
 	        android:text="@string/yodo_cash"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
 	    
 	    <TextView
-	        android:id="@+id/yodoTodayCashTextView"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:paddingLeft="5dp"
+			style="@style/DialogContent"
+	        android:id="@+id/tvTodayCredits"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
 	    
 	    <LinearLayout 
@@ -38,19 +37,17 @@
             android:orientation="horizontal" >
 	    
 		    <TextView
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
+				style="@style/DialogLabel"
 		        android:text="@string/yodo_debits"
-		        android:paddingLeft="5dp"
 		        android:textAppearance="?android:attr/textAppearanceSmall" />
 		    
 		    <TextView
-		        android:id="@+id/yodoTodayDebitsTextView"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:paddingLeft="5dp"
+				style="@style/DialogContent"
+		        android:id="@+id/tvTodayDebits"
 		        android:textAppearance="?android:attr/textAppearanceSmall" />
+
 	    </LinearLayout>
+
     </LinearLayout>
     
     <LinearLayout 
@@ -60,24 +57,23 @@
         android:orientation="horizontal" >
 	    
         <TextView
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
+			style="@style/DialogLabel"
 	        android:text="@string/yodo_today_balance"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
 	    
 	    <TextView
-	        android:id="@+id/yodoTodayBalanceTextView"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:paddingLeft="5dp"
+			style="@style/DialogContent"
+	        android:id="@+id/tvTodayBalance"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
 	    
     </LinearLayout>
 
+	<!-- To Date -->
+
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+		style="@style/DialogLabel"
         android:text="@string/to_date"
+		android:textStyle="bold"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <LinearLayout 
@@ -86,16 +82,13 @@
         android:orientation="horizontal" >
 	    
 	    <TextView
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
+			style="@style/DialogLabel"
 	        android:text="@string/yodo_cash"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
 	    
 	    <TextView
-	        android:id="@+id/yodoCashTextView"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:paddingLeft="5dp"
+			style="@style/DialogContent"
+	        android:id="@+id/tvHistoryCredits"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
 	    
 	    <LinearLayout 
@@ -105,19 +98,17 @@
             android:orientation="horizontal" >
 	    
 		    <TextView
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
+				style="@style/DialogLabel"
 		        android:text="@string/yodo_debits"
-		        android:paddingLeft="5dp"
 		        android:textAppearance="?android:attr/textAppearanceSmall" />
 		    
 		    <TextView
-		        android:id="@+id/yodoDebitsTextView"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:paddingLeft="5dp"
+				style="@style/DialogContent"
+		        android:id="@+id/tvHistoryDebits"
 		        android:textAppearance="?android:attr/textAppearanceSmall" />
+
 	    </LinearLayout>
+
     </LinearLayout>
     
     <LinearLayout 
@@ -127,16 +118,13 @@
         android:orientation="horizontal" >
 	    
         <TextView
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
+			style="@style/DialogLabel"
 	        android:text="@string/yodo_cumulative_balance"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
 	    
 	    <TextView
-	        android:id="@+id/yodoBalanceTextView"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:paddingLeft="5dp"
+			style="@style/DialogContent"
+	        android:id="@+id/tvHistoryBalance"
 	        android:textAppearance="?android:attr/textAppearanceSmall" />
 	    
     </LinearLayout>

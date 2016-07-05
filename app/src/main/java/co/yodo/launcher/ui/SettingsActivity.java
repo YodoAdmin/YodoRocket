@@ -7,13 +7,18 @@ import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.AppConfig;
-import co.yodo.launcher.helper.AppUtils;
+import co.yodo.launcher.helper.GUIUtils;
+import co.yodo.launcher.helper.PrefUtils;
+import co.yodo.launcher.helper.SystemUtils;
+import co.yodo.launcher.ui.notification.ToastMaster;
 
 /**
  * Created by luis on 3/08/15.
@@ -23,7 +28,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        AppUtils.setLanguage( SettingsActivity.this );
+        GUIUtils.setLanguage( this );
         setContentView( R.layout.activity_settings );
 
         setupGUI();
@@ -40,24 +45,30 @@ public class SettingsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected( item );
     }
 
+    /**
+     * Configures the main GUI Controllers
+     */
     private void setupGUI() {
         // Only used at creation
         Toolbar toolbar = (Toolbar) findViewById( R.id.toolbar );
 
+        // Setup the toolbar
         setSupportActionBar( toolbar );
-        if( getSupportActionBar() != null )
-            getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        ActionBar actionbar = getSupportActionBar();
+        if( actionbar != null )
+            actionbar.setDisplayHomeAsUpEnabled( true );
 
         getFragmentManager().beginTransaction().replace( R.id.content, new PrefsFragmentInner() ).commit();
     }
 
     public static class PrefsFragmentInner extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+        /** Context object */
         private Context c;
 
-        private CheckBoxPreference ETP_ADVERTISING;
-
+        /** GUI Controllers */
         private EditTextPreference ETP_SPREF_USERNAME;
-        //private EditTextPreference ETP_SPREF_TIP;
+        private CheckBoxPreference ETP_ADVERTISING;
+        private CheckBoxPreference ETP_LOCATING;
 
         @Override
         public void onCreate( final Bundle savedInstanceState ) {
@@ -79,14 +90,17 @@ public class SettingsActivity extends AppCompatActivity {
             ETP_SPREF_USERNAME = (EditTextPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_CURRENT_BEACON );
 
-            /*ETP_SPREF_TIP = (EditTextPreference) getPreferenceScreen()
-                    .findPreference( AppConfig.SPREF_CURRENT_TIP );*/
-
             ETP_ADVERTISING = (CheckBoxPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_ADVERTISING_SERVICE );
 
-            if( AppUtils.isLegacy( c ) )
+            ETP_LOCATING = (CheckBoxPreference) getPreferenceScreen()
+                    .findPreference( AppConfig.SPREF_LOCATION_SERVICE );
+
+            if( PrefUtils.isLegacy( c ) )
                 ETP_ADVERTISING.setEnabled( false );
+
+            if( !SystemUtils.hasLocationService( c ) )
+                ETP_LOCATING.setEnabled( false );
         }
 
         private void updateStatus( String key ) {
@@ -112,8 +126,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void setAllSummaries() {
-            ETP_SPREF_USERNAME.setSummary( AppUtils.getBeaconName( c ) );
-            //ETP_SPREF_TIP.setSummary( AppUtils.getCurrentTip( c ) );
+            ETP_SPREF_USERNAME.setSummary( PrefUtils.getBeaconName( c ) );
         }
 
         @Override

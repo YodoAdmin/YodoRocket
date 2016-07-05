@@ -88,7 +88,7 @@
         <item name="android:clickable">true</item>
         <item name="android:singleLine">true</item>
         <item name="android:text">@string/zero</item>
-        <item name="android:onClick">viewClick</item>
+        <item name="android:onClick">selectClick</item>
         <item name="android:textSize">@dimen/text_size_values</item>
         <item name="android:background">@drawable/show_text_field</item>
     </style>

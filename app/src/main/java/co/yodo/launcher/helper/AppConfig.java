@@ -1,5 +1,7 @@
 package co.yodo.launcher.helper;
 
+import com.android.volley.VolleyLog;
+
 import co.yodo.restapi.network.YodoRequest;
 
 /**
@@ -8,7 +10,7 @@ import co.yodo.restapi.network.YodoRequest;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true; // Should be false for release.
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoRocketSharedPref";
@@ -70,11 +72,6 @@ public class AppConfig {
     */
     public static final String SPREF_DISCOUNT = "SPDiscount";
 
-    /* The current tip to the purchase.
-    * type -- Integer
-    */
-    public static final String SPREF_CURRENT_TIP = "SPCurrentTip";
-
     /* The current password, in case of remember option selected.
     * type -- String
     */
@@ -104,6 +101,15 @@ public class AppConfig {
 	 */
     public static final String SPREF_ADVERTISING_SERVICE = "SPAdvertisingService";
 
+    /* Location service status.
+	 * type -- Boolean
+	 *
+	 * __Values__
+	 * true  -- Service is running
+	 * false -- Service not running
+	 */
+    public static final String SPREF_LOCATION_SERVICE = "SPLocationService";
+
     /* The current background of the Rocket.
     * type -- Integer
     */
@@ -122,21 +128,14 @@ public class AppConfig {
     public static final String DEFAULT_LANGUAGE = "en";
 
     /*
-	 * Default value position for the currency
-	 *
-	 * Default: position 1 (Canada Dollar)
-	 */
-    public static final Integer DEFAULT_CURRENCY = 1;
-
-    /*
 	 * Default value for the discount (%)
 	 */
     public static final String DEFAULT_DISCOUNT = "0";
 
     /*
-	 * Default value for the tip (%)
+	 * Default value for the tender currencies Canadian Dollar
 	 */
-    public static final String DEFAULT_TIP = "0";
+    public static final String DEFAULT_CURRENCY = "CAD";
 
     /*
 	 * Default value position for the scanner
@@ -145,13 +144,6 @@ public class AppConfig {
 	 */
     public static final Integer DEFAULT_SCANNER = 0;
 
-    /* Currency of the URL where we are getting the rates */
-    public static final String URL_CURRENCY  = "EUR";
-
     /* Logo URL */
     public static final String LOGO_PATH = YodoRequest.getRoot() + "/yodo-merch/uploads/img/logo/";
-
-    /* SKS Sizes */
-    public static final int SKS_SIZE = 256;
-    public static final int ALT_SIZE = 257;
 }

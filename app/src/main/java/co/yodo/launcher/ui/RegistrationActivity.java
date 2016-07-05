@@ -14,10 +14,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.component.YodoHandler;
-import co.yodo.launcher.helper.AppUtils;
-import co.yodo.launcher.ui.component.ProgressDialogHelper;
-import co.yodo.launcher.ui.component.ToastMaster;
+import co.yodo.launcher.helper.PrefUtils;
+import co.yodo.launcher.ui.notification.YodoHandler;
+import co.yodo.launcher.helper.GUIUtils;
+import co.yodo.launcher.ui.notification.ProgressDialogHelper;
+import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.model.ServerResponse;
 
@@ -50,6 +51,7 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        GUIUtils.setLanguage( RegistrationActivity.this );
         setContentView(R.layout.activity_registration);
 
         setupGUI();
@@ -91,11 +93,11 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     }
 
     private void updateData() {
-        if( AppUtils.isLoggedIn( ac ) )
+        if( PrefUtils.isLoggedIn( ac ) )
             finish();
 
         // Gets the hardware token - account identifier
-        hardwareToken = AppUtils.getHardwareToken( ac );
+        hardwareToken = PrefUtils.getHardwareToken( ac );
         if( hardwareToken == null ) {
             ToastMaster.makeText( ac, R.string.message_no_hardware, Toast.LENGTH_LONG ).show();
             finish();
@@ -113,7 +115,7 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
         if( token.isEmpty() ) {
             etPassword.startAnimation( aShake );
         } else {
-            AppUtils.hideSoftKeyboard( this );
+            GUIUtils.hideSoftKeyboard( this );
 
             ProgressDialogHelper.getInstance().createProgressDialog(
                     ac,
@@ -128,7 +130,11 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     }
 
     public void showPasswordClick( View v ) {
-        AppUtils.showPassword( (CheckBox) v, etPassword );
+        GUIUtils.showPassword( (CheckBox) v, etPassword );
+    }
+
+    @Override
+    public void onPrepare() {
     }
 
     @Override
@@ -144,7 +150,7 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
                     finish();
                 } else {
                     String message = response.getMessage();
-                    AppUtils.sendMessage( handlerMessages, code, message );
+                    YodoHandler.sendMessage( handlerMessages, code, message );
                 }
                 break;
         }

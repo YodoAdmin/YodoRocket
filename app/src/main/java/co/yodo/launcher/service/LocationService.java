@@ -1,11 +1,17 @@
 package co.yodo.launcher.service;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.Service;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -15,7 +21,10 @@ import com.google.android.gms.location.LocationServices;
 
 import org.greenrobot.eventbus.EventBus;
 
-import co.yodo.launcher.helper.AppUtils;
+import co.yodo.launcher.R;
+import co.yodo.launcher.helper.PrefUtils;
+import co.yodo.launcher.helper.SystemUtils;
+import co.yodo.launcher.ui.notification.AlertDialogHelper;
 
 /**
  * Service to obtain the location of the device, this service in particular
@@ -42,16 +51,16 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     private static final int TIME_DIFFERENCE_THRESHOLD = 60 * 1000; // 1 minute(s)
 
     /** Location updates intervals in sec */
-    private static final int UPDATE_INTERVAL  = 30 * 1000; // 30 second(s)
+    private static final int UPDATE_INTERVAL = 30 * 1000; // 30 second(s)
     private static final int FASTEST_INTERVAL = 20 * 1000; // 20 second(s)
-    private static final float DISPLACEMENT   = 10.0F;     // 10 meter(s)
+    private static final float DISPLACEMENT = 10.0F;     // 10 meter(s)
 
     /** Accuracy requirements */
     private static final int BAD_ACCURACY = 100; // 100 meters
 
     @Override
     public void onCreate() {
-        AppUtils.Logger( TAG, ">> Created" );
+        SystemUtils.Logger( TAG, ">> Created" );
         super.onCreate();
     }
 
@@ -78,7 +87,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     @Override
     public void onDestroy() {
         super.onDestroy();
-        AppUtils.Logger( TAG, ">> Destroyed" );
+        SystemUtils.Logger( TAG, ">> Destroyed" );
         // Disconnect from the Google API
         if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
             mGoogleApiClient.disconnect();
@@ -86,7 +95,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     }
 
     @Override
-    public IBinder onBind(Intent arg0) {
+    public IBinder onBind( Intent arg0 ) {
         throw new UnsupportedOperationException( "Not yet implemented" );
     }
 
@@ -141,7 +150,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             return false;
 
         // Check whether the new location fix is more or less accurate
-        int accuracyDelta = (int) ( newLocation.getAccuracy() - oldLocation.getAccuracy() );
+        int accuracyDelta = ( int ) ( newLocation.getAccuracy() - oldLocation.getAccuracy() );
         boolean isLessAccurate = accuracyDelta > 0;
         boolean isMoreAccurate = accuracyDelta < 0;
         boolean isSignificantlyLessAccurate = accuracyDelta > BAD_ACCURACY; // 100 meters
@@ -169,8 +178,14 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
     @Override
     public void onConnected( Bundle bundle ) {
-        createLocationRequest();
+        int permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_FINE_LOCATION );
+        if( permissionCheck != PackageManager.PERMISSION_GRANTED ) {
+            PrefUtils.saveLocating( this, false );
+            stopSelf();
+            return;
+        }
 
+        createLocationRequest();
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient,
                 mLocationRequest,
@@ -180,13 +195,13 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
     @Override
     public void onConnectionSuspended( int i ) {
-        AppUtils.Logger( TAG, "GoogleApiClient connection has been suspended" );
+        SystemUtils.Logger( TAG, "GoogleApiClient connection has been suspended" );
         mGoogleApiClient.connect();
     }
 
     @Override
     public void onConnectionFailed( @NonNull ConnectionResult connectionResult ) {
-        AppUtils.Logger( TAG, "GoogleApiClient connection has failed" );
+        SystemUtils.Logger( TAG, "GoogleApiClient connection has failed" );
         stopSelf();
     }
 
@@ -203,7 +218,63 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             // Save the location as last registered
             lastRegisteredLocation = location;
             // Print location for debugging
-            AppUtils.Logger( TAG, location.toString() );
+            SystemUtils.Logger( TAG, location.toString() );
+        }
+    }
+
+    /**
+     * Request the necessary permissions for the location
+     * @param activity The activity that needs the location permission
+     * @param requestCode The code to request the permission
+     * @param resultCode The code to respond to the activity - REQUEST_CODE_LOCATION_SERVICES
+     */
+    public static void setup( Activity activity, int requestCode, int resultCode ) {
+        if( PrefUtils.isLegacy( activity ) )
+            return;
+
+        boolean locationPermission = SystemUtils.requestPermission(
+                activity,
+                R.string.message_permission_location,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                requestCode
+        );
+        // We have permission, it is time to see if location is enabled, if not just request
+        if( locationPermission )
+            enable( activity, resultCode );
+    }
+
+    /**
+     * Asks the user to enable the location services
+     * @param activity The activity that requests to enable location
+     * @param resultCode The code to respond to the activity - REQUEST_CODE_LOCATION_SERVICES
+     */
+    public static void enable( final Activity activity, final int resultCode ) {
+        if( SystemUtils.isLocationEnabled( activity ) ) {
+            // Start the location service
+            Intent iLoc = new Intent( activity, LocationService.class );
+            if( !SystemUtils.isMyServiceRunning( activity, LocationService.class.getName() ) )
+                activity.startService( iLoc );
+        } else {
+            // If location not enabled, then request
+            DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dialog, int item ) {
+                    Intent intent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS );
+                    activity.startActivityForResult( intent, resultCode );
+                }
+            };
+
+            DialogInterface.OnClickListener onCancel = new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dialog, int item ) {
+                    PrefUtils.saveLocating( activity, false );
+                }
+            };
+
+            AlertDialogHelper.showAlertDialog(
+                    activity,
+                    R.string.message_gps_enable,
+                    onClick,
+                    onCancel
+            );
         }
     }
 }

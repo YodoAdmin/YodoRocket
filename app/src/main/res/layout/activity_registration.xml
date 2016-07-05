@@ -43,7 +43,7 @@
             android:textSize="14sp"
             android:text="@string/register_hint" />
 
-        <co.yodo.launcher.component.ClearEditText
+        <co.yodo.launcher.ui.component.ClearEditText
             android:id="@+id/merchTokenText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
