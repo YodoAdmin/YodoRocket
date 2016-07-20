@@ -50,9 +50,9 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate( savedInstanceState );
         GUIUtils.setLanguage( RegistrationActivity.this );
-        setContentView(R.layout.activity_registration);
+        setContentView( R.layout.activity_registration );
 
         setupGUI();
         updateData();

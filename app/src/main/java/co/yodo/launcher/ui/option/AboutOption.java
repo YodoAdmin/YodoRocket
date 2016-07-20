@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import co.yodo.launcher.BuildConfig;
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.ui.notification.AlertDialogHelper;
@@ -47,7 +48,7 @@ public class AboutOption extends IOption {
                 this.mActivity.getString( R.string.label_currency )    + " " +
                 PrefUtils.getMerchantCurrency( this.mActivity ) + "\n" +
                 this.mActivity.getString( R.string.version_label ) + " " +
-                this.mActivity.getString( R.string.version_value ) + "/" +
+                BuildConfig.VERSION_NAME + "/" +
                 YodoRequest.getSwitch() + "\n\n" +
                 this.mActivity.getString( R.string.about_message );
         this.mEmail = this.mActivity.getString( R.string.about_email );

@@ -138,18 +138,15 @@ public class LauncherActivity extends AppCompatActivity implements
     private static final int PERMISSIONS_REQUEST_CAMERA   = 1;
     private static final int PERMISSIONS_REQUEST_LOCATION = 2;
 
-    /** Request code to use when launching the resolution activity */
-    public static final int REQUEST_RESOLVE_ERROR = 1001;
-
     /** External data */
     private Bundle externBundle;
     private boolean prompt_response = true;
 
     /** Response codes for the queries */
-    private static final int QRY_LOG_REQ  = 0x00;
-    private static final int EXCH_REQ     = 0x01;
-    private static final int ALT_REQ      = 0x02;
-    private static final int CURR_REQ     = 0x03;
+    private static final int QRY_LOG_REQ = 0x00;
+    private static final int EXCH_REQ    = 0x01;
+    private static final int ALT_REQ     = 0x02;
+    private static final int CURR_REQ    = 0x03;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -160,27 +157,6 @@ public class LauncherActivity extends AppCompatActivity implements
 
         setupGUI();
         updateData();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        // register to event bus
-        EventBus.getDefault().register( this );
-
-        // Setup the required permissions for location
-        if( PrefUtils.isLocating( ac ) ) {
-            LocationService.setup(
-                    this,
-                    PERMISSIONS_REQUEST_LOCATION,
-                    REQUEST_CODE_LOCATION_SERVICES
-            );
-        }
-
-        // Setup the advertisement service
-        if( PrefUtils.isAdvertising( ac ) ) {
-            this.mPromotionManager.startService();
-        }
     }
 
     @Override
@@ -210,6 +186,22 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        // register to event bus
+        EventBus.getDefault().register( this );
+
+        // Setup the required permissions for location
+        if( PrefUtils.isLocating( ac ) ) {
+            LocationService.setup(
+                    this,
+                    PERMISSIONS_REQUEST_LOCATION,
+                    REQUEST_CODE_LOCATION_SERVICES
+            );
+        }
+    }
+
+    @Override
     public void onStop() {
         // Unregister from event bus
         EventBus.getDefault().unregister( this );
@@ -219,9 +211,6 @@ public class LauncherActivity extends AppCompatActivity implements
             Intent iLoc = new Intent( ac, LocationService.class );
             stopService( iLoc );
         }
-
-        // Disconnect the advertise service
-        this.mPromotionManager.stopService();
 
         super.onStop();
     }
@@ -251,8 +240,11 @@ public class LauncherActivity extends AppCompatActivity implements
         mRequestManager  = YodoRequest.getInstance( ac );
         mRequestManager.setListener( this );
 
-        // Setup promotion manager and factory for scanners
-        mPromotionManager = new PromotionManager( this, REQUEST_RESOLVE_ERROR );
+        // Setup promotion manager start it
+        mPromotionManager = new PromotionManager( this );
+        mPromotionManager.startService();
+
+        // Start scanner factory
         mScannerFactory   = new QRScannerFactory( this );
 
         // GUI Globals
@@ -911,7 +903,8 @@ public class LauncherActivity extends AppCompatActivity implements
     @Override
     public void onConnected( @Nullable Bundle bundle ) {
         SystemUtils.Logger( TAG, "GoogleApiClient connected" );
-        this.mPromotionManager.publish();
+        if( PrefUtils.isAdvertising( ac ) )
+            mPromotionManager.publish();
     }
 
     @Override
@@ -966,12 +959,6 @@ public class LauncherActivity extends AppCompatActivity implements
                     setResult( RESULT_FIRST_USER );
                     finish();
                 }
-                break;
-
-            case REQUEST_RESOLVE_ERROR:
-                this.mPromotionManager.onResolutionResult();
-                if( resultCode == RESULT_OK )
-                    this.mPromotionManager.publish();
                 break;
         }
     }
