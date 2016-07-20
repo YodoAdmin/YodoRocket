@@ -39,8 +39,10 @@
     <string name="input_token">Input your Token Password</string>
     <string name="merch_pip_hint">Activation Code</string>
     <string name="barcode_scanner">Scan the code</string>
+    <string name="message.already_registered">Already registered? Restart</string>
     <string name="message.gps_enable">GPS is not enabled. Do you want to go to settings menu?</string>
-    <string name="register_hint">Enter your activation code. You must be registered as a merchant prior to activation. Contact: support@yodo.co</string>
+    <string name="register_hint">You must be registered as a merchant prior to activation.</string>
+    <string name="register_contact">Contact: support@yodo.co</string>
     <string name="about_message">Please use the email below to contact us. We\'ll do everything we can to respond quickly. We will never sell or distribute personal information you provide.</string>
     <string name="about_email" translatable="false">support@yodo.co</string>
 

@@ -1,17 +1,17 @@
 package co.yodo.launcher.ui;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.component.Intents;
+import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
 import co.yodo.launcher.ui.notification.ToastMaster;
@@ -20,7 +20,7 @@ import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.builder.ServerRequest;
 import co.yodo.restapi.network.model.ServerResponse;
 
-public class MainActivity extends Activity implements YodoRequest.RESTListener {
+public class MainActivity extends AppCompatActivity implements YodoRequest.RESTListener {
     /** DEBUG */
     @SuppressWarnings( "unused" )
     private static final String TAG = MainActivity.class.getSimpleName();

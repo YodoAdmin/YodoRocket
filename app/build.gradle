@@ -2,14 +2,16 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "22.0.1"
+    buildToolsVersion "24.0.0"
 
     defaultConfig {
         applicationId "co.yodo.launcher"
         minSdkVersion 15
         targetSdkVersion 24
-        versionCode 6
-        versionName "2.0.2"
+        versionCode 7
+        versionName "2.0.3"
+
+        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
         release {

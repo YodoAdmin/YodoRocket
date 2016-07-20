@@ -14,9 +14,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <supports-screens
-        android:smallScreens="true"
+        android:smallScreens="false"
         android:normalScreens="true"
         android:largeScreens="true"
+        android:xlargeScreens="true"
         android:anyDensity="true" />
 
     <application
@@ -41,7 +42,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <!-- Accepts URIs that begin with "http://www.example.com/gizmos” -->
+                <!-- Accepts URIs that begin with "http://www.yodo.co/” -->
                 <data android:scheme="http"
                       android:host="http://www.yodo.co/"
                       android:pathPrefix="/yodo" />
@@ -62,7 +63,6 @@
 
         <!-- Start Services -->
 
-        <service android:name=".service.RESTService" />
         <service android:name=".service.LocationService" />
 
         <!-- End Services -->

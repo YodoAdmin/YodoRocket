@@ -1,6 +1,7 @@
 package co.yodo.launcher.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -14,11 +15,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.PrefUtils;
-import co.yodo.launcher.ui.notification.YodoHandler;
 import co.yodo.launcher.helper.GUIUtils;
+import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.notification.ToastMaster;
+import co.yodo.launcher.ui.notification.YodoHandler;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.model.ServerResponse;
 
@@ -83,7 +84,7 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
         aShake = AnimationUtils.loadAnimation( this, R.anim.shake );
 
         // Only used at creation
-        Toolbar toolbar = (Toolbar) findViewById( R.id.registrationBar );
+        Toolbar toolbar = (Toolbar) findViewById( R.id.actionBar );
 
         // Setup the toolbar
         setSupportActionBar( toolbar );
@@ -127,6 +128,17 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
                     token
             );
         }
+    }
+
+    /**
+     * Restarts the application to authenticate the user
+     * @param v The view of the button, not used
+     */
+    public void restartClick( View v ) {
+        Intent i = new Intent( ac, MainActivity.class );
+        i.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP );
+        i.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        startActivity( i );
     }
 
     public void showPasswordClick( View v ) {

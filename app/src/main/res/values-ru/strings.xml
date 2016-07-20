@@ -38,8 +38,10 @@
     <string name="input_token">Введите Ваш пароль</string>
     <string name="merch_pip_hint">Активировать код</string>
     <string name="barcode_scanner">Сканировать код</string>
+    <string name="message.already_registered">Уже зарегистрирован? Перезапуск</string>
     <string name="message.gps_enable">GPS не включен. Хотите перейти в Настройки?</string>
-    <string name="register_hint">Введите Ваш код активации. Вы должны быть зарегистрированы в качестве продавца до активации. Связаться: support@yodo.co</string>
+    <string name="register_hint">Вы должны быть зарегистрированы в качестве продавца до активации.</string>
+    <string name="register_contact">Связаться: support@yodo.co</string>
     <string name="about_message">Чтобы связаться с нами, используйте адрес электронной почты, который указан ниже. Мы сделаем все возможное, чтобы ответить быстро. Будьте уверены, мы никогда не продаем и не распространяем личную информацию, предоставленную Вами.</string>
 
     <!-- Exchange Response -->
