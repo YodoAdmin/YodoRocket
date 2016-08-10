@@ -29,7 +29,7 @@
 
         <yuku.ambilwarna.widget.AmbilWarnaPreference
             android:key="SPBackgroundColor"
-            android:defaultValue="-0x1"
+            android:defaultValue="-1"
             android:title="@string/config_pref_background"/>
 
     </PreferenceCategory>

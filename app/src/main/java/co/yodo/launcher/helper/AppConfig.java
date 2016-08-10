@@ -8,7 +8,7 @@ import co.yodo.restapi.network.YodoRequest;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = false; // Should be false for release.
+    public static final boolean DEBUG = true; // Should be false for release.
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoRocketSharedPref";

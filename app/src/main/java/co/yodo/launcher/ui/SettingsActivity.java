@@ -78,7 +78,7 @@ public class SettingsActivity extends AppCompatActivity {
             prefMgr.setSharedPreferencesName( AppConfig.SHARED_PREF_FILE );
             prefMgr.setSharedPreferencesMode( MODE_PRIVATE );
 
-            addPreferencesFromResource( R.xml.fragment_settings);
+            addPreferencesFromResource( R.xml.fragment_settings );
 
             setupGUI();
         }
@@ -96,10 +96,12 @@ public class SettingsActivity extends AppCompatActivity {
             ETP_LOCATING = (CheckBoxPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_LOCATION_SERVICE );
 
-            if( PrefUtils.isLegacy( c ) )
+            if( PrefUtils.isLegacy( c ) ) {
+                ETP_SPREF_USERNAME.setEnabled( false );
                 ETP_ADVERTISING.setEnabled( false );
+            }
 
-            if( !SystemUtils.hasLocationService( c ) )
+            if( PrefUtils.isLegacy( c ) || !SystemUtils.hasLocationService( c ) )
                 ETP_LOCATING.setEnabled( false );
         }
 

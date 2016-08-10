@@ -22,6 +22,9 @@ import co.yodo.launcher.ui.notification.AlertDialogHelper;
  * google services or logger
  */
 public class SystemUtils {
+    /** DEBUG */
+    private static final String TAG = SystemUtils.class.getSimpleName();
+
     /**
      * Verify if a service is running
      * @param c The Context of the Android system.
@@ -46,9 +49,10 @@ public class SystemUtils {
         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
         int resultCode = googleAPI.isGooglePlayServicesAvailable( activity );
         if( resultCode != ConnectionResult.SUCCESS ) {
-            if( googleAPI.isUserResolvableError( resultCode ) ) {
+            if( resultCode != ConnectionResult.SERVICE_INVALID && googleAPI.isUserResolvableError( resultCode ) ) {
                 googleAPI.getErrorDialog( activity, resultCode, code ).show();
             } else {
+                SystemUtils.Logger( TAG, "This device does not support Google Services (" + resultCode + ")" );
                 PrefUtils.setLegacy( activity, true );
             }
             return false;

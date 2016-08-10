@@ -28,7 +28,7 @@ public class YodoApplication extends Application {
         ACRA.init( this );
 
         // Sets the log flag and IP for the restapi
-        YodoRequest.IP = YodoRequest.PROD_IP;
+        YodoRequest.IP = YodoRequest.DEV_IP;
         AppConfig.DEBUG = co.yodo.launcher.helper.AppConfig.DEBUG;
     }
 }
