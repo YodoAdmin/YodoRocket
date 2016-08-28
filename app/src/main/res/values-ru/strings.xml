@@ -33,6 +33,7 @@
 
     <!-- General Messages -->
     <string name="input_pip">Кодовая фраза продавца (MIP)</string>
+    <string name="pip_hint">Кодовая фраза продавца</string>
     <string name="show_pass">Показать Пароль</string>
     <string name="remember_pass">Запомнить Пароль</string>
     <string name="input_token">Введите Ваш пароль</string>
@@ -49,7 +50,7 @@
     <string name="exchange_auth">Номер авторизации:</string>
     <string name="exchange_message">Сообщение:</string>
     <string name="exchange_extra">Дополнительно:</string>
-    <string name="exchange_error">Недопустимый размер SKS</string>
+    <string name="exchange_error">Недопустимый размер SKS. Клиент может потребоваться обновить приложение платежа Ёдо.</string>
 
     <!-- Balance Messages -->
     <string name="yodo_title">Отчет о балансе продавца</string>

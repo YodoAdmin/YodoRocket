@@ -1,6 +1,6 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/screenRootView"
+    android:id="@+id/llRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -64,19 +64,19 @@
 
                 <TextView
                     style="@style/EditTextView"
-                    android:id="@+id/totalText"
+                    android:id="@+id/tvTotal"
                     android:textStyle="bold"
                     android:textAppearance="?android:attr/textAppearanceLarge"/>
 
                 <TextView
                     style="@style/EditTextView"
-                    android:id="@+id/cashTenderText"
+                    android:id="@+id/tvCashtender"
                     android:drawableLeft="@drawable/canada"
                     android:drawableStart="@drawable/canada"/>
 
                 <TextView
                     style="@style/EditTextView"
-                    android:id="@+id/cashBackText"/>
+                    android:id="@+id/tvCashback"/>
 
             </LinearLayout>
             <!-- end Text Fields -->
@@ -106,7 +106,7 @@
 
             <ProgressBar
                 style="?android:attr/progressBarStyleSmall"
-                android:id="@+id/progressBarBalance"
+                android:id="@+id/pgBalance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
@@ -114,7 +114,7 @@
                 android:layout_gravity="center" />
 
             <TextView
-                android:id="@+id/balanceText"
+                android:id="@+id/tvBalance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
@@ -201,12 +201,7 @@
                 style="@style/StaticValueButton"
                 android:id="@+id/b0000"
                 android:text="@string/coins_0"/>
-            <!--
-            <Button
-                style="@style/StaticValueButton"
-                android:id="@+id/b500"
-                android:text="@string/coins_5"/>
-            -->
+
             <Button
                 style="@style/StaticValueButton"
                 android:id="@+id/b1000"
@@ -242,7 +237,7 @@
             android:orientation="vertical" >
 
             <com.android.volley.toolbox.NetworkImageView
-                android:id="@+id/companyLogo"
+                android:id="@+id/nivCompanyLogo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="4"

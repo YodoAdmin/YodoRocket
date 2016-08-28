@@ -51,9 +51,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     private static final int TIME_DIFFERENCE_THRESHOLD = 60 * 1000; // 1 minute(s)
 
     /** Location updates intervals in sec */
-    private static final int UPDATE_INTERVAL = 30 * 1000; // 30 second(s)
+    private static final int UPDATE_INTERVAL  = 30 * 1000; // 30 second(s)
     private static final int FASTEST_INTERVAL = 20 * 1000; // 20 second(s)
-    private static final float DISPLACEMENT = 10.0F;     // 10 meter(s)
+    private static final float DISPLACEMENT   = 10.0F;     // 10 meter(s)
 
     /** Accuracy requirements */
     private static final int BAD_ACCURACY = 100; // 100 meters

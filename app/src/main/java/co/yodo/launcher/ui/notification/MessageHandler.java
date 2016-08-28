@@ -16,7 +16,7 @@ import co.yodo.restapi.network.model.ServerResponse;
  * Created by luis on 15/12/14.
  * Handler for messages
  */
-public class YodoHandler extends Handler {
+public class MessageHandler extends Handler {
     /** Id for Messages */
     public static final int INIT_ERROR   = 1;
     public static final int SERVER_ERROR = 2;
@@ -27,7 +27,7 @@ public class YodoHandler extends Handler {
 
     private final WeakReference<Activity> wMain;
 
-    public YodoHandler( Activity main ) {
+    public MessageHandler( Activity main ) {
         super();
         this.wMain = new WeakReference<>(main);
     }
@@ -80,13 +80,13 @@ public class YodoHandler extends Handler {
      * @param title The title for the alert
      * @param message The message for the alert
      */
-    public static void sendMessage( int messageType, YodoHandler handlerMessages, String title, String message ) {
+    public static void sendMessage( int messageType, MessageHandler handlerMessages, String title, String message ) {
         Message msg = new Message();
         msg.what = messageType;
 
         Bundle bundle = new Bundle();
-        bundle.putString( YodoHandler.CODE, title );
-        bundle.putString( YodoHandler.MESSAGE, message );
+        bundle.putString( MessageHandler.CODE, title );
+        bundle.putString( MessageHandler.MESSAGE, message );
         msg.setData( bundle );
 
         handlerMessages.sendMessage( msg );
@@ -98,7 +98,7 @@ public class YodoHandler extends Handler {
      * @param title The title for the alert
      * @param message The message for the alert
      */
-    public static void sendMessage( YodoHandler handlerMessages, String title, String message ) {
-        sendMessage( YodoHandler.SERVER_ERROR, handlerMessages, title, message );
+    public static void sendMessage( MessageHandler handlerMessages, String title, String message ) {
+        sendMessage( MessageHandler.SERVER_ERROR, handlerMessages, title, message );
     }
 }

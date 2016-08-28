@@ -9,10 +9,6 @@ public class QRScannerFactory {
 	//public static final int SKS_SIZE = 256;
 	//public static final int ALT_SIZE = 257;
 
-	/** SKS Sizes - key 512 */
-	public static final int SKS_SIZE = 128;
-	public static final int ALT_SIZE = 129;
-
 	public enum SupportedScanner {
 		Hardware    ( R.string.name_scanner_hardware ),
 		CameraFront ( R.string.name_scanner_software_front ),

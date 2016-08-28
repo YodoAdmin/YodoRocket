@@ -11,9 +11,6 @@ import co.yodo.launcher.ui.component.TransparentProgressDialog;
  * Handles a progress dialog
  */
 public class ProgressDialogHelper {
-    /** Singleton instance */
-    private static ProgressDialogHelper instance = null;
-
     /** ID for the types of progress dialog */
     public enum ProgressDialogType {
         NORMAL,
@@ -23,22 +20,6 @@ public class ProgressDialogHelper {
     /** Progress dialog */
     private ProgressDialog progressDialog;
     private TransparentProgressDialog transProgressDialog;
-
-    /**
-     * Private constructor needed for the singleton
-     */
-    private ProgressDialogHelper() {
-    }
-
-    /**
-     * The initializer for the singleton
-     * @return The instance
-     */
-    public static synchronized ProgressDialogHelper getInstance() {
-        if( instance == null )
-            instance = new ProgressDialogHelper();
-        return instance;
-    }
 
     /**
      * Creates a new progress dialog on a respective activity

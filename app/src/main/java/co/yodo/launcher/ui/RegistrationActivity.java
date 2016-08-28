@@ -14,12 +14,17 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import javax.inject.Inject;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import co.yodo.launcher.R;
+import co.yodo.launcher.YodoApplication;
 import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.notification.ToastMaster;
-import co.yodo.launcher.ui.notification.YodoHandler;
+import co.yodo.launcher.ui.notification.MessageHandler;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.model.ServerResponse;
 
@@ -35,13 +40,19 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     private String hardwareToken;
 
     /** GUI Controllers */
-    private EditText etPassword;
+    @BindView( R.id.etActivationCode )
+    EditText etActivationCode;
 
     /** Messages Handler */
-    private static YodoHandler handlerMessages;
+    private static MessageHandler handlerMessages;
 
     /** Manager for the server requests */
-    private YodoRequest mRequestManager;
+    @Inject
+    YodoRequest mRequestManager;
+
+    /** Progress dialog for the requests */
+    @Inject
+    ProgressDialogHelper mProgressManager;
 
     /** The shake animation for wrong inputs */
     private Animation aShake;
@@ -73,12 +84,11 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     private void setupGUI() {
         // Get the context and handler for the messages
         ac = RegistrationActivity.this;
-        handlerMessages = new YodoHandler( RegistrationActivity.this );
-        mRequestManager = YodoRequest.getInstance( ac );
-        mRequestManager.setListener( this );
+        handlerMessages = new MessageHandler( RegistrationActivity.this );
 
-        // GUI global components
-        etPassword = (EditText) findViewById( R.id.merchTokenText );
+        // Injection
+        ButterKnife.bind( this );
+        YodoApplication.getComponent().inject( this );
 
         // Load the animation
         aShake = AnimationUtils.loadAnimation( this, R.anim.shake );
@@ -111,14 +121,14 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
      */
     public void registrationClick( View v ) {
         // Get the token
-        String token = etPassword.getText().toString();
+        String token = etActivationCode.getText().toString();
 
         if( token.isEmpty() ) {
-            etPassword.startAnimation( aShake );
+            etActivationCode.startAnimation( aShake );
         } else {
             GUIUtils.hideSoftKeyboard( this );
 
-            ProgressDialogHelper.getInstance().createProgressDialog(
+            mProgressManager.createProgressDialog(
                     ac,
                     ProgressDialogHelper.ProgressDialogType.NORMAL
             );
@@ -142,7 +152,7 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     }
 
     public void showPasswordClick( View v ) {
-        GUIUtils.showPassword( (CheckBox) v, etPassword );
+        GUIUtils.showPassword( (CheckBox) v, etActivationCode );
     }
 
     @Override
@@ -151,7 +161,7 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
 
     @Override
     public void onResponse( int responseCode, ServerResponse response ) {
-        ProgressDialogHelper.getInstance().destroyProgressDialog();
+        mProgressManager.destroyProgressDialog();
 
         switch( responseCode ) {
             case REG_REQ:
@@ -162,7 +172,7 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
                     finish();
                 } else {
                     String message = response.getMessage();
-                    YodoHandler.sendMessage( handlerMessages, code, message );
+                    MessageHandler.sendMessage( handlerMessages, code, message );
                 }
                 break;
         }

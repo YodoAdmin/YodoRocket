@@ -15,7 +15,7 @@ import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
 import co.yodo.launcher.ui.notification.ToastMaster;
-import co.yodo.launcher.ui.notification.YodoHandler;
+import co.yodo.launcher.ui.notification.MessageHandler;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.builder.ServerRequest;
 import co.yodo.restapi.network.model.ServerResponse;
@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements YodoRequest.RESTL
     private String mHardwareToken;
 
     /** Messages Handler */
-    private YodoHandler mHandlerMessages;
+    private MessageHandler mHandlerMessages;
 
     /** Manager for the server requests */
     private YodoRequest mRequestManager;
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements YodoRequest.RESTL
     private void setupGUI() {
         // Get the context and handler for the messages
         ac = MainActivity.this;
-        mHandlerMessages = new YodoHandler( MainActivity.this );
+        mHandlerMessages = new MessageHandler( MainActivity.this );
         mRequestManager = YodoRequest.getInstance( ac );
         mRequestManager.setListener( this );
     }
@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements YodoRequest.RESTL
                         break;
 
                     default:
-                        YodoHandler.sendMessage( YodoHandler.INIT_ERROR,
+                        MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
                                 mHandlerMessages,
                                 code,
                                 message
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements YodoRequest.RESTL
                     if( bundle != null ) intent.putExtras( bundle );
                     startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
                 } else {
-                    YodoHandler.sendMessage( YodoHandler.INIT_ERROR,
+                    MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
                             mHandlerMessages,
                             code,
                             message

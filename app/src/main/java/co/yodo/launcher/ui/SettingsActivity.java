@@ -11,14 +11,12 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
-import co.yodo.launcher.ui.notification.ToastMaster;
 
 /**
  * Created by luis on 3/08/15.

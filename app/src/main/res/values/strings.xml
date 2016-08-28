@@ -34,6 +34,7 @@
 
     <!-- General Messages -->
     <string name="input_pip">Merch Identity Phrase (MIP)</string>
+    <string name="pip_hint">Merch Identity Phrase</string>
     <string name="show_pass">Show Password</string>
     <string name="remember_pass">Remember Password</string>
     <string name="input_token">Input your Token Password</string>
@@ -51,7 +52,7 @@
     <string name="exchange_auth">Authorization Number:</string>
     <string name="exchange_message">Message:</string>
     <string name="exchange_extra">Extra:</string>
-    <string name="exchange_error">Invalid SKS size</string>
+    <string name="exchange_error">Invalid SKS size. The client may need to update the YodoPayment application.</string>
 
     <!-- Balance Messages -->
     <string name="yodo_title">Merchant Balance Report</string>

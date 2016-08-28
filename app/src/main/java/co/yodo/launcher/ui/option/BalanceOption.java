@@ -1,22 +1,21 @@
 package co.yodo.launcher.ui.option;
 
-import android.content.DialogInterface;
+import android.view.View;
 import android.widget.Toast;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.manager.PromotionManager;
 import co.yodo.launcher.ui.LauncherActivity;
 import co.yodo.launcher.ui.dialog.BalanceDialog;
 import co.yodo.launcher.ui.notification.AlertDialogHelper;
+import co.yodo.launcher.ui.notification.MessageHandler;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.notification.ToastMaster;
-import co.yodo.launcher.ui.notification.YodoHandler;
-import co.yodo.launcher.ui.option.contract.IOption;
+import co.yodo.launcher.ui.option.contract.IRequestOption;
 import co.yodo.restapi.network.YodoRequest;
 import co.yodo.restapi.network.builder.ServerRequest;
 import co.yodo.restapi.network.model.ServerResponse;
@@ -25,19 +24,13 @@ import co.yodo.restapi.network.model.ServerResponse;
  * Created by hei on 21/06/16.
  * Implements the Balance Option of the Launcher
  */
-public class BalanceOption extends IOption implements YodoRequest.RESTListener {
+public class BalanceOption extends IRequestOption implements YodoRequest.RESTListener {
     /** Elements for the request */
-    private final YodoRequest mRequestManager;
-    private final YodoHandler mHandlerMessages;
     private final PromotionManager mPromotionManager;
-    private final String mHardwareToken;
-
-    /** Elements for the AlertDialog */
-    private final String mTitle;
 
     /** Response codes for the server requests */
-    private static final int QRY_HBAL_REQ = 0x04; // History Balance
-    private static final int QRY_TBAL_REQ = 0x05; // Today Balance
+    private static final int QRY_HBAL_REQ = 0x00; // History Balance
+    private static final int QRY_TBAL_REQ = 0x01; // Today Balance
 
     /** Response params temporal */
     private HashMap<String, String> mTempData = null;
@@ -52,32 +45,24 @@ public class BalanceOption extends IOption implements YodoRequest.RESTListener {
      * Sets up the main elements of the options
      * @param activity The Activity to handle
      */
-    public BalanceOption( LauncherActivity activity, YodoRequest requestManager, YodoHandler handlerMessages, PromotionManager promotionManager ) {
-        super( activity );
+    public BalanceOption( LauncherActivity activity, MessageHandler handlerMessages, PromotionManager promotionManager ) {
+        super( activity, handlerMessages );
+
         // Request
-        this.mRequestManager   = requestManager;
-        this.mHandlerMessages  = handlerMessages;
         this.mPromotionManager = promotionManager;
-        this.mHardwareToken    = PrefUtils.getHardwareToken( this.mActivity );
 
-        // AlertDialog
-        this.mTitle = this.mActivity.getString( R.string.input_pip );
-    }
-
-    @Override
-    public void execute() {
-        etInput.setText( "" );
-
-        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int item) {
-                GUIUtils.hideSoftKeyboard( mActivity );
+        // Dialog
+        final View layout = buildLayout();
+        final View.OnClickListener okClick = new View.OnClickListener() {
+            @Override
+            public void onClick( View view  ) {
+                mAlertDialog.dismiss();
                 setTempPIP( etInput.getText().toString() );
 
-                ProgressDialogHelper.getInstance().createProgressDialog(
+                mProgressManager.createProgressDialog(
                         mActivity,
                         ProgressDialogHelper.ProgressDialogType.NORMAL
                 );
-
                 mRequestManager.setListener( BalanceOption.this );
                 mRequestManager.requestQuery(
                         QRY_HBAL_REQ,
@@ -88,13 +73,17 @@ public class BalanceOption extends IOption implements YodoRequest.RESTListener {
             }
         };
 
-        AlertDialogHelper.showAlertDialog(
-                this.mActivity,
-                this.mTitle,
-                this.etInput,
-                true,
-                onClick
+        mAlertDialog = AlertDialogHelper.create(
+                mActivity,
+                layout,
+                buildOnClick( okClick )
         );
+    }
+
+    @Override
+    public void execute() {
+        mAlertDialog.show();
+        clearGUI();
     }
 
     /**
@@ -124,8 +113,8 @@ public class BalanceOption extends IOption implements YodoRequest.RESTListener {
     @Override
     public void onResponse( int responseCode, ServerResponse response ) {
         // Set listener to the principal activity
-        ProgressDialogHelper.getInstance().destroyProgressDialog();
-        mRequestManager.setListener( ( ( LauncherActivity ) this.mActivity ) );
+        mProgressManager.destroyProgressDialog();
+        mRequestManager.setListener( (LauncherActivity) mActivity );
 
         // If it was publishing before the request
         if( isPublishing )
@@ -144,7 +133,7 @@ public class BalanceOption extends IOption implements YodoRequest.RESTListener {
                             return;
                         }
                         setTempData( response.getParams() );
-                        ProgressDialogHelper.getInstance().createProgressDialog(
+                        mProgressManager.createProgressDialog(
                                 mActivity,
                                 ProgressDialogHelper.ProgressDialogType.NORMAL
                         );
@@ -189,13 +178,13 @@ public class BalanceOption extends IOption implements YodoRequest.RESTListener {
                 break;
 
             case ServerResponse.ERROR_FAILED:
-                message = this.mActivity.getString( R.string.message_incorrect_pip );
-                YodoHandler.sendMessage( mHandlerMessages, code, message );
+                message = mActivity.getString( R.string.message_incorrect_pip );
+                MessageHandler.sendMessage( mHandlerMessages, code, message );
                 setTempData( null );
                 break;
 
             default:
-                YodoHandler.sendMessage( mHandlerMessages, code, message );
+                MessageHandler.sendMessage( mHandlerMessages, code, message );
                 setTempData( null );
                 break;
         }

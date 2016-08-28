@@ -43,7 +43,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 
+import javax.inject.Inject;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import co.yodo.launcher.R;
+import co.yodo.launcher.YodoApplication;
+import co.yodo.launcher.component.SKS;
 import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.FormatUtils;
 import co.yodo.launcher.helper.GUIUtils;
@@ -56,7 +62,7 @@ import co.yodo.launcher.ui.adapter.ScannerAdapter;
 import co.yodo.launcher.ui.notification.AlertDialogHelper;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.notification.ToastMaster;
-import co.yodo.launcher.ui.notification.YodoHandler;
+import co.yodo.launcher.ui.notification.MessageHandler;
 import co.yodo.launcher.ui.option.AboutOption;
 import co.yodo.launcher.ui.option.BalanceOption;
 import co.yodo.launcher.ui.option.CurrencyOption;
@@ -82,17 +88,47 @@ public class LauncherActivity extends AppCompatActivity implements
     /** POS Data */
     private String mHardwareToken;
 
+    /** Messages Handler */
+    private MessageHandler mHandlerMessages;
+
+    /** Manager for the server requests */
+    @Inject
+    YodoRequest mRequestManager;
+
+    /** Progress dialog for the requests */
+    @Inject
+    ProgressDialogHelper mProgressManager;
+
     /** GUI controllers */
-    private LinearLayout mRootLayout;
-    private SlidingPaneLayout mSlidingLayout;
-    private Spinner mScannersSpinner;
-    private NetworkImageView mAvatarImage;
-    private ImageView mPaymentButton;
-    private ProgressBar pgBalance;
-    private TextView tvTotal;
-    private TextView tvCashtender;
-    private TextView tvCashback;
-    private TextView tvBalance;
+    @BindView( R.id.llRoot )
+    LinearLayout llRoot;
+
+    @BindView( R.id.splActivityLauncher )
+    SlidingPaneLayout splActivityLauncher;
+
+    @BindView( R.id.nivCompanyLogo )
+    NetworkImageView nivCompanyLogo;
+
+    @BindView( R.id.sScannerSelector )
+    Spinner sScannerSelector;
+
+    @BindView( R.id.pgBalance )
+    ProgressBar pgBalance;
+
+    @BindView( R.id.tvTotal )
+    TextView tvTotal;
+
+    @BindView( R.id.tvCashtender )
+    TextView tvCashtender;
+
+    @BindView( R.id.tvCashback )
+    TextView tvCashback;
+
+    @BindView( R.id.tvBalance )
+    TextView tvBalance;
+
+    @BindView( R.id.ivYodoGear )
+    ImageView ivYodoGear;
 
     /** Popup Window and GUI for tender */
     private PopupWindow mPopupTender;
@@ -111,12 +147,6 @@ public class LauncherActivity extends AppCompatActivity implements
     private DiscountOption mDiscountOption;
     private BalanceOption mBalanceOption;
     private AboutOption mAboutOption;
-
-    /** Messages Handler */
-    private YodoHandler mHandlerMessages;
-
-    /** Manager for the server requests */
-    private YodoRequest mRequestManager;
 
     /** Handles the start/stop subscribe/unsubscribe functions of Nearby */
     private PromotionManager mPromotionManager;
@@ -141,6 +171,7 @@ public class LauncherActivity extends AppCompatActivity implements
     /** External data */
     private Bundle externBundle;
     private boolean prompt_response = true;
+    private String ex_tip;
 
     /** Response codes for the queries */
     private static final int QRY_LOG_REQ = 0x00;
@@ -172,7 +203,7 @@ public class LauncherActivity extends AppCompatActivity implements
         }
 
         // Sets Background
-        mRootLayout.setBackgroundColor( PrefUtils.getCurrentBackground( ac ) );
+        llRoot.setBackgroundColor( PrefUtils.getCurrentBackground( ac ) );
     }
 
     @Override
@@ -236,8 +267,11 @@ public class LauncherActivity extends AppCompatActivity implements
     private void setupGUI() {
         // get the context
         ac = LauncherActivity.this;
-        mHandlerMessages = new YodoHandler( LauncherActivity.this );
-        mRequestManager  = YodoRequest.getInstance( ac );
+        mHandlerMessages = new MessageHandler( LauncherActivity.this );
+
+        // Injection
+        ButterKnife.bind( this );
+        YodoApplication.getComponent().inject( this );
         mRequestManager.setListener( this );
 
         // Setup promotion manager start it
@@ -245,31 +279,19 @@ public class LauncherActivity extends AppCompatActivity implements
         mPromotionManager.startService();
 
         // Start scanner factory
-        mScannerFactory   = new QRScannerFactory( this );
-
-        // GUI Globals
-        mRootLayout      = (LinearLayout) findViewById( R.id.screenRootView );
-        mSlidingLayout   = (SlidingPaneLayout) findViewById( R.id.sliding_panel_layout );
-        mScannersSpinner = (Spinner) findViewById(R.id.scannerSpinner);
-        mAvatarImage     = (NetworkImageView) findViewById( R.id.companyLogo );
-        mPaymentButton   = (ImageView) findViewById( R.id.ivYodoGear );
-        pgBalance        = (ProgressBar) findViewById( R.id.progressBarBalance );
-        tvTotal          = (TextView) findViewById( R.id.totalText );
-        tvCashtender     = (TextView) findViewById( R.id.cashTenderText );
-        tvCashback       = (TextView) findViewById( R.id.cashBackText );
-        tvBalance        = (TextView) findViewById( R.id.balanceText );
+        mScannerFactory = new QRScannerFactory( this );
 
         // Set selected view as the total
         selectClick( tvTotal );
 
         // Global options (navigation window)
         mCurrencyOption = new CurrencyOption( this );
-        mDiscountOption = new DiscountOption( this, mRequestManager, mHandlerMessages, mPromotionManager );
-        mBalanceOption  = new BalanceOption( this, mRequestManager, mHandlerMessages, mPromotionManager );
+        mDiscountOption = new DiscountOption( this, mHandlerMessages, mPromotionManager );
+        mBalanceOption  = new BalanceOption( this, mHandlerMessages, mPromotionManager );
         mAboutOption    = new AboutOption( this );
 
         // Sliding Panel Configurations
-        mSlidingLayout.setParallaxDistance( 30 );
+        splActivityLauncher.setParallaxDistance( 30 );
 
         // Sets up the spinner, listeners, popup, and set currency
         initializeScannerSpinner();
@@ -278,7 +300,7 @@ public class LauncherActivity extends AppCompatActivity implements
         setDefaultCurrency();
 
         // Set default Logo
-        mAvatarImage.setDefaultImageResId( R.drawable.no_image );
+        nivCompanyLogo.setDefaultImageResId( R.drawable.no_image );
 
         // Set an icon there is a discount
         if( !PrefUtils.getDiscount( ac ).equals( AppConfig.DEFAULT_DISCOUNT ) ) {
@@ -287,7 +309,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
         // If it is the first login, show the navigation panel
         if( PrefUtils.isFirstLogin( ac ) ) {
-            mSlidingLayout.openPane();
+            splActivityLauncher.openPane();
             PrefUtils.saveFirstLogin( ac, false );
         }
     }
@@ -331,6 +353,7 @@ public class LauncherActivity extends AppCompatActivity implements
             }
 
             selectClick( tvCashtender );
+            tvTotal.setOnClickListener( null );
 
             // Handle the prompt of the response message from the server
             prompt_response = externBundle.getBoolean( Intents.PROMPT_RESPONSE, true );
@@ -352,7 +375,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     mHardwareToken,
                     ServerRequest.QueryRecord.MERCHANT_LOGO );
         } else {
-            mAvatarImage.setImageUrl( logo_url, mRequestManager.getImageLoader() );
+            nivCompanyLogo.setImageUrl( logo_url, mRequestManager.getImageLoader() );
         }
     }
 
@@ -361,7 +384,7 @@ public class LauncherActivity extends AppCompatActivity implements
      */
     private void initializeScannerSpinner() {
         // Add item listener to the spinner
-        mScannersSpinner.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
+        sScannerSelector.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected( AdapterView<?> parentView, View selectedItemView, int position, long id ) {
                 TextView scanner = (TextView) selectedItemView;
@@ -383,8 +406,8 @@ public class LauncherActivity extends AppCompatActivity implements
         );
 
         // Set the current scanner
-        mScannersSpinner.setAdapter( adapter );
-        mScannersSpinner.setSelection( PrefUtils.getScanner( ac ) );
+        sScannerSelector.setAdapter( adapter );
+        sScannerSelector.setSelection( PrefUtils.getScanner( ac ) );
     }
 
     /**
@@ -525,7 +548,7 @@ public class LauncherActivity extends AppCompatActivity implements
      * @param v View, used to get the title
      */
     public void setCurrencyClick(View v) {
-        mSlidingLayout.closePane();
+        splActivityLauncher.closePane();
         mCurrencyOption.execute();
     }
 
@@ -541,7 +564,7 @@ public class LauncherActivity extends AppCompatActivity implements
      * @param v The view is not used
      */
     public void setDiscountClick( View v ) {
-        mSlidingLayout.closePane();
+        splActivityLauncher.closePane();
         mDiscountOption.execute();
     }
 
@@ -562,7 +585,7 @@ public class LauncherActivity extends AppCompatActivity implements
      * @param v View, not used
      */
     public void settingsClick( View v ) {
-        mSlidingLayout.closePane();
+        splActivityLauncher.closePane();
         Intent intent = new Intent( ac, SettingsActivity.class );
         startActivityForResult( intent, REQUEST_SETTINGS );
     }
@@ -572,7 +595,7 @@ public class LauncherActivity extends AppCompatActivity implements
      * @param v View, not used
      */
     public void getBalanceClick( View v ) {
-        mSlidingLayout.closePane();
+        splActivityLauncher.closePane();
         mBalanceOption.execute();
     }
 
@@ -581,7 +604,7 @@ public class LauncherActivity extends AppCompatActivity implements
      * @param v View, not used
      */
     public void aboutClick( View v ) {
-        mSlidingLayout.closePane();
+        splActivityLauncher.closePane();
         mAboutOption.execute();
     }
 
@@ -614,7 +637,8 @@ public class LauncherActivity extends AppCompatActivity implements
     public void resetClick(View v) {
         String zero = getString( R.string.zero );
 
-        tvTotal.setText( zero );
+        if( externBundle == null )
+            tvTotal.setText( zero );
         tvCashtender.setText( zero );
         tvCashback.setText( zero );
         tvBalance.setText( zero );
@@ -626,7 +650,7 @@ public class LauncherActivity extends AppCompatActivity implements
      */
     @SuppressWarnings( "unused" )
     public void valueClick( View v ) {
-        final String value = ( (Button)v ).getText().toString();
+        final String value = ( (Button) v ).getText().toString();
 
         // This button is not working value_.
         if( value.equals( getString( R.string.value__ ) ) )
@@ -691,9 +715,9 @@ public class LauncherActivity extends AppCompatActivity implements
             return;
         }
 
-        GUIUtils.rotateImage( mPaymentButton );
+        GUIUtils.rotateImage( ivYodoGear );
         currentScanner = mScannerFactory.getScanner(
-                (QRScannerFactory.SupportedScanner) mScannersSpinner.getSelectedItem()
+                (QRScannerFactory.SupportedScanner) sScannerSelector.getSelectedItem()
         );
 
         if( currentScanner != null )
@@ -708,56 +732,60 @@ public class LauncherActivity extends AppCompatActivity implements
                 BigDecimal.ONE.subtract( discount )
         );
 
-        final String total      = subTotal.setScale( 2, RoundingMode.DOWN ).toString();
         final String cashtender = tvCashtender.getText().toString();
         final String cashback   = tvCashback.getText().toString();
 
-        switch( data.length() ) {
-            case QRScannerFactory.SKS_SIZE:
-                ProgressDialogHelper.getInstance().createProgressDialog(
-                        LauncherActivity.this,
-                        ProgressDialogHelper.ProgressDialogType.TRANSPARENT
-                );
+        SystemUtils.Logger( TAG, data );
 
-                mRequestManager.requestExchange(
-                        EXCH_REQ,
-                        mHardwareToken,
-                        data,
-                        total,
-                        cashtender,
-                        cashback,
-                        mLocation.getLatitude(),
-                        mLocation.getLongitude(),
-                        PrefUtils.getTenderCurrency( ac )
-                );
-                break;
+        SKS code = SKS.build( data );
+        if( code == null ) {
+            ToastMaster.makeText( LauncherActivity.this, R.string.exchange_error, Toast.LENGTH_LONG ).show();
+        } else {
+            final String client = code.getClient();
+            final SKS.PAYMENT method = code.getPaymentMethod();
+            ex_tip = subTotal.multiply(
+                    code.getTip()
+            ).setScale( 2, RoundingMode.DOWN ).toString();
 
-            case QRScannerFactory.ALT_SIZE:
-                String clientData  = data.substring( 0, data.length() - 1 );
-                String accountType = data.substring( data.length() - 1 );
+            final String total = subTotal.multiply(
+                    BigDecimal.ONE.add( code.getTip() )
+            ).setScale( 2, RoundingMode.DOWN ).toString();
 
-                ProgressDialogHelper.getInstance().createProgressDialog(
-                        LauncherActivity.this,
-                        ProgressDialogHelper.ProgressDialogType.TRANSPARENT
-                );
+            mProgressManager.createProgressDialog(
+                    LauncherActivity.this,
+                    ProgressDialogHelper.ProgressDialogType.TRANSPARENT
+            );
 
-                mRequestManager.requestAlternate(
-                        ALT_REQ,
-                        accountType,
-                        mHardwareToken,
-                        clientData,
-                        total,
-                        cashtender,
-                        cashback,
-                        mLocation.getLatitude(),
-                        mLocation.getLongitude(),
-                        PrefUtils.getTenderCurrency( ac )
-                );
-                break;
+            switch( method ) {
+                case YODO:
+                    mRequestManager.requestExchange(
+                            EXCH_REQ,
+                            mHardwareToken,
+                            client,
+                            total,
+                            cashtender,
+                            cashback,
+                            mLocation.getLatitude(),
+                            mLocation.getLongitude(),
+                            PrefUtils.getTenderCurrency( ac )
+                    );
+                    break;
 
-            default:
-                ToastMaster.makeText( LauncherActivity.this, R.string.exchange_error, Toast.LENGTH_LONG ).show();
-                break;
+                case HEART:
+                    mRequestManager.requestAlternate(
+                            ALT_REQ,
+                            String.valueOf( method.ordinal() ),
+                            mHardwareToken,
+                            client,
+                            total,
+                            cashtender,
+                            cashback,
+                            mLocation.getLatitude(),
+                            mLocation.getLongitude(),
+                            PrefUtils.getTenderCurrency( ac )
+                    );
+                    break;
+            }
         }
     }
 
@@ -771,7 +799,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
     @Override
     public void onResponse( int responseCode, ServerResponse response ) {
-        ProgressDialogHelper.getInstance().destroyProgressDialog();
+        mProgressManager.destroyProgressDialog();
         String code, message;
 
         // If it was publishing before the request
@@ -791,7 +819,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     if( logoName != null ) {
                         String logo_url = AppConfig.LOGO_PATH + logoName;
                         PrefUtils.saveLogoUrl( ac, logo_url );
-                        mAvatarImage.setImageUrl( logo_url, mRequestManager.getImageLoader() );
+                        nivCompanyLogo.setImageUrl( logo_url, mRequestManager.getImageLoader() );
                     }
                 }
                 break;
@@ -862,11 +890,12 @@ public class LauncherActivity extends AppCompatActivity implements
                         data.putExtra( Intents.RESULT_MSG, ex_message );
                         data.putExtra( Intents.RESULT_ACC, ex_account );
                         data.putExtra( Intents.RESULT_PUR, ex_purchase );
+                        data.putExtra( Intents.RESULT_TIP, ex_tip );
                         data.putExtra( Intents.RESULT_DEL, ex_delta );
                         setResult( RESULT_OK, data );
 
                         onClick = new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int item) {
+                            public void onClick( DialogInterface dialog, int item ) {
                                 finish();
                             }
                         };
@@ -885,7 +914,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     else finish();
                 } else {
                     message  = response.getMessage() + "\n" + response.getParam( XMLHandler.PARAMS );
-                    YodoHandler.sendMessage( mHandlerMessages, code, message );
+                    MessageHandler.sendMessage( mHandlerMessages, code, message );
                 }
                 break;
         }

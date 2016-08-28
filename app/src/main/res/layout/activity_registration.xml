@@ -54,7 +54,7 @@
                 android:layout_height="wrap_content">
 
                 <co.yodo.launcher.ui.component.ClearEditText
-                    android:id="@+id/merchTokenText"
+                    android:id="@+id/etActivationCode"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/registration_margin"

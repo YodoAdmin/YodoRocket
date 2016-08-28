@@ -9,6 +9,11 @@ import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.acra.sender.HttpSender;
 
+import co.yodo.launcher.injection.component.ApplicationComponent;
+import co.yodo.launcher.injection.component.DaggerApplicationComponent;
+import co.yodo.launcher.injection.component.DaggerGraphComponent;
+import co.yodo.launcher.injection.component.GraphComponent;
+import co.yodo.launcher.injection.module.ApplicationModule;
 import co.yodo.restapi.helper.AppConfig;
 import co.yodo.restapi.network.YodoRequest;
 
@@ -22,13 +27,33 @@ import co.yodo.restapi.network.YodoRequest;
                 resToastText = R.string.crash_toast_text
 )
 public class YodoApplication extends Application {
+    /** Component that build the dependencies */
+    private static GraphComponent mComponent;
+
     @Override
     protected void attachBaseContext( Context base ) {
         super.attachBaseContext( base );
         ACRA.init( this );
 
         // Sets the log flag and IP for the restapi
-        YodoRequest.IP = YodoRequest.DEV_IP;
+        YodoRequest.IP = YodoRequest.DEMO_IP;
         AppConfig.DEBUG = co.yodo.launcher.helper.AppConfig.DEBUG;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        ApplicationComponent appComponent = DaggerApplicationComponent.builder()
+                .applicationModule( new ApplicationModule( this ) )
+                .build();
+
+        mComponent = DaggerGraphComponent.builder()
+                .applicationComponent( appComponent )
+                .build();
+    }
+
+    public static GraphComponent getComponent() {
+        return mComponent;
     }
 }
