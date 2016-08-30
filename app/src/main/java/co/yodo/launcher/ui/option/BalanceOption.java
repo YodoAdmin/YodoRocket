@@ -16,15 +16,16 @@ import co.yodo.launcher.ui.notification.MessageHandler;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.launcher.ui.option.contract.IRequestOption;
-import co.yodo.restapi.network.YodoRequest;
-import co.yodo.restapi.network.builder.ServerRequest;
+import co.yodo.restapi.network.ApiClient;
+import co.yodo.restapi.network.model.Params;
 import co.yodo.restapi.network.model.ServerResponse;
+import co.yodo.restapi.network.request.QueryRequest;
 
 /**
  * Created by hei on 21/06/16.
  * Implements the Balance Option of the Launcher
  */
-public class BalanceOption extends IRequestOption implements YodoRequest.RESTListener {
+public class BalanceOption extends IRequestOption implements ApiClient.RequestsListener {
     /** Elements for the request */
     private final PromotionManager mPromotionManager;
 
@@ -33,7 +34,7 @@ public class BalanceOption extends IRequestOption implements YodoRequest.RESTLis
     private static final int QRY_TBAL_REQ = 0x01; // Today Balance
 
     /** Response params temporal */
-    private HashMap<String, String> mTempData = null;
+    private Params mTempData = null;
 
     /** PIP temporal */
     private String mTempPIP = null;
@@ -64,11 +65,13 @@ public class BalanceOption extends IRequestOption implements YodoRequest.RESTLis
                         ProgressDialogHelper.ProgressDialogType.NORMAL
                 );
                 mRequestManager.setListener( BalanceOption.this );
-                mRequestManager.requestQuery(
-                        QRY_HBAL_REQ,
-                        mHardwareToken,
-                        mTempPIP,
-                        ServerRequest.QueryRecord.HISTORY_BALANCE
+                mRequestManager.invoke(
+                        new QueryRequest(
+                                QRY_HBAL_REQ,
+                                mHardwareToken,
+                                mTempPIP,
+                                QueryRequest.Record.HISTORY_BALANCE
+                        )
                 );
             }
         };
@@ -98,7 +101,7 @@ public class BalanceOption extends IRequestOption implements YodoRequest.RESTLis
      * Sets the temporary Data to a MapValue (response params)
      * @param response The ServerResponse params
      */
-    private void setTempData( HashMap<String, String> response ) {
+    private void setTempData( Params response ) {
         this.mTempData = response;
     }
 
@@ -128,10 +131,11 @@ public class BalanceOption extends IRequestOption implements YodoRequest.RESTLis
 
                 switch( responseCode ) {
                     case QRY_HBAL_REQ:
-                        if( response.getParams().size() == 1 ) {
+                        if( response.getParams().getCredit() == null ) {
                             ToastMaster.makeText( mActivity, R.string.no_balance, Toast.LENGTH_SHORT ).show();
                             return;
                         }
+
                         setTempData( response.getParams() );
                         mProgressManager.createProgressDialog(
                                 mActivity,
@@ -139,26 +143,28 @@ public class BalanceOption extends IRequestOption implements YodoRequest.RESTLis
                         );
 
                         mRequestManager.setListener( BalanceOption.this );
-                        mRequestManager.requestQuery(
-                                QRY_TBAL_REQ,
-                                mHardwareToken,
-                                mTempPIP,
-                                ServerRequest.QueryRecord.TODAY_BALANCE
+                        mRequestManager.invoke(
+                                new QueryRequest(
+                                        QRY_TBAL_REQ,
+                                        mHardwareToken,
+                                        mTempPIP,
+                                        QueryRequest.Record.TODAY_BALANCE
+                                )
                         );
                         break;
 
                     case QRY_TBAL_REQ:
                         BigDecimal todayBalance = BigDecimal.ZERO;
-                        BigDecimal todayCredits = new BigDecimal( response.getParam( ServerResponse.CREDIT ) );
-                        BigDecimal todayDebits = new BigDecimal( response.getParam( ServerResponse.DEBIT ) );
+                        BigDecimal todayCredits = new BigDecimal( response.getParams().getCredit() );
+                        BigDecimal todayDebits = new BigDecimal( response.getParams().getDebit() );
 
                         todayBalance = todayBalance
                                 .add( todayCredits )
                                 .subtract( todayDebits );
 
                         BigDecimal historyBalance = BigDecimal.ZERO;
-                        BigDecimal historyCredits = new BigDecimal( mTempData.get( ServerResponse.CREDIT ) );
-                        BigDecimal historyDebits = new BigDecimal( mTempData.get( ServerResponse.DEBIT ) );
+                        BigDecimal historyCredits = new BigDecimal( mTempData.getCredit() );
+                        BigDecimal historyDebits = new BigDecimal( mTempData.getDebit() );
 
                         historyBalance = historyBalance
                                 .add( historyCredits )

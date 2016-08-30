@@ -20,7 +20,7 @@ import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.ui.notification.MessageHandler;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
-import co.yodo.restapi.network.YodoRequest;
+import co.yodo.restapi.network.ApiClient;
 
 /**
  * Created by hei on 04/08/16.
@@ -36,7 +36,7 @@ public abstract class IRequestOption extends IOption {
 
     /** Manager for the server requests */
     @Inject
-    protected YodoRequest mRequestManager;
+    protected ApiClient mRequestManager;
 
     /** Progress dialog for the requests */
     @Inject

@@ -32,8 +32,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.gms.common.ConnectionResult;
+import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -69,14 +69,16 @@ import co.yodo.launcher.ui.option.CurrencyOption;
 import co.yodo.launcher.ui.option.DiscountOption;
 import co.yodo.launcher.ui.scanner.QRScanner;
 import co.yodo.launcher.ui.scanner.QRScannerFactory;
-import co.yodo.restapi.network.YodoRequest;
-import co.yodo.restapi.network.builder.ServerRequest;
-import co.yodo.restapi.network.handler.XMLHandler;
+import co.yodo.restapi.network.ApiClient;
 import co.yodo.restapi.network.model.ServerResponse;
+import co.yodo.restapi.network.request.AlternateRequest;
+import co.yodo.restapi.network.request.CurrenciesRequest;
+import co.yodo.restapi.network.request.ExchangeRequest;
+import co.yodo.restapi.network.request.QueryRequest;
 
 public class LauncherActivity extends AppCompatActivity implements
         PromotionManager.IPromotionListener,
-        YodoRequest.RESTListener,
+        ApiClient.RequestsListener,
         QRScanner.QRScannerListener {
     /** DEBUG */
     @SuppressWarnings( "unused" )
@@ -93,7 +95,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
     /** Manager for the server requests */
     @Inject
-    YodoRequest mRequestManager;
+    ApiClient mRequestManager;
 
     /** Progress dialog for the requests */
     @Inject
@@ -107,7 +109,7 @@ public class LauncherActivity extends AppCompatActivity implements
     SlidingPaneLayout splActivityLauncher;
 
     @BindView( R.id.nivCompanyLogo )
-    NetworkImageView nivCompanyLogo;
+    ImageView nivCompanyLogo;
 
     @BindView( R.id.sScannerSelector )
     Spinner sScannerSelector;
@@ -300,7 +302,7 @@ public class LauncherActivity extends AppCompatActivity implements
         setDefaultCurrency();
 
         // Set default Logo
-        nivCompanyLogo.setDefaultImageResId( R.drawable.no_image );
+        //nivCompanyLogo.setDefaultImageResId( R.drawable.no_image );
 
         // Set an icon there is a discount
         if( !PrefUtils.getDiscount( ac ).equals( AppConfig.DEFAULT_DISCOUNT ) ) {
@@ -370,12 +372,17 @@ public class LauncherActivity extends AppCompatActivity implements
         // Get the Logo now that we have the hardware token
         String logo_url = PrefUtils.getLogoUrl( ac );
         if( logo_url.equals( "" ) ) {
-            mRequestManager.requestQuery(
-                    QRY_LOG_REQ,
-                    mHardwareToken,
-                    ServerRequest.QueryRecord.MERCHANT_LOGO );
+            mRequestManager.invoke(
+                    new QueryRequest(
+                            QRY_LOG_REQ,
+                            mHardwareToken,
+                            QueryRequest.Record.MERCHANT_LOGO
+                    )
+            );
         } else {
-            nivCompanyLogo.setImageUrl( logo_url, mRequestManager.getImageLoader() );
+            Picasso.with( ac )
+                    .load( logo_url )
+                    .into( nivCompanyLogo );
         }
     }
 
@@ -526,7 +533,13 @@ public class LauncherActivity extends AppCompatActivity implements
 
         String merchantCurr = PrefUtils.getMerchantCurrency( ac );
         String tenderCurr = PrefUtils.getTenderCurrency( ac );
-        mRequestManager.requestCurrencies( CURR_REQ, merchantCurr, tenderCurr );
+        mRequestManager.invoke(
+                new CurrenciesRequest(
+                        CURR_REQ,
+                        merchantCurr,
+                        tenderCurr
+                )
+        );
     }
 
     /**
@@ -758,31 +771,35 @@ public class LauncherActivity extends AppCompatActivity implements
 
             switch( method ) {
                 case YODO:
-                    mRequestManager.requestExchange(
-                            EXCH_REQ,
-                            mHardwareToken,
-                            client,
-                            total,
-                            cashtender,
-                            cashback,
-                            mLocation.getLatitude(),
-                            mLocation.getLongitude(),
-                            PrefUtils.getTenderCurrency( ac )
+                    mRequestManager.invoke(
+                            new ExchangeRequest(
+                                    EXCH_REQ,
+                                    mHardwareToken,
+                                    client,
+                                    total,
+                                    cashtender,
+                                    cashback,
+                                    mLocation.getLatitude(),
+                                    mLocation.getLongitude(),
+                                    PrefUtils.getTenderCurrency( ac )
+                            )
                     );
                     break;
 
                 case HEART:
-                    mRequestManager.requestAlternate(
-                            ALT_REQ,
-                            String.valueOf( method.ordinal() ),
-                            mHardwareToken,
-                            client,
-                            total,
-                            cashtender,
-                            cashback,
-                            mLocation.getLatitude(),
-                            mLocation.getLongitude(),
-                            PrefUtils.getTenderCurrency( ac )
+                    mRequestManager.invoke(
+                            new AlternateRequest(
+                                    ALT_REQ,
+                                    String.valueOf( method.ordinal() ),
+                                    mHardwareToken,
+                                    client,
+                                    total,
+                                    cashtender,
+                                    cashback,
+                                    mLocation.getLatitude(),
+                                    mLocation.getLongitude(),
+                                    PrefUtils.getTenderCurrency( ac )
+                            )
                     );
                     break;
             }
@@ -814,19 +831,21 @@ public class LauncherActivity extends AppCompatActivity implements
                 code = response.getCode();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    String logoName = response.getParam( ServerResponse.LOGO );
+                    String logoName = response.getParams().getLogo();
 
                     if( logoName != null ) {
                         String logo_url = AppConfig.LOGO_PATH + logoName;
                         PrefUtils.saveLogoUrl( ac, logo_url );
-                        nivCompanyLogo.setImageUrl( logo_url, mRequestManager.getImageLoader() );
+                        Picasso.with( ac )
+                                .load( logo_url )
+                                .into( nivCompanyLogo );
                     }
                 }
                 break;
 
             case CURR_REQ:
-                final String sMerchRate  = response.getParam( ServerResponse.MERCH_RATE );
-                final String sTenderRate = response.getParam( ServerResponse.TENDER_RATE );
+                final String sMerchRate  = response.getParams().getMerchRate();
+                final String sTenderRate = response.getParams().getTenderRate();
 
                 if( sMerchRate != null && sTenderRate != null ) {
                     // Get the rates in BigDecimals
@@ -873,9 +892,9 @@ public class LauncherActivity extends AppCompatActivity implements
                 final String ex_code       = response.getCode();
                 final String ex_authbumber = response.getAuthNumber();
                 final String ex_message    = response.getMessage();
-                final String ex_account    = response.getParam( ServerResponse.ACCOUNT );
-                final String ex_purchase   = response.getParam( ServerResponse.PURCHASE );
-                final String ex_delta      = response.getParam( ServerResponse.AMOUNT_DELTA );
+                final String ex_account    = response.getParams().getAccount();
+                final String ex_purchase   = response.getParams().getPurchase();
+                final String ex_delta      = response.getParams().getAmountDelta();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
                     message = getString( R.string.exchange_auth ) + " " + ex_authbumber + "\n" +
@@ -913,7 +932,7 @@ public class LauncherActivity extends AppCompatActivity implements
                         AlertDialogHelper.showAlertDialog( ac, response.getCode(), message , onClick );
                     else finish();
                 } else {
-                    message  = response.getMessage() + "\n" + response.getParam( XMLHandler.PARAMS );
+                    message  = response.getMessage();
                     MessageHandler.sendMessage( mHandlerMessages, code, message );
                 }
                 break;

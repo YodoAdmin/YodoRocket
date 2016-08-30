@@ -49,13 +49,19 @@ public class SKS {
     }
 
     public static SKS build( String data ) {
-        final String[] split = data.split( QR_SEP );
+        try {
 
-        final String header = split[0];
-        final String client = split[1];
+            final String[] split = data.split( QR_SEP );
 
-        return ( client.length() == SKS_SIZE ) ?
-            new SKS( header, client ) : null;
+            final String header = split[ 0 ];
+            final String client = split[ 1 ];
+
+            return ( client.length() == SKS_SIZE ) ?
+                    new SKS( header, client ) : null;
+        } catch( ArrayIndexOutOfBoundsException ex ) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     /**
