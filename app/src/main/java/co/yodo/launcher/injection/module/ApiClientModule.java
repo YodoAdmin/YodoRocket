@@ -4,7 +4,7 @@ import android.content.Context;
 
 import co.yodo.launcher.injection.scope.ApplicationScope;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
-import co.yodo.restapi.network.YodoRequest;
+import co.yodo.restapi.network.ApiClient;
 import dagger.Module;
 import dagger.Provides;
 
@@ -18,7 +18,7 @@ public class ApiClientModule {
 
     @Provides
     @ApplicationScope
-    public YodoRequest providesApiClient( Context context ) {
-        return YodoRequest.getInstance( context );
+    public ApiClient providesApiClient( Context context ) {
+        return ApiClient.getInstance( context );
     }
 }

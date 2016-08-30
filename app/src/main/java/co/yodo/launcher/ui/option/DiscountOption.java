@@ -16,14 +16,15 @@ import co.yodo.launcher.ui.notification.AlertDialogHelper;
 import co.yodo.launcher.ui.notification.MessageHandler;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.option.contract.IRequestOption;
-import co.yodo.restapi.network.YodoRequest;
+import co.yodo.restapi.network.ApiClient;
 import co.yodo.restapi.network.model.ServerResponse;
+import co.yodo.restapi.network.request.AuthenticateRequest;
 
 /**
  * Created by hei on 22/06/16.
  * Implements the Discount Option of the Launcher
  */
-public class DiscountOption extends IRequestOption implements YodoRequest.RESTListener {
+public class DiscountOption extends IRequestOption implements ApiClient.RequestsListener {
     /** Elements for the request */
     private final PromotionManager mPromotionManager;
 
@@ -56,10 +57,12 @@ public class DiscountOption extends IRequestOption implements YodoRequest.RESTLi
                         ProgressDialogHelper.ProgressDialogType.NORMAL
                 );
                 mRequestManager.setListener( DiscountOption.this );
-                mRequestManager.requestMerchAuth(
-                        AUTH_REQ,
-                        mHardwareToken,
-                        pip
+                mRequestManager.invoke(
+                        new AuthenticateRequest(
+                                AUTH_REQ,
+                                mHardwareToken,
+                                pip
+                        )
                 );
             }
         };

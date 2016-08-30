@@ -15,7 +15,7 @@ import co.yodo.launcher.R;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.ui.notification.AlertDialogHelper;
 import co.yodo.launcher.ui.option.contract.IOption;
-import co.yodo.restapi.network.YodoRequest;
+import co.yodo.restapi.network.ApiClient;
 
 /**
  * Created by hei on 22/06/16.
@@ -50,7 +50,7 @@ public class AboutOption extends IOption {
                 mActivity.getString( R.string.imei )           + " " + PrefUtils.getHardwareToken( mActivity ) + "\n" +
                         mActivity.getString( R.string.label_currency ) + " " + PrefUtils.getMerchantCurrency( mActivity ) + "\n" +
                         mActivity.getString( R.string.version_label )  + " " + BuildConfig.VERSION_NAME + "/" +
-                        YodoRequest.getSwitch()  + "\n\n" +
+                        ApiClient.getSwitch()  + "\n\n" +
                         mActivity.getString( R.string.about_message );
         final String email = mActivity.getString( R.string.about_email );
 

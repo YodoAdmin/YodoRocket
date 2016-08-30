@@ -13,7 +13,7 @@ import dagger.Component;
         modules = { ApiClientModule.class},
         dependencies = ApplicationComponent.class
 )
-public interface GraphComponent {
+public interface InjectionComponent {
     // Injects to the Activities
     void inject( MainActivity activity );
     void inject( RegistrationActivity activity );

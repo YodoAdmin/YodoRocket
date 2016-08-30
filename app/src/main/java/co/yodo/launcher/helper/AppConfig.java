@@ -1,6 +1,6 @@
 package co.yodo.launcher.helper;
 
-import co.yodo.restapi.network.YodoRequest;
+import co.yodo.restapi.network.ApiClient;
 
 /**
  * Created by luis on 15/12/14.
@@ -143,5 +143,5 @@ public class AppConfig {
     public static final Integer DEFAULT_SCANNER = 0;
 
     /* Logo URL */
-    public static final String LOGO_PATH = YodoRequest.getRoot() + "/yodo-merch/uploads/img/logo/";
+    public static final String LOGO_PATH = ApiClient.getRoot() + "/yodo-merch/uploads/img/logo/";
 }

@@ -25,10 +25,11 @@ import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.launcher.ui.notification.MessageHandler;
-import co.yodo.restapi.network.YodoRequest;
+import co.yodo.restapi.network.ApiClient;
 import co.yodo.restapi.network.model.ServerResponse;
+import co.yodo.restapi.network.request.RegisterRequest;
 
-public class RegistrationActivity extends AppCompatActivity implements YodoRequest.RESTListener {
+public class RegistrationActivity extends AppCompatActivity implements ApiClient.RequestsListener {
     /** DEBUG */
     @SuppressWarnings( "unused" )
     private static final String TAG = RegistrationActivity.class.getSimpleName();
@@ -44,11 +45,11 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     EditText etActivationCode;
 
     /** Messages Handler */
-    private static MessageHandler handlerMessages;
+    private static MessageHandler mHandlerMessages;
 
     /** Manager for the server requests */
     @Inject
-    YodoRequest mRequestManager;
+    ApiClient mRequestManager;
 
     /** Progress dialog for the requests */
     @Inject
@@ -84,11 +85,12 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
     private void setupGUI() {
         // Get the context and handler for the messages
         ac = RegistrationActivity.this;
-        handlerMessages = new MessageHandler( RegistrationActivity.this );
+        mHandlerMessages = new MessageHandler( RegistrationActivity.this );
 
         // Injection
         ButterKnife.bind( this );
         YodoApplication.getComponent().inject( this );
+        mRequestManager.setListener( this );
 
         // Load the animation
         aShake = AnimationUtils.loadAnimation( this, R.anim.shake );
@@ -132,10 +134,12 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
                     ac,
                     ProgressDialogHelper.ProgressDialogType.NORMAL
             );
-            mRequestManager.requestMerchReg(
-                    REG_REQ,
-                    hardwareToken,
-                    token
+            mRequestManager.invoke(
+                    new RegisterRequest(
+                            REG_REQ,
+                            hardwareToken,
+                            token
+                    )
             );
         }
     }
@@ -172,7 +176,7 @@ public class RegistrationActivity extends AppCompatActivity implements YodoReque
                     finish();
                 } else {
                     String message = response.getMessage();
-                    MessageHandler.sendMessage( handlerMessages, code, message );
+                    MessageHandler.sendMessage( mHandlerMessages, code, message );
                 }
                 break;
         }
