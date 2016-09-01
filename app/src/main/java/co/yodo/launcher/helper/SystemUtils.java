@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.util.Log;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import co.yodo.launcher.R;
 import co.yodo.launcher.ui.notification.AlertDialogHelper;
 
 /**
@@ -22,6 +24,9 @@ import co.yodo.launcher.ui.notification.AlertDialogHelper;
  * google services or logger
  */
 public class SystemUtils {
+    /** DEBUG */
+    private static final String TAG = SystemUtils.class.getSimpleName();
+
     /**
      * Verify if a service is running
      * @param c The Context of the Android system.
@@ -46,9 +51,10 @@ public class SystemUtils {
         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
         int resultCode = googleAPI.isGooglePlayServicesAvailable( activity );
         if( resultCode != ConnectionResult.SUCCESS ) {
-            if( googleAPI.isUserResolvableError( resultCode ) ) {
+            if( resultCode != ConnectionResult.SERVICE_INVALID && googleAPI.isUserResolvableError( resultCode ) ) {
                 googleAPI.getErrorDialog( activity, resultCode, code ).show();
             } else {
+                SystemUtils.Logger( TAG, "This device does not support Google Services (" + resultCode + ")" );
                 PrefUtils.setLegacy( activity, true );
             }
             return false;
@@ -85,9 +91,13 @@ public class SystemUtils {
      * @param requestCode The request code for the result
      * @return If the permission was already allowed or not
      */
-    public static boolean requestPermission( final Activity ac, final int message, final String permission, final int requestCode ) {
+    public static boolean requestPermission( final Activity ac, final int message, final String permission, final Integer requestCode ) {
         // Assume thisActivity is the current activity
         int permissionCheck = ContextCompat.checkSelfPermission( ac, permission );
+        if( permissionCheck != PackageManager.PERMISSION_GRANTED && requestCode == null ) {
+            return false;
+        }
+
         if( permissionCheck != PackageManager.PERMISSION_GRANTED ) {
             if( ActivityCompat.shouldShowRequestPermissionRationale( ac, permission ) ) {
                 DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
@@ -113,6 +123,35 @@ public class SystemUtils {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Plays a sound of error
+     * @param c The Context of the Android system.
+     * @param type The kind of sound 0 - error and 1 - successful
+     */
+    public static void startSound(Context c, int type) {
+        MediaPlayer mp = null;
+
+        switch( type ) {
+            case AppConfig.ERROR:
+                mp = MediaPlayer.create( c, R.raw.error );
+                break;
+
+            case AppConfig.SUCCESSFUL:
+                mp = MediaPlayer.create( c, R.raw.successful );
+                break;
+        }
+
+        if( mp != null ) {
+            mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    mp.release();
+                }
+            });
+            mp.start();
+        }
     }
 
     /**

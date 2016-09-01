@@ -1,26 +1,30 @@
 package co.yodo.launcher.ui;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import javax.inject.Inject;
+
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.GUIUtils;
+import co.yodo.launcher.YodoApplication;
 import co.yodo.launcher.component.Intents;
+import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
 import co.yodo.launcher.ui.notification.ToastMaster;
-import co.yodo.launcher.ui.notification.YodoHandler;
-import co.yodo.restapi.network.YodoRequest;
-import co.yodo.restapi.network.builder.ServerRequest;
+import co.yodo.launcher.ui.notification.MessageHandler;
+import co.yodo.restapi.network.ApiClient;
 import co.yodo.restapi.network.model.ServerResponse;
+import co.yodo.restapi.network.request.AuthenticateRequest;
+import co.yodo.restapi.network.request.QueryRequest;
 
-public class MainActivity extends Activity implements YodoRequest.RESTListener {
+public class MainActivity extends AppCompatActivity implements ApiClient.RequestsListener {
     /** DEBUG */
     @SuppressWarnings( "unused" )
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -32,10 +36,11 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
     private String mHardwareToken;
 
     /** Messages Handler */
-    private YodoHandler mHandlerMessages;
+    private MessageHandler mHandlerMessages;
 
     /** Manager for the server requests */
-    private YodoRequest mRequestManager;
+    @Inject
+    ApiClient mRequestManager;
 
     /** Code for the error dialog */
     private static final int REQUEST_CODE_RECOVER_PLAY_SERVICES = 0;
@@ -73,8 +78,8 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
     private void setupGUI() {
         // Get the context and handler for the messages
         ac = MainActivity.this;
-        mHandlerMessages = new YodoHandler( MainActivity.this );
-        mRequestManager = YodoRequest.getInstance( ac );
+        mHandlerMessages = new MessageHandler( MainActivity.this );
+        YodoApplication.getComponent().inject( this );
         mRequestManager.setListener( this );
     }
 
@@ -109,9 +114,11 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
             if( mHardwareToken == null ) {
                 setupPermissions();
             } else if( !isLoggedIn || !hasMerchCurr || !hasTenderCurr ) {
-                mRequestManager.requestMerchAuth(
-                        AUTH_REQ,
-                        mHardwareToken
+                mRequestManager.invoke(
+                        new AuthenticateRequest(
+                                AUTH_REQ,
+                                mHardwareToken
+                        )
                 );
             } else {
                 intent = new Intent( ac, LauncherActivity.class );
@@ -149,9 +156,11 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
         } else {
             // We have the hardware token, now let's verify if the user exists
             PrefUtils.saveHardwareToken( ac, mHardwareToken );
-            mRequestManager.requestMerchAuth(
-                    AUTH_REQ,
-                    mHardwareToken
+            mRequestManager.invoke(
+                    new AuthenticateRequest(
+                            AUTH_REQ,
+                            mHardwareToken
+                    )
             );
         }
     }
@@ -172,10 +181,12 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
                 switch( code ) {
                     case ServerResponse.AUTHORIZED:
                         // Get the merchant currency
-                        mRequestManager.requestQuery(
-                                QUERY_REQ,
-                                mHardwareToken,
-                                ServerRequest.QueryRecord.MERCHANT_CURRENCY
+                        mRequestManager.invoke(
+                                new QueryRequest(
+                                        QUERY_REQ,
+                                        mHardwareToken,
+                                        QueryRequest.Record.MERCHANT_CURRENCY
+                                )
                         );
                         break;
 
@@ -186,7 +197,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
                         break;
 
                     default:
-                        YodoHandler.sendMessage( YodoHandler.INIT_ERROR,
+                        MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
                                 mHandlerMessages,
                                 code,
                                 message
@@ -200,7 +211,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
                     // Set currencies
-                    String currency = response.getParam( ServerResponse.CURRENCY );
+                    String currency = response.getParams().getCurrency();
                     PrefUtils.saveMerchantCurrency( ac, currency );
                     PrefUtils.saveTenderCurrency( ac, currency );
 
@@ -210,7 +221,7 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
                     if( bundle != null ) intent.putExtras( bundle );
                     startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
                 } else {
-                    YodoHandler.sendMessage( YodoHandler.INIT_ERROR,
+                    MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
                             mHandlerMessages,
                             code,
                             message
@@ -241,10 +252,12 @@ public class MainActivity extends Activity implements YodoRequest.RESTListener {
 
                 case ACTIVITY_REGISTRATION_REQUEST:
                     // Get the merchant currency
-                    mRequestManager.requestQuery(
-                            QUERY_REQ,
-                            mHardwareToken,
-                            ServerRequest.QueryRecord.MERCHANT_CURRENCY
+                    mRequestManager.invoke(
+                            new QueryRequest(
+                                    QUERY_REQ,
+                                    mHardwareToken,
+                                    QueryRequest.Record.MERCHANT_CURRENCY
+                            )
                     );
                     break;
 

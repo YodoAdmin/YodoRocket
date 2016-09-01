@@ -10,52 +10,29 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import co.yodo.launcher.BuildConfig;
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.ui.notification.AlertDialogHelper;
 import co.yodo.launcher.ui.option.contract.IOption;
-import co.yodo.restapi.network.YodoRequest;
+import co.yodo.restapi.network.ApiClient;
 
 /**
  * Created by hei on 22/06/16.
  * Implements the About Option of the MainActivity
  */
 public class AboutOption extends IOption {
-    /** Data of the about */
-    private final String mHardwareToken;
-
-    /** Elements for the AlertDialog */
-    private final String mTitle;
-    private final String mMessage;
-    private final String mEmail;
-    private final View mLayout;
-
     /**
      * Sets up the main elements of the options
      * @param activity The Activity to handle
      */
     public AboutOption( Activity activity ) {
         super( activity );
-        // Data
-        this.mHardwareToken = PrefUtils.getHardwareToken( this.mActivity );
-
-        // AlertDialog
-        this.mTitle = this.mActivity.getString( R.string.about );
-        this.mMessage =
-                this.mActivity.getString( R.string.imei )    + " " +
-                PrefUtils.getHardwareToken( this.mActivity ) + "\n" +
-                this.mActivity.getString( R.string.label_currency )    + " " +
-                PrefUtils.getMerchantCurrency( this.mActivity ) + "\n" +
-                this.mActivity.getString( R.string.version_label ) + " " +
-                this.mActivity.getString( R.string.version_value ) + "/" +
-                YodoRequest.getSwitch() + "\n\n" +
-                this.mActivity.getString( R.string.about_message );
-        this.mEmail = this.mActivity.getString( R.string.about_email );
 
         // Gets and sets the dialog layout
-        LayoutInflater inflater = (LayoutInflater) this.mActivity.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
-        this.mLayout = inflater.inflate( R.layout.dialog_about, new LinearLayout( this.mActivity ), false );
-        setupLayout( this.mLayout );
+        LayoutInflater inflater = (LayoutInflater) mActivity.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
+        final View layout = inflater.inflate( R.layout.dialog_about, new LinearLayout( mActivity ), false );
+        setupLayout( layout );
     }
 
     /**
@@ -66,34 +43,46 @@ public class AboutOption extends IOption {
         // GUI controllers of the dialog
         TextView emailView = (TextView) layout.findViewById( R.id.emailView );
         TextView messageView = (TextView) layout.findViewById( R.id.messageView );
-        SpannableString ssEmail = new SpannableString( this.mEmail );
+
+        // Get data
+        final String hardwareToken = PrefUtils.getHardwareToken( mActivity );
+        final String message =
+                mActivity.getString( R.string.imei )           + " " + PrefUtils.getHardwareToken( mActivity ) + "\n" +
+                        mActivity.getString( R.string.label_currency ) + " " + PrefUtils.getMerchantCurrency( mActivity ) + "\n" +
+                        mActivity.getString( R.string.version_label )  + " " + BuildConfig.VERSION_NAME + "/" +
+                        ApiClient.getSwitch()  + "\n\n" +
+                        mActivity.getString( R.string.about_message );
+        final String email = mActivity.getString( R.string.about_email );
 
         // Set text to the controllers
+        SpannableString ssEmail = new SpannableString( email );
         ssEmail.setSpan( new UnderlineSpan(), 0, ssEmail.length(), 0 );
         emailView.setText( ssEmail );
-        messageView.setText( this.mMessage  );
+        messageView.setText( message  );
 
         // Create the onClick listener
         emailView.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent( Intent.ACTION_SEND );
-                String[] recipients = { mEmail };
+                String[] recipients = { email };
                 intent.putExtra( Intent.EXTRA_EMAIL, recipients ) ;
-                intent.putExtra( Intent.EXTRA_SUBJECT, mHardwareToken );
+                intent.putExtra( Intent.EXTRA_SUBJECT, hardwareToken );
                 intent.setType( "text/html" );
                 mActivity.startActivity( Intent.createChooser( intent, "Send Email" ) );
             }
         });
+
+        // Generate the AlertDialog
+        mAlertDialog = AlertDialogHelper.create(
+                mActivity,
+                R.string.about,
+                layout
+        );
     }
 
     @Override
     public void execute() {
-        // Generate the AlertDialog
-        AlertDialogHelper.showAlertDialog(
-                this.mActivity,
-                this.mTitle,
-                this.mLayout
-        );
+        mAlertDialog.show();
     }
 }

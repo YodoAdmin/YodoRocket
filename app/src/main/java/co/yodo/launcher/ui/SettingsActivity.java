@@ -2,29 +2,33 @@ package co.yodo.launcher.ui;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
-import co.yodo.launcher.ui.notification.ToastMaster;
+import co.yodo.launcher.service.LocationService;
 
 /**
  * Created by luis on 3/08/15.
  * Settings for the Rocket
  */
 public class SettingsActivity extends AppCompatActivity {
+    /** Request codes for the permissions */
+    private static final int PERMISSIONS_REQUEST_LOCATION = 1;
+
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
@@ -78,7 +82,7 @@ public class SettingsActivity extends AppCompatActivity {
             prefMgr.setSharedPreferencesName( AppConfig.SHARED_PREF_FILE );
             prefMgr.setSharedPreferencesMode( MODE_PRIVATE );
 
-            addPreferencesFromResource( R.xml.fragment_settings);
+            addPreferencesFromResource( R.xml.fragment_settings );
 
             setupGUI();
         }
@@ -96,11 +100,16 @@ public class SettingsActivity extends AppCompatActivity {
             ETP_LOCATING = (CheckBoxPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_LOCATION_SERVICE );
 
-            if( PrefUtils.isLegacy( c ) )
+            if( PrefUtils.isLegacy( c ) ) {
+                ETP_SPREF_USERNAME.setEnabled( false );
                 ETP_ADVERTISING.setEnabled( false );
+            }
 
-            if( !SystemUtils.hasLocationService( c ) )
+            if( PrefUtils.isLegacy( c ) || !LocationService.permission( getActivity(), null ) ) {
                 ETP_LOCATING.setEnabled( false );
+            } else if( LocationService.permission( getActivity(), null ) && !SystemUtils.hasLocationService( c ) ) {
+                ETP_LOCATING.setEnabled( false );
+            }
         }
 
         private void updateStatus( String key ) {

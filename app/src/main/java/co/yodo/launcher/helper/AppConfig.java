@@ -1,8 +1,6 @@
 package co.yodo.launcher.helper;
 
-import com.android.volley.VolleyLog;
-
-import co.yodo.restapi.network.YodoRequest;
+import co.yodo.restapi.network.ApiClient;
 
 /**
  * Created by luis on 15/12/14.
@@ -10,7 +8,7 @@ import co.yodo.restapi.network.YodoRequest;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = true; // Should be false for release.
+    public static final boolean DEBUG = false; // Should be false for release.
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoRocketSharedPref";
@@ -145,5 +143,9 @@ public class AppConfig {
     public static final Integer DEFAULT_SCANNER = 0;
 
     /* Logo URL */
-    public static final String LOGO_PATH = YodoRequest.getRoot() + "/yodo-merch/uploads/img/logo/";
+    public static final String LOGO_PATH = ApiClient.getRoot() + "/yodo-merch/uploads/img/logo/";
+
+    /* Type of transaction sounds  */
+    public static final int ERROR      = 0;
+    public static final int SUCCESSFUL = 1;
 }

@@ -51,9 +51,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     private static final int TIME_DIFFERENCE_THRESHOLD = 60 * 1000; // 1 minute(s)
 
     /** Location updates intervals in sec */
-    private static final int UPDATE_INTERVAL = 30 * 1000; // 30 second(s)
+    private static final int UPDATE_INTERVAL  = 30 * 1000; // 30 second(s)
     private static final int FASTEST_INTERVAL = 20 * 1000; // 20 second(s)
-    private static final float DISPLACEMENT = 10.0F;     // 10 meter(s)
+    private static final float DISPLACEMENT   = 10.0F;     // 10 meter(s)
 
     /** Accuracy requirements */
     private static final int BAD_ACCURACY = 100; // 100 meters
@@ -226,20 +226,28 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
      * Request the necessary permissions for the location
      * @param activity The activity that needs the location permission
      * @param requestCode The code to request the permission
+     */
+    public static boolean permission( Activity activity, Integer requestCode ) {
+        return SystemUtils.requestPermission(
+                activity,
+                R.string.message_permission_location,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                requestCode
+        );
+    }
+
+    /**
+     * Request the necessary permissions for the location and enables the service
+     * @param activity The activity that needs the location permission
+     * @param requestCode The code to request the permission
      * @param resultCode The code to respond to the activity - REQUEST_CODE_LOCATION_SERVICES
      */
     public static void setup( Activity activity, int requestCode, int resultCode ) {
         if( PrefUtils.isLegacy( activity ) )
             return;
 
-        boolean locationPermission = SystemUtils.requestPermission(
-                activity,
-                R.string.message_permission_location,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                requestCode
-        );
         // We have permission, it is time to see if location is enabled, if not just request
-        if( locationPermission )
+        if( permission( activity, requestCode ) )
             enable( activity, resultCode );
     }
 

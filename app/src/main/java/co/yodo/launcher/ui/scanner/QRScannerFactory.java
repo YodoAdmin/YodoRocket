@@ -5,9 +5,9 @@ import android.app.Activity;
 import co.yodo.launcher.R;
 
 public class QRScannerFactory {
-	/** SKS Sizes */
-	public static final int SKS_SIZE = 256;
-	public static final int ALT_SIZE = 257;
+	/** SKS Sizes - key 1024 */
+	//public static final int SKS_SIZE = 256;
+	//public static final int ALT_SIZE = 257;
 
 	public enum SupportedScanner {
 		Hardware    ( R.string.name_scanner_hardware ),

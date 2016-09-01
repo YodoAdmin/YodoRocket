@@ -4,34 +4,29 @@ import android.content.DialogInterface;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
+import android.view.View;
 import android.widget.EditText;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.manager.PromotionManager;
 import co.yodo.launcher.ui.LauncherActivity;
 import co.yodo.launcher.ui.component.ClearEditText;
 import co.yodo.launcher.ui.notification.AlertDialogHelper;
+import co.yodo.launcher.ui.notification.MessageHandler;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
-import co.yodo.launcher.ui.notification.YodoHandler;
-import co.yodo.launcher.ui.option.contract.IOption;
-import co.yodo.restapi.network.YodoRequest;
+import co.yodo.launcher.ui.option.contract.IRequestOption;
+import co.yodo.restapi.network.ApiClient;
 import co.yodo.restapi.network.model.ServerResponse;
+import co.yodo.restapi.network.request.AuthenticateRequest;
 
 /**
  * Created by hei on 22/06/16.
  * Implements the Discount Option of the Launcher
  */
-public class DiscountOption extends IOption implements YodoRequest.RESTListener {
+public class DiscountOption extends IRequestOption implements ApiClient.RequestsListener {
     /** Elements for the request */
-    private final YodoRequest mRequestManager;
-    private final YodoHandler mHandlerMessages;
     private final PromotionManager mPromotionManager;
-    private final String mHardwareToken;
-
-    /** Elements for the AlertDialog */
-    private final String mTitle;
 
     /** Response codes for the server requests */
     private static final int AUTH_REQ = 0x00;
@@ -43,49 +38,46 @@ public class DiscountOption extends IOption implements YodoRequest.RESTListener 
      * Sets up the main elements of the options
      * @param activity The Activity to handle
      */
-    public DiscountOption( LauncherActivity activity, YodoRequest requestManager, YodoHandler handlerMessages, PromotionManager promotionManager ) {
-        super( activity );
+    public DiscountOption( LauncherActivity activity, MessageHandler handlerMessages, PromotionManager promotionManager ) {
+        super( activity, handlerMessages );
+
         // Request
-        this.mRequestManager   = requestManager;
-        this.mHandlerMessages  = handlerMessages;
         this.mPromotionManager = promotionManager;
-        this.mHardwareToken    = PrefUtils.getHardwareToken( this.mActivity );
 
-        // AlertDialog
-        this.mTitle = this.mActivity.getString( R.string.input_pip );
-    }
-
-    @Override
-    public void execute() {
-        etInput.setText( "" );
-
-        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
+        // Dialog
+        final View layout = buildLayout();
+        final View.OnClickListener okClick = new View.OnClickListener() {
             @Override
-            public void onClick( DialogInterface dialog, int item ) {
-                GUIUtils.hideSoftKeyboard( mActivity );
+            public void onClick( View view  ) {
+                mAlertDialog.dismiss();
                 final String pip = etInput.getText().toString();
 
-                ProgressDialogHelper.getInstance().createProgressDialog(
+                mProgressManager.createProgressDialog(
                         mActivity,
                         ProgressDialogHelper.ProgressDialogType.NORMAL
                 );
-
                 mRequestManager.setListener( DiscountOption.this );
-                mRequestManager.requestMerchAuth(
-                        AUTH_REQ,
-                        mHardwareToken,
-                        pip
+                mRequestManager.invoke(
+                        new AuthenticateRequest(
+                                AUTH_REQ,
+                                mHardwareToken,
+                                pip
+                        )
                 );
             }
         };
 
-        AlertDialogHelper.showAlertDialog(
-                this.mActivity,
-                this.mTitle,
-                this.etInput,
-                false,
-                onClick
+        mAlertDialog = AlertDialogHelper.create(
+                mActivity,
+                layout,
+                buildOnClick( okClick )
         );
+    }
+
+    @Override
+    public void execute() {
+        mAlertDialog.show();
+        clearGUI();
     }
 
     @Override
@@ -99,8 +91,8 @@ public class DiscountOption extends IOption implements YodoRequest.RESTListener 
     @Override
     public void onResponse( int responseCode, ServerResponse response ) {
         // Set listener to the principal activity
-        ProgressDialogHelper.getInstance().destroyProgressDialog();
-        mRequestManager.setListener( ( (LauncherActivity) this.mActivity ) );
+        mProgressManager.destroyProgressDialog();
+        mRequestManager.setListener( (LauncherActivity) mActivity );
 
         // If it was publishing before the request
         if( isPublishing )
@@ -158,11 +150,11 @@ public class DiscountOption extends IOption implements YodoRequest.RESTListener 
 
                     case ServerResponse.ERROR_FAILED:
                         message = this.mActivity.getString( R.string.message_incorrect_pip );
-                        YodoHandler.sendMessage( mHandlerMessages, code, message );
+                        MessageHandler.sendMessage( mHandlerMessages, code, message );
                         break;
 
                     default:
-                        YodoHandler.sendMessage( mHandlerMessages, code, message );
+                        MessageHandler.sendMessage( mHandlerMessages, code, message );
                         break;
                 }
                 break;

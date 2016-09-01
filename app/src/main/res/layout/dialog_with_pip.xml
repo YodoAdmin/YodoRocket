@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/GeneralLayout"
+	android:id="@+id/dialog_with_password"
+	android:orientation="vertical">
+
+	<android.support.design.widget.TextInputLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content" >
+
+		<co.yodo.launcher.ui.component.ClearEditText
+			style="@style/PIPInput"
+			android:id="@+id/cetPIP" />
+
+	</android.support.design.widget.TextInputLayout>
+
+	<CheckBox
+		android:id="@+id/cbOption"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="@string/show_pass"/>
+
+</LinearLayout>

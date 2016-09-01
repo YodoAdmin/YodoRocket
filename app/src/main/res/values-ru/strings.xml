@@ -33,13 +33,16 @@
 
     <!-- General Messages -->
     <string name="input_pip">Кодовая фраза продавца (MIP)</string>
+    <string name="pip_hint">Кодовая фраза продавца</string>
     <string name="show_pass">Показать Пароль</string>
     <string name="remember_pass">Запомнить Пароль</string>
     <string name="input_token">Введите Ваш пароль</string>
     <string name="merch_pip_hint">Активировать код</string>
     <string name="barcode_scanner">Сканировать код</string>
+    <string name="message.already_registered">Уже зарегистрирован? Перезапуск</string>
     <string name="message.gps_enable">GPS не включен. Хотите перейти в Настройки?</string>
-    <string name="register_hint">Введите Ваш код активации. Вы должны быть зарегистрированы в качестве продавца до активации. Связаться: support@yodo.co</string>
+    <string name="register_hint">Вы должны быть зарегистрированы в качестве продавца до активации.</string>
+    <string name="register_contact">Связаться: support@yodo.co</string>
     <string name="about_message">Чтобы связаться с нами, используйте адрес электронной почты, который указан ниже. Мы сделаем все возможное, чтобы ответить быстро. Будьте уверены, мы никогда не продаем и не распространяем личную информацию, предоставленную Вами.</string>
 
     <!-- Exchange Response -->
@@ -47,7 +50,7 @@
     <string name="exchange_auth">Номер авторизации:</string>
     <string name="exchange_message">Сообщение:</string>
     <string name="exchange_extra">Дополнительно:</string>
-    <string name="exchange_error">Недопустимый размер SKS</string>
+    <string name="exchange_error">Недопустимый размер SKS. Клиент может потребоваться обновить приложение платежа Ёдо.</string>
 
     <!-- Balance Messages -->
     <string name="yodo_title">Отчет о балансе продавца</string>
