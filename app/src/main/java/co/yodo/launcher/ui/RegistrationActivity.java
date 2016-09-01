@@ -38,7 +38,7 @@ public class RegistrationActivity extends AppCompatActivity implements ApiClient
     private Context ac;
 
     /** Account identifiers */
-    private String hardwareToken;
+    private String mHardwareToken;
 
     /** GUI Controllers */
     @BindView( R.id.etActivationCode )
@@ -110,8 +110,8 @@ public class RegistrationActivity extends AppCompatActivity implements ApiClient
             finish();
 
         // Gets the hardware token - account identifier
-        hardwareToken = PrefUtils.getHardwareToken( ac );
-        if( hardwareToken == null ) {
+        mHardwareToken = PrefUtils.getHardwareToken( ac );
+        if( mHardwareToken == null ) {
             ToastMaster.makeText( ac, R.string.message_no_hardware, Toast.LENGTH_LONG ).show();
             finish();
         }
@@ -137,7 +137,7 @@ public class RegistrationActivity extends AppCompatActivity implements ApiClient
             mRequestManager.invoke(
                     new RegisterRequest(
                             REG_REQ,
-                            hardwareToken,
+                            mHardwareToken,
                             token
                     )
             );

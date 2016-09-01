@@ -224,6 +224,11 @@ public class LauncherActivity extends AppCompatActivity implements
         // register to event bus
         EventBus.getDefault().register( this );
 
+        LocationService.permission(
+                this,
+                PERMISSIONS_REQUEST_LOCATION
+        );
+
         // Setup the required permissions for location
         if( PrefUtils.isLocating( ac ) ) {
             LocationService.setup(
@@ -752,10 +757,12 @@ public class LauncherActivity extends AppCompatActivity implements
 
         SKS code = SKS.build( data );
         if( code == null ) {
+            SystemUtils.startSound( ac, AppConfig.ERROR );
             ToastMaster.makeText( LauncherActivity.this, R.string.exchange_error, Toast.LENGTH_LONG ).show();
         } else {
             final String client = code.getClient();
             final SKS.PAYMENT method = code.getPaymentMethod();
+
             ex_tip = subTotal.multiply(
                     code.getTip()
             ).setScale( 2, RoundingMode.DOWN ).toString();
@@ -932,7 +939,7 @@ public class LauncherActivity extends AppCompatActivity implements
                         AlertDialogHelper.showAlertDialog( ac, response.getCode(), message , onClick );
                     else finish();
                 } else {
-                    message  = response.getMessage();
+                    message = response.getMessage();
                     MessageHandler.sendMessage( mHandlerMessages, code, message );
                 }
                 break;

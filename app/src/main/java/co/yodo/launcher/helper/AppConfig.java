@@ -8,7 +8,7 @@ import co.yodo.restapi.network.ApiClient;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = true; // Should be false for release.
+    public static final boolean DEBUG = false; // Should be false for release.
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoRocketSharedPref";
@@ -144,4 +144,8 @@ public class AppConfig {
 
     /* Logo URL */
     public static final String LOGO_PATH = ApiClient.getRoot() + "/yodo-merch/uploads/img/logo/";
+
+    /* Type of transaction sounds  */
+    public static final int ERROR      = 0;
+    public static final int SUCCESSFUL = 1;
 }
