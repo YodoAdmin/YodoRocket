@@ -71,15 +71,16 @@ public class SKS {
             // Support for old SKS
             if( split.length == 1 ) {
                 final String client = split[ 0 ];
-                return new SKS( null, client );
+                final int length = client.length();
+                if( length == SKS_SIZE || length == ALT_SIZE )
+                    return new SKS( null, client );
             }
             // New SKS with header
             else if( split.length == 2 ) {
                 final String header = split[ 0 ];
                 final String client = split[ 1 ];
 
-                return ( client.length() == SKS_SIZE ) ?
-                        new SKS( header, client ) : null;
+                return new SKS( header, client );
             }
             // There is a problem with the SKS
             else {
@@ -89,6 +90,7 @@ public class SKS {
             ex.printStackTrace();
             return null;
         }
+        return null;
     }
 
     /**
