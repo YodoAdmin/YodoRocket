@@ -29,9 +29,9 @@ public class PrefUtils {
      *         false It is not a number.
      */
     @SuppressWarnings( "all" )
-    public static Boolean isNumber(String s) {
+    public static Boolean isNumber( String s ) {
         try {
-            Integer.parseInt(s);
+            Integer.parseInt( s );
         }
         catch( NumberFormatException e ) {
             return false;
@@ -209,6 +209,51 @@ public class PrefUtils {
     }
 
     /**
+     * It gets the currency for a specific key.
+     * @param c The Context of the Android system.
+     * @param key The key of the currency
+     * @return String It returns the currency name.
+     */
+    public static String getCurrency( Context c, String key ) {
+        SharedPreferences config = getSPrefConfig( c );
+        String currency;
+
+        // Looks for any problem in previous preferences
+        try {
+            currency = config.getString( key, null );
+        } catch( ClassCastException e ) {
+            e.printStackTrace();
+            return null;
+        }
+
+        final String[] currencies = c.getResources().getStringArray( R.array.currency_array );
+        return ( currency != null && !Arrays.asList( currencies ).contains( currency ) ) ? null : currency;
+    }
+
+    /**
+     * It saves the currency to the preferences.
+     * @param c The Context of the Android system.
+     * @param key The key of the currency
+     * @param currency The currency name
+     * @return true  If it was saved.
+     *         false If it was not saved.
+     */
+    public static Boolean saveCurrency( Context c, String key, String currency ) {
+        // Supported currencies
+        final String[] currencies = c.getResources().getStringArray( R.array.currency_array );
+
+        // Get the editor
+        SharedPreferences.Editor writer = getSPrefConfig( c ).edit();
+
+        // Verify if currency exists in the array
+        if( Arrays.asList( currencies ).contains( currency ) ) {
+            writer.putString( key, currency );
+            return writer.commit();
+        }
+        return false;
+    }
+
+    /**
      * It saves the currency array position to the preferences.
      * @param c The Context of the Android system.
      * @param currency The currency name
@@ -216,15 +261,7 @@ public class PrefUtils {
      *         false If it was not saved.
      */
     public static Boolean saveTenderCurrency( Context c, String currency ) {
-        // Supported currencies
-        final String[] currencies = c.getResources().getStringArray( R.array.currency_array );
-        SharedPreferences config = getSPrefConfig( c );
-        SharedPreferences.Editor writer = config.edit();
-        if( Arrays.asList( currencies ).contains( currency ) )
-            writer.putString( AppConfig.SPREF_CURRENT_CURRENCY, currency );
-        else
-            writer.putString( AppConfig.SPREF_CURRENT_CURRENCY, AppConfig.DEFAULT_CURRENCY );
-        return writer.commit();
+        return saveCurrency( c, AppConfig.SPREF_CURRENT_CURRENCY, currency );
     }
 
     /**
@@ -233,29 +270,18 @@ public class PrefUtils {
      * @return int It returns the currency name.
      */
     public static String getTenderCurrency( Context c ) {
-        SharedPreferences config = getSPrefConfig( c );
-        // Looks for any problem in previous preferences
-        try {
-            config.getString( AppConfig.SPREF_CURRENT_CURRENCY, null );
-        } catch( ClassCastException e ) {
-            e.printStackTrace();
-            return null;
-        }
-        return config.getString( AppConfig.SPREF_CURRENT_CURRENCY, null );
+        return getCurrency( c, AppConfig.SPREF_CURRENT_CURRENCY );
     }
 
     /**
      * It saves the merchant currency to the preferences.
      * @param c The Context of the Android system.
-     * @param n The currency of the merchant.
+     * @param currency The currency of the merchant.
      * @return true  If it was saved.
      *         false If it was not saved.
      */
-    public static Boolean saveMerchantCurrency( Context c, String n ) {
-        SharedPreferences config = getSPrefConfig( c );
-        SharedPreferences.Editor writer = config.edit();
-        writer.putString( AppConfig.SPREF_MERCHANT_CURRENCY, n );
-        return writer.commit();
+    public static Boolean saveMerchantCurrency( Context c, String currency ) {
+        return saveCurrency( c, AppConfig.SPREF_MERCHANT_CURRENCY, currency );
     }
 
     /**
@@ -264,8 +290,7 @@ public class PrefUtils {
      * @return int It returns the currency.
      */
     public static String getMerchantCurrency( Context c ) {
-        SharedPreferences config = getSPrefConfig( c );
-        return config.getString( AppConfig.SPREF_MERCHANT_CURRENCY, null );
+        return getCurrency( c, AppConfig.SPREF_MERCHANT_CURRENCY );
     }
 
     /**

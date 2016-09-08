@@ -150,8 +150,8 @@ public class GUIUtils {
 
         // Set the drawable to the TextView
         final int position = Arrays.asList( currencies ).indexOf( currency );
-        Drawable icon  = getDrawableByName( c, icons[ position ] );
-        icon.setBounds( 3, 0, v.getLineHeight(), (int)( v.getLineHeight() * 0.9 ) );
+        Drawable icon = getDrawableByName( c, icons[ position ] );
+        icon.setBounds( 3, 0, v.getLineHeight(), ( int ) ( v.getLineHeight() * 0.9 ) );
         v.setCompoundDrawables( icon, null, null, null );
     }
 
