@@ -91,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
             String action = intent.getAction();
             if( Intents.ACTION.equals( action ) ) {
                 bundle = intent.getExtras();
-                //if( bundle == null ) bundle = new Bundle();
             }
         }
         /**************************************************/
@@ -212,14 +211,23 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
                     // Set currencies
                     String currency = response.getParams().getCurrency();
-                    PrefUtils.saveMerchantCurrency( ac, currency );
-                    PrefUtils.saveTenderCurrency( ac, currency );
+                    final boolean savedMCurr = PrefUtils.saveMerchantCurrency( ac, currency );
+                    final boolean savedTCurr = PrefUtils.saveTenderCurrency( ac, currency );
 
-                    // Start the app
-                    PrefUtils.saveLoginStatus( ac, true );
-                    Intent intent = new Intent( ac, LauncherActivity.class );
-                    if( bundle != null ) intent.putExtras( bundle );
-                    startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
+                    if( savedMCurr && savedTCurr ) {
+                        // Start the app
+                        PrefUtils.saveLoginStatus( ac, true );
+                        Intent intent = new Intent( ac, LauncherActivity.class );
+                        if( bundle != null ) intent.putExtras( bundle );
+                        startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
+                    } else {
+                        MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
+                                mHandlerMessages,
+                                ServerResponse.ERROR_FAILED,
+                                "Currency not supported"
+                        );
+                    }
+
                 } else {
                     MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
                             mHandlerMessages,
