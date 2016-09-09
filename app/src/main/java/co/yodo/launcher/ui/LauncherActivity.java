@@ -387,6 +387,7 @@ public class LauncherActivity extends AppCompatActivity implements
         } else {
             Picasso.with( ac )
                     .load( logo_url )
+                    .error( R.drawable.no_image )
                     .into( nivCompanyLogo );
         }
     }
@@ -701,6 +702,15 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     /**
+     * Copies the value of the purchase to the tender TextView
+     * @param v, The view, not used
+     */
+    public void purchaseToTenderClick( View v ) {
+        final String value = tvTotal.getText().toString();
+        tvCashtender.setText( value );
+    }
+
+    /**
      * Handles on back pressed
      * @param v View, not used
      */
@@ -845,6 +855,7 @@ public class LauncherActivity extends AppCompatActivity implements
                         PrefUtils.saveLogoUrl( ac, logo_url );
                         Picasso.with( ac )
                                 .load( logo_url )
+                                .error( R.drawable.no_image )
                                 .into( nivCompanyLogo );
                     }
                 }
