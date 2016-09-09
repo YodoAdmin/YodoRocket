@@ -57,6 +57,10 @@ public class MessageHandler extends Handler {
         String response = msg.getData().getString( MESSAGE );
 
         switch( code ) {
+            case ServerResponse.ERROR_NETWORK:
+                response = main.getString( R.string.message_error_network );
+                break;
+
             case ServerResponse.ERROR_DUP_AUTH:
                 response = main.getString( R.string.message_error_amount_exceed );
                 break;

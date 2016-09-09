@@ -907,14 +907,15 @@ public class LauncherActivity extends AppCompatActivity implements
             case EXCH_REQ:
             case ALT_REQ:
                 code = response.getCode();
-                final String ex_code       = response.getCode();
-                final String ex_authbumber = response.getAuthNumber();
-                final String ex_message    = response.getMessage();
-                final String ex_account    = response.getParams().getAccount();
-                final String ex_purchase   = response.getParams().getPurchase();
-                final String ex_delta      = response.getParams().getAmountDelta();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                    final String ex_code       = response.getCode();
+                    final String ex_authbumber = response.getAuthNumber();
+                    final String ex_message    = response.getMessage();
+                    final String ex_account    = response.getParams().getAccount();
+                    final String ex_purchase   = response.getParams().getPurchase();
+                    final String ex_delta      = response.getParams().getAmountDelta();
+
                     message = getString( R.string.exchange_auth ) + " " + ex_authbumber + "\n" +
                               getString( R.string.exchange_message ) + " " + ex_message;
 
