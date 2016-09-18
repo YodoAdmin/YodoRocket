@@ -195,7 +195,7 @@ public class PrefUtils {
      */
     public static String getLogoUrl( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
-        return config.getString( AppConfig.SPREF_CURRENT_LOGO, "" );
+        return config.getString( AppConfig.SPREF_CURRENT_LOGO, null );
     }
 
     /**

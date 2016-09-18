@@ -7,10 +7,14 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import javax.inject.Inject;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import co.yodo.launcher.BuildConfig;
 import co.yodo.launcher.R;
 import co.yodo.launcher.YodoApplication;
 import co.yodo.launcher.component.Intents;
@@ -79,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
         // Get the context and handler for the messages
         ac = MainActivity.this;
         mHandlerMessages = new MessageHandler( MainActivity.this );
+
+        // Inject
+        ButterKnife.bind( this );
         YodoApplication.getComponent().inject( this );
         mRequestManager.setListener( this );
     }
