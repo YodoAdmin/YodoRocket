@@ -21,7 +21,7 @@ public class AppConfig {
     /* Hardware token for the account
      * type -- String
      */
-    public static final String SPREF_HARDWARE_TOKEN = "SPHardwareToken";
+    static final String SPREF_HARDWARE_TOKEN = "SPHardwareToken";
 
     /* Device state: legacy or not.
 	 * type -- Boolean
@@ -30,7 +30,7 @@ public class AppConfig {
 	 * true  -- The device is legacy (doesn't have google services)
 	 * false -- The device supports google services
 	 */
-    public static final String SPREF_LEGACY = "SPLegacy";
+    static final String SPREF_LEGACY = "SPLegacy";
 
     /* Login status.
 	 * type -- Boolean
@@ -39,7 +39,7 @@ public class AppConfig {
 	 * true  -- Application registered and authorized
 	 * false -- Application not registered or authorized
 	 */
-    public static final String SPREF_LOGIN_STATE = "SPLoginState";
+    static final String SPREF_LOGIN_STATE = "SPLoginState";
 
     /* First Login status.
 	 * type -- Boolean
@@ -48,12 +48,12 @@ public class AppConfig {
 	 * true  -- First time that the user is logged in
 	 * false -- It was already logged in several times
 	 */
-    public static final String SPREF_FIRST_LOGIN = "SPFirstLogin";
+    static final String SPREF_FIRST_LOGIN = "SPFirstLogin";
 
     /* The current logo url.
     * type -- String
     */
-    public static final String SPREF_CURRENT_LOGO = "SPCurrentLogo";
+    static final String SPREF_CURRENT_LOGO = "SPCurrentLogo";
 
     /* The current language.
 	 * type -- Integer
@@ -68,27 +68,27 @@ public class AppConfig {
     /* The current discount to the purchase.
     * type -- String
     */
-    public static final String SPREF_DISCOUNT = "SPDiscount";
+    static final String SPREF_DISCOUNT = "SPDiscount";
 
     /* The current password, in case of remember option selected.
     * type -- String
     */
-    public static final String SPREF_CURRENT_PASSWORD = "SPCurrentPassword";
+    static final String SPREF_CURRENT_PASSWORD = "SPCurrentPassword";
 
     /* The current currency.
     * type -- Integer
     */
-    public static final String SPREF_CURRENT_CURRENCY = "SPCurrentCurrency";
+    static final String SPREF_CURRENT_CURRENCY = "SPCurrentCurrency";
 
     /* The current currency.
     * type -- Integer
     */
-    public static final String SPREF_MERCHANT_CURRENCY = "SPMerchantCurrency";
+    static final String SPREF_MERCHANT_CURRENCY = "SPMerchantCurrency";
 
     /* The current scanner position.
     * type -- Integer
     */
-    public static final String SPREF_CURRENT_SCANNER = "SPCurrentScanner";
+    static final String SPREF_CURRENT_SCANNER = "SPCurrentScanner";
 
     /* Advertising service status.
 	 * type -- Boolean
@@ -111,7 +111,7 @@ public class AppConfig {
     /* The current background of the Rocket.
     * type -- Integer
     */
-    public static final String SPREF_CURRENT_BACKGROUND = "SPBackgroundColor";
+    static final String SPREF_CURRENT_BACKGROUND = "SPBackgroundColor";
 
     /**
      * Default values
@@ -123,7 +123,7 @@ public class AppConfig {
 	 *
 	 * Default: en (English)
 	 */
-    public static final String DEFAULT_LANGUAGE = "en";
+    static final String DEFAULT_LANGUAGE = "en";
 
     /*
 	 * Default value for the discount (%)
@@ -131,21 +131,16 @@ public class AppConfig {
     public static final String DEFAULT_DISCOUNT = "0";
 
     /*
-	 * Default value for the tender currencies Canadian Dollar
-	 */
-    public static final String DEFAULT_CURRENCY = "CAD";
-
-    /*
 	 * Default value position for the scanner
 	 *
 	 * Default: position 0 (BarcodeScanner)
 	 */
-    public static final Integer DEFAULT_SCANNER = 0;
+    static final Integer DEFAULT_SCANNER = 0;
 
     /* Logo URL */
     public static final String LOGO_PATH = ApiClient.getRoot() + "/yodo-merch/uploads/img/logo/";
 
     /* Type of transaction sounds  */
     public static final int ERROR      = 0;
-    public static final int SUCCESSFUL = 1;
+    static final int SUCCESSFUL = 1;
 }

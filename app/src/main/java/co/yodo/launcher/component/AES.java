@@ -18,14 +18,14 @@ public class AES {
 		 return bytesToHex( result );
 	 }
     
-	 public static String decrypt(String encrypted) throws Exception {
+	 public static String decrypt( String encrypted ) throws Exception {
 		 byte[] rawKey = getRawKey( seed.getBytes() );
 		 byte[] enc = hexToBytes( encrypted );
 		 byte[] result = decrypt( rawKey, enc );
 		 return new String( result );
 	 }
 
-	 private static byte[] getRawKey(byte[] seed) throws Exception { 
+	 private static byte[] getRawKey( byte[] seed ) throws Exception {
 		 MessageDigest md = MessageDigest.getInstance( "MD5" );
 		 byte[] md5Bytes = md.digest( seed ); // 128 Bit = 16 byte SecretKey
 		 SecretKeySpec skey = new SecretKeySpec( md5Bytes, "AES" );
