@@ -8,8 +8,8 @@ import java.math.BigDecimal;
  */
 public class SKS {
     /** Size of the data */
-    public static final int SKS_SIZE = 128;
-    public static final int ALT_SIZE = 129;
+    private static final int SKS_SIZE = 128;
+    private static final int ALT_SIZE = 129;
 
     /** Types of payments */
     public enum PAYMENT {
@@ -18,7 +18,8 @@ public class SKS {
         TRANSIT,
         HEART,
         VISA,
-        PAYPAL;
+        PAYPAL,
+        STATIC;
 
         public static final PAYMENT values[] = values();
     }

@@ -76,6 +76,8 @@ import co.yodo.restapi.network.request.CurrenciesRequest;
 import co.yodo.restapi.network.request.ExchangeRequest;
 import co.yodo.restapi.network.request.QueryRequest;
 
+import static co.yodo.restapi.network.model.ServerResponse.ERROR_FAILED;
+
 public class LauncherActivity extends AppCompatActivity implements
         PromotionManager.IPromotionListener,
         ApiClient.RequestsListener,
@@ -803,6 +805,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     );
                     break;
 
+                case STATIC:
                 case HEART:
                     mRequestManager.invoke(
                             new AlternateRequest(
@@ -817,6 +820,15 @@ public class LauncherActivity extends AppCompatActivity implements
                                     mLocation.getLongitude(),
                                     PrefUtils.getTenderCurrency( ac )
                             )
+                    );
+                    break;
+
+                default:
+                    mProgressManager.destroyProgressDialog();
+                    MessageHandler.sendMessage(
+                            mHandlerMessages,
+                            ERROR_FAILED,
+                            "SKS not supported"
                     );
                     break;
             }
@@ -877,7 +889,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
                     // Get the tender in merchant currency
                     BigDecimal merchTender = cashtender.multiply(
-                            merchRate.divide( tenderRate, 2, RoundingMode.DOWN )
+                            merchRate.divide( tenderRate, 4, RoundingMode.DOWN )
                     );
 
                     tvpTender.setText( FormatUtils.truncateDecimal( merchTender.toString() ) );
