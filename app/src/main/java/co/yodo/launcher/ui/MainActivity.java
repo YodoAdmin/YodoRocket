@@ -7,10 +7,14 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import javax.inject.Inject;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import co.yodo.launcher.BuildConfig;
 import co.yodo.launcher.R;
 import co.yodo.launcher.YodoApplication;
 import co.yodo.launcher.component.Intents;
@@ -79,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
         // Get the context and handler for the messages
         ac = MainActivity.this;
         mHandlerMessages = new MessageHandler( MainActivity.this );
+
+        // Inject
+        ButterKnife.bind( this );
         YodoApplication.getComponent().inject( this );
         mRequestManager.setListener( this );
     }
@@ -91,7 +98,6 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
             String action = intent.getAction();
             if( Intents.ACTION.equals( action ) ) {
                 bundle = intent.getExtras();
-                //if( bundle == null ) bundle = new Bundle();
             }
         }
         /**************************************************/
@@ -212,14 +218,23 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
                     // Set currencies
                     String currency = response.getParams().getCurrency();
-                    PrefUtils.saveMerchantCurrency( ac, currency );
-                    PrefUtils.saveTenderCurrency( ac, currency );
+                    final boolean savedMCurr = PrefUtils.saveMerchantCurrency( ac, currency );
+                    final boolean savedTCurr = PrefUtils.saveTenderCurrency( ac, currency );
 
-                    // Start the app
-                    PrefUtils.saveLoginStatus( ac, true );
-                    Intent intent = new Intent( ac, LauncherActivity.class );
-                    if( bundle != null ) intent.putExtras( bundle );
-                    startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
+                    if( savedMCurr && savedTCurr ) {
+                        // Start the app
+                        PrefUtils.saveLoginStatus( ac, true );
+                        Intent intent = new Intent( ac, LauncherActivity.class );
+                        if( bundle != null ) intent.putExtras( bundle );
+                        startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
+                    } else {
+                        MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
+                                mHandlerMessages,
+                                ServerResponse.ERROR_FAILED,
+                                "Currency not supported"
+                        );
+                    }
+
                 } else {
                     MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
                             mHandlerMessages,

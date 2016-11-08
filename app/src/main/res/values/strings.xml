@@ -108,16 +108,23 @@
     <string name="name.scanner.hardware">Barcode Scanner</string>
     <string name="name.scanner.software_front">Camera Front</string>
     <string name="name.scanner.software_back">Camera Back</string>
-    
+
+    <!-- Quick Keys -->
+    <string name="coins_0"     translatable="false">00</string>
+    <string name="coins_5"     translatable="false">5</string>
+    <string name="coins_10"    translatable="false">10</string>
+    <string name="coins_20"    translatable="false">20</string>
+    <string name="coins_50"    translatable="false">50</string>
+    <string name="coins_100"   translatable="false">100</string>
+    <string name="coins_200"   translatable="false">200</string>
+    <string name="coins_500"   translatable="false">500</string>
+    <string name="coins_1000"  translatable="false">1000</string>
+    <string name="coins_3000"  translatable="false">3000</string>
+    <string name="coins_5000"  translatable="false">5000</string>
+    <string name="coins_10000" translatable="false">10000</string>
+
     <!-- Input Labels -->
     <string name="clear"     translatable="false">C</string>
-    <string name="coins_0"   translatable="false">00</string>
-    <string name="coins_5"   translatable="false">5</string>
-    <string name="coins_10"  translatable="false">10</string>
-    <string name="coins_20"  translatable="false">20</string>
-    <string name="coins_50"  translatable="false">50</string>
-    <string name="coins_100" translatable="false">100</string>
-    <string name="coins_200" translatable="false">200</string>
     <string name="value_7"   translatable="false">7</string>
     <string name="value_8"   translatable="false">8</string>
     <string name="value_9"   translatable="false">9</string>
@@ -183,11 +190,13 @@
     <string name="config_pref_tip">Tip (%)</string>
     <string name="config_pref_advertising">Promotion Service</string>
     <string name="config_pref_location">Location Service</string>
+    <string name="config_pref_portrait">Portrait Mode</string>
     <string name="config_pref_background">Background Color</string>
 
     <!-- Preferences Summary -->
     <string name="config_pref_advertising_summary">Send promotions to nearby clients</string>
     <string name="config_pref_location_summary">Send the location of transactions</string>
+    <string name="config_pref_portrait_summary">Sets the layout to portrait mode</string>
 
     <!-- Tutorial Instructions -->
     <string name="tutorial_title">Navigator &amp; action items</string>

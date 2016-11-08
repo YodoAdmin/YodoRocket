@@ -245,6 +245,7 @@
                 android:scaleType="fitCenter"
                 android:gravity="center"
                 android:contentDescription="@string/desc"
+                android:onClick="purchaseToTenderClick"
                 android:src="@drawable/no_image" />
 
             <ImageView

@@ -9,8 +9,8 @@ android {
         applicationId "co.yodo.launcher"
         minSdkVersion 15
         targetSdkVersion 24
-        versionCode 8
-        versionName "2.0.10"
+        versionCode 12
+        versionName "2.0.20"
 
         vectorDrawables.useSupportLibrary = true
     }
@@ -40,9 +40,9 @@ dependencies {
     compile 'com.android.support:support-v4:24.1.0'
     // -- Google --
     compile 'com.google.code.gson:gson:2.4'
-    compile 'com.google.android.gms:play-services-location:9.4.0'
-    compile 'com.google.android.gms:play-services-gcm:9.4.0'
-    compile 'com.google.android.gms:play-services-nearby:9.4.0'
+    compile 'com.google.android.gms:play-services-location:9.6.1'
+    compile 'com.google.android.gms:play-services-gcm:9.6.1'
+    compile 'com.google.android.gms:play-services-nearby:9.6.1'
     // -- Squareup --
     compile 'com.squareup.retrofit2:retrofit:2.1.0'
     compile ('com.squareup.retrofit2:converter-simplexml:2.1.0') {

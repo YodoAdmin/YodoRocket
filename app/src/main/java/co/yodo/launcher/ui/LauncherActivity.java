@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -75,6 +76,8 @@ import co.yodo.restapi.network.request.AlternateRequest;
 import co.yodo.restapi.network.request.CurrenciesRequest;
 import co.yodo.restapi.network.request.ExchangeRequest;
 import co.yodo.restapi.network.request.QueryRequest;
+
+import static co.yodo.restapi.network.model.ServerResponse.ERROR_FAILED;
 
 public class LauncherActivity extends AppCompatActivity implements
         PromotionManager.IPromotionListener,
@@ -206,6 +209,11 @@ public class LauncherActivity extends AppCompatActivity implements
 
         // Sets Background
         llRoot.setBackgroundColor( PrefUtils.getCurrentBackground( ac ) );
+
+        if( PrefUtils.isPortraitMode( ac ) )
+            setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT );
+        else
+            setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE );
     }
 
     @Override
@@ -376,7 +384,21 @@ public class LauncherActivity extends AppCompatActivity implements
 
         // Get the Logo now that we have the hardware token
         String logo_url = PrefUtils.getLogoUrl( ac );
-        if( logo_url.equals( "" ) ) {
+        if( logo_url != null && !logo_url.isEmpty() ) {
+            Picasso.with( ac )
+                    .load( logo_url )
+                    .error( R.drawable.no_image )
+                    .into( nivCompanyLogo );
+        }
+
+        mRequestManager.invoke(
+                new QueryRequest(
+                        QRY_LOG_REQ,
+                        mHardwareToken,
+                        QueryRequest.Record.MERCHANT_LOGO
+                )
+        );
+        /*if( logo_url.equals( "" ) ) {
             mRequestManager.invoke(
                     new QueryRequest(
                             QRY_LOG_REQ,
@@ -387,8 +409,9 @@ public class LauncherActivity extends AppCompatActivity implements
         } else {
             Picasso.with( ac )
                     .load( logo_url )
+                    .error( R.drawable.no_image )
                     .into( nivCompanyLogo );
-        }
+        }*/
     }
 
     /**
@@ -551,8 +574,10 @@ public class LauncherActivity extends AppCompatActivity implements
      * Sets the default currency and sets the icon
      */
     private void setDefaultCurrency() {
-        PrefUtils.saveTenderCurrency( ac, PrefUtils.getMerchantCurrency( ac ) );
+        final String currency = PrefUtils.getMerchantCurrency( ac );
+        PrefUtils.saveTenderCurrency( ac, currency );
         GUIUtils.setTenderCurrencyIcon( ac, tvCashtender );
+        GUIUtils.setQuickKeys( this, currency );
         requestBalance();
     }
 
@@ -663,6 +688,14 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     /**
+     * Resets a value to 0.00
+     * @param v The View, not used
+     */
+    public void deleteClick(View v) {
+        tvSelected.setText( getString( R.string.zero ) );
+    }
+
+    /**
      * Handle numeric button clicked
      * @param v View, used to get the number
      */
@@ -698,6 +731,15 @@ public class LauncherActivity extends AppCompatActivity implements
             final String tvNewValue = value.setScale( 2, RoundingMode.DOWN ).toString();
             tvSelected.setText( tvNewValue );
         }
+    }
+
+    /**
+     * Copies the value of the purchase to the tender TextView
+     * @param v, The view, not used
+     */
+    public void purchaseToTenderClick( View v ) {
+        final String value = tvTotal.getText().toString();
+        tvCashtender.setText( value );
     }
 
     /**
@@ -793,6 +835,7 @@ public class LauncherActivity extends AppCompatActivity implements
                     );
                     break;
 
+                case STATIC:
                 case HEART:
                     mRequestManager.invoke(
                             new AlternateRequest(
@@ -807,6 +850,15 @@ public class LauncherActivity extends AppCompatActivity implements
                                     mLocation.getLongitude(),
                                     PrefUtils.getTenderCurrency( ac )
                             )
+                    );
+                    break;
+
+                default:
+                    mProgressManager.destroyProgressDialog();
+                    MessageHandler.sendMessage(
+                            mHandlerMessages,
+                            ERROR_FAILED,
+                            "SKS not supported"
                     );
                     break;
             }
@@ -841,10 +893,11 @@ public class LauncherActivity extends AppCompatActivity implements
                     String logoName = response.getParams().getLogo();
 
                     if( logoName != null ) {
-                        String logo_url = AppConfig.LOGO_PATH + logoName;
+                        final String logo_url = AppConfig.LOGO_PATH + logoName;
                         PrefUtils.saveLogoUrl( ac, logo_url );
                         Picasso.with( ac )
                                 .load( logo_url )
+                                .error( R.drawable.no_image )
                                 .into( nivCompanyLogo );
                     }
                 }
@@ -866,7 +919,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
                     // Get the tender in merchant currency
                     BigDecimal merchTender = cashtender.multiply(
-                            merchRate.divide( tenderRate, 2, RoundingMode.DOWN )
+                            merchRate.divide( tenderRate, 4, RoundingMode.DOWN )
                     );
 
                     tvpTender.setText( FormatUtils.truncateDecimal( merchTender.toString() ) );
@@ -896,14 +949,15 @@ public class LauncherActivity extends AppCompatActivity implements
             case EXCH_REQ:
             case ALT_REQ:
                 code = response.getCode();
-                final String ex_code       = response.getCode();
-                final String ex_authbumber = response.getAuthNumber();
-                final String ex_message    = response.getMessage();
-                final String ex_account    = response.getParams().getAccount();
-                final String ex_purchase   = response.getParams().getPurchase();
-                final String ex_delta      = response.getParams().getAmountDelta();
 
                 if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                    final String ex_code       = response.getCode();
+                    final String ex_authbumber = response.getAuthNumber();
+                    final String ex_message    = response.getMessage();
+                    final String ex_account    = response.getParams().getAccount();
+                    final String ex_purchase   = response.getParams().getPurchase();
+                    final String ex_delta      = response.getParams().getAmountDelta();
+
                     message = getString( R.string.exchange_auth ) + " " + ex_authbumber + "\n" +
                               getString( R.string.exchange_message ) + " " + ex_message;
 
