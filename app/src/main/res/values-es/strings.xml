@@ -136,5 +136,7 @@
 
     <!-- ACRA -->
     <string name="crash_toast_text">Ooooops! Me he caído, pero un informe ha sido enviado a mi desarrollador para ayudar a solucionar el problema!</string>
+    <string name="config_pref_portrait">Modo Retrato</string>
+    <string name="config_pref_portrait_summary">Establece la pantalla a modo de retrato</string>
 
 </resources>

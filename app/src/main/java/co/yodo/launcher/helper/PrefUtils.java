@@ -203,7 +203,7 @@ public class PrefUtils {
      * @param c The Context of the Android system.
      * @return int It returns the language position.
      */
-    public static String getLanguage( Context c ) {
+    static String getLanguage( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getString( AppConfig.SPREF_CURRENT_LANGUAGE, AppConfig.DEFAULT_LANGUAGE );
     }
@@ -214,7 +214,7 @@ public class PrefUtils {
      * @param key The key of the currency
      * @return String It returns the currency name.
      */
-    public static String getCurrency( Context c, String key ) {
+    private static String getCurrency( Context c, String key ) {
         SharedPreferences config = getSPrefConfig( c );
         String currency;
 
@@ -238,7 +238,7 @@ public class PrefUtils {
      * @return true  If it was saved.
      *         false If it was not saved.
      */
-    public static Boolean saveCurrency( Context c, String key, String currency ) {
+    private static Boolean saveCurrency( Context c, String key, String currency ) {
         // Supported currencies
         final String[] currencies = c.getResources().getStringArray( R.array.currency_array );
 
@@ -423,6 +423,16 @@ public class PrefUtils {
     public static Boolean isFirstLogin( Context c ) {
         SharedPreferences config = getSPrefConfig( c );
         return config.getBoolean( AppConfig.SPREF_FIRST_LOGIN, true );
+    }
+
+    /**
+     * It gets the layout mode.
+     * @param c The Context of the Android system.
+     * @return int It returns the layout mode.
+     */
+    public static Boolean isPortraitMode( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getBoolean( AppConfig.SPREF_PORTRAIT_MODE, false );
     }
 
     public static int getCurrentBackground( Context c ) {

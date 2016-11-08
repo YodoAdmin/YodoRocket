@@ -27,6 +27,11 @@
 
     <PreferenceCategory android:title="@string/config_pref_category_gui" >
 
+        <CheckBoxPreference
+            android:key="SPPortraitMode"
+            android:title="@string/config_pref_portrait"
+            android:summary="@string/config_pref_portrait_summary" />
+
         <yuku.ambilwarna.widget.AmbilWarnaPreference
             android:key="SPBackgroundColor"
             android:defaultValue="-1"

@@ -21,7 +21,7 @@ import co.yodo.launcher.helper.SystemUtils;
  * class that implements a handler for the scandit
  * scanner
  */
-public class ScanditScanner extends QRScanner implements OnScanListener {
+class ScanditScanner extends QRScanner implements OnScanListener {
     /** DEBUG */
     @SuppressWarnings( "unused" )
     private static final String TAG = ScanditScanner.class.getSimpleName();
@@ -30,7 +30,7 @@ public class ScanditScanner extends QRScanner implements OnScanListener {
     private BarcodePicker mBarcodePicker;
 
     /** Your Scandit SDK App key is available via your Scandit SDK web account. */
-    public static final String sScanditSdkAppKey = "fKiwAnaUTbGsN9Us2fDIIyGYwxHaS3gwbOs21jWzSfU";
+    private static final String sScanditSdkAppKey = "fKiwAnaUTbGsN9Us2fDIIyGYwxHaS3gwbOs21jWzSfU";
 
     /** GUI Controllers */
     private TableRow opPanel;
@@ -45,7 +45,7 @@ public class ScanditScanner extends QRScanner implements OnScanListener {
     /** Handler used after the scan */
     private Handler handler = new Handler();
 
-    public ScanditScanner( Activity activity ) {
+    ScanditScanner( Activity activity ) {
         super( activity );
         SystemUtils.Logger( TAG, ">> Created" );
         ScanditLicense.setAppKey( sScanditSdkAppKey );

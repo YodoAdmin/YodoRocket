@@ -136,5 +136,7 @@
 
     <!-- ACRA -->
     <string name="crash_toast_text">Упс! Неудача. Чтобы помочь исправить проблему, отчет был отправлен разработчикам!</string>
+    <string name="config_pref_portrait">Режим Портрет</string>
+    <string name="config_pref_portrait_summary">Устанавливает расположение в портретном режиме</string>
 
 </resources>

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -208,6 +209,11 @@ public class LauncherActivity extends AppCompatActivity implements
 
         // Sets Background
         llRoot.setBackgroundColor( PrefUtils.getCurrentBackground( ac ) );
+
+        if( PrefUtils.isPortraitMode( ac ) )
+            setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT );
+        else
+            setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE );
     }
 
     @Override
@@ -378,7 +384,7 @@ public class LauncherActivity extends AppCompatActivity implements
 
         // Get the Logo now that we have the hardware token
         String logo_url = PrefUtils.getLogoUrl( ac );
-        if( logo_url != null ) {
+        if( logo_url != null && !logo_url.isEmpty() ) {
             Picasso.with( ac )
                     .load( logo_url )
                     .error( R.drawable.no_image )
@@ -568,8 +574,10 @@ public class LauncherActivity extends AppCompatActivity implements
      * Sets the default currency and sets the icon
      */
     private void setDefaultCurrency() {
-        PrefUtils.saveTenderCurrency( ac, PrefUtils.getMerchantCurrency( ac ) );
+        final String currency = PrefUtils.getMerchantCurrency( ac );
+        PrefUtils.saveTenderCurrency( ac, currency );
         GUIUtils.setTenderCurrencyIcon( ac, tvCashtender );
+        GUIUtils.setQuickKeys( this, currency );
         requestBalance();
     }
 
@@ -677,6 +685,14 @@ public class LauncherActivity extends AppCompatActivity implements
         tvCashtender.setText( zero );
         tvCashback.setText( zero );
         tvBalance.setText( zero );
+    }
+
+    /**
+     * Resets a value to 0.00
+     * @param v The View, not used
+     */
+    public void deleteClick(View v) {
+        tvSelected.setText( getString( R.string.zero ) );
     }
 
     /**

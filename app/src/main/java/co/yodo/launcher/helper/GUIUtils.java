@@ -9,20 +9,25 @@ import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.support.v4.content.ContextCompat;
 import android.text.InputType;
+import android.text.Layout;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import org.greenrobot.eventbus.util.ExceptionToResourceMapping;
 
 import java.util.Arrays;
 import java.util.Locale;
 
 import co.yodo.launcher.R;
+import co.yodo.launcher.ui.LauncherActivity;
 
 /**
  * Created by hei on 20/06/16.
@@ -143,7 +148,7 @@ public class GUIUtils {
      * @param v The view to modify the drawable
      * @param currency The currency to tbe set in the view
      */
-    public static void setCurrencyIcon( Context c, TextView v, String currency ) {
+    private static void setCurrencyIcon( Context c, TextView v, String currency ) {
         // Get currencies and icons
         final String[] icons = c.getResources().getStringArray( R.array.currency_icon_array );
         final String[] currencies = c.getResources().getStringArray( R.array.currency_array );
@@ -171,5 +176,70 @@ public class GUIUtils {
      */
     public static void setMerchantCurrencyIcon( Context c, TextView v ) {
         setCurrencyIcon( c, v, PrefUtils.getMerchantCurrency( c ) );
+    }
+
+    public static void setQuickKeys( LauncherActivity act, String currency ) {
+        Button b1 = (Button) act.findViewById( R.id.b1000 );
+        Button b2 = (Button) act.findViewById( R.id.b2000 );
+        Button b3 = (Button) act.findViewById( R.id.b5000 );
+        Button b4 = (Button) act.findViewById( R.id.b10000 );
+        Button b5 = (Button) act.findViewById( R.id.b20000 );
+
+        switch( currency ) {
+            case "CAD":
+            case "USD":
+            case "CNY":
+            case "EUR":
+            case "TRY":
+            case "BRL":
+                b1.setText( R.string.coins_5 );
+                b2.setText( R.string.coins_10 );
+                b3.setText( R.string.coins_20 );
+                b4.setText( R.string.coins_50 );
+                b5.setText( R.string.coins_100 );
+                break;
+
+            case "PEN":
+            case "UAH":
+                b1.setText( R.string.coins_10 );
+                b2.setText( R.string.coins_20 );
+                b3.setText( R.string.coins_50 );
+                b4.setText( R.string.coins_100 );
+                b5.setText( R.string.coins_200 );
+                break;
+
+            case "PHP":
+            case "MXN":
+                b1.setText( R.string.coins_20 );
+                b2.setText( R.string.coins_50 );
+                b3.setText( R.string.coins_100 );
+                b4.setText( R.string.coins_200 );
+                b5.setText( R.string.coins_500 );
+                break;
+
+            case "JPY":
+                b1.setText( R.string.coins_500 );
+                b2.setText( R.string.coins_1000 );
+                b3.setText( R.string.coins_3000 );
+                b4.setText( R.string.coins_5000 );
+                b5.setText( R.string.coins_10000 );
+                break;
+
+            case "INR":
+                b1.setText( R.string.coins_10 );
+                b2.setText( R.string.coins_20 );
+                b3.setText( R.string.coins_50 );
+                b4.setText( R.string.coins_100 );
+                b5.setText( R.string.coins_500 );
+                break;
+
+            case "RUB":
+                b1.setText( R.string.coins_10 );
+                b2.setText( R.string.coins_50 );
+                b3.setText( R.string.coins_100 );
+                b4.setText( R.string.coins_500 );
+                b5.setText( R.string.coins_1000 );
+                break;
+        }
     }
 }

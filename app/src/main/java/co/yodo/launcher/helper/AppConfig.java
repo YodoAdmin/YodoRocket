@@ -111,6 +111,11 @@ public class AppConfig {
     /* The current background of the Rocket.
     * type -- Integer
     */
+    static final String SPREF_PORTRAIT_MODE = "SPPortraitMode";
+
+    /* The current background of the Rocket.
+    * type -- Integer
+    */
     static final String SPREF_CURRENT_BACKGROUND = "SPBackgroundColor";
 
     /**

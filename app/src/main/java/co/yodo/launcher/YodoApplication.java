@@ -36,7 +36,7 @@ public class YodoApplication extends Application {
         ACRA.init( this );
 
         // Sets the log flag and IP for the restapi
-        ApiClient.IP = "http://192.168.1.38";//ApiClient.DEMO_IP;
+        ApiClient.IP = ApiClient.PROD_IP;
         AppConfig.DEBUG = co.yodo.launcher.helper.AppConfig.DEBUG;
     }
 
