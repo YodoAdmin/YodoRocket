@@ -10,7 +10,7 @@ public class Currency {
     private String   name;
     private Drawable img;
 
-    public Currency(String name, Drawable img) {
+    public Currency( String name, Drawable img ) {
         this.name = name;
         this.img = img;
     }

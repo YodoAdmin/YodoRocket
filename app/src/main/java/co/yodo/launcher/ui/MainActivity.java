@@ -116,6 +116,10 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
 
         // Verify Google Play Services
         if( hasServices || isLegacy ) {
+            // If has services, then it is not legacy
+            if( hasServices )
+                PrefUtils.setLegacy( ac, false );
+
             mHardwareToken = PrefUtils.getHardwareToken( ac );
             if( mHardwareToken == null ) {
                 setupPermissions();

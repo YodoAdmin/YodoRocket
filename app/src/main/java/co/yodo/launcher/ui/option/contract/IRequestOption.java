@@ -3,13 +3,13 @@ package co.yodo.launcher.ui.option.contract;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import javax.inject.Inject;
@@ -43,8 +43,8 @@ public abstract class IRequestOption extends IOption {
     protected ProgressDialogHelper mProgressManager;
 
     /** GUI elements */
-    protected EditText etInput;
-    protected CheckBox cbShowPIP;
+    protected TextInputEditText etInput;
+    //protected CheckBox cbShowPIP;
     private TextInputLayout tilPip;
 
     /**
@@ -75,16 +75,16 @@ public abstract class IRequestOption extends IOption {
         final View layout = inflater.inflate( R.layout.dialog_with_pip, new LinearLayout( mActivity ), false );
 
         // GUI setup
-        etInput = (EditText) layout.findViewById( R.id.cetPIP );
-        cbShowPIP = (CheckBox) layout.findViewById( R.id.cbOption );
-        tilPip = (TextInputLayout) etInput.getParent();
+        etInput = (TextInputEditText) layout.findViewById( R.id.cetPIP );
+        //cbShowPIP = (CheckBox) layout.findViewById( R.id.cbOption );
+        tilPip = (TextInputLayout) etInput.getParent().getParent();
 
-        cbShowPIP.setOnClickListener( new View.OnClickListener() {
+        /*cbShowPIP.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick( View v ) {
                 GUIUtils.showPassword( cbShowPIP, etInput );
             }
-        } );
+        } );*/
 
         return layout;
     }
@@ -116,7 +116,7 @@ public abstract class IRequestOption extends IOption {
         tilPip.setErrorEnabled( false );
         tilPip.setError( null );
         etInput.requestFocus();
-        cbShowPIP.setChecked( false );
-        GUIUtils.showPassword( cbShowPIP, etInput );
+        /*cbShowPIP.setChecked( false );
+        GUIUtils.showPassword( cbShowPIP, etInput );*/
     }
 }

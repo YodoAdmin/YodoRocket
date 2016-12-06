@@ -1,11 +1,14 @@
 package co.yodo.launcher.ui.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+
+import java.util.Comparator;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.ui.adapter.data.Currency;
@@ -18,7 +21,7 @@ public class CurrencyAdapter extends ArrayAdapter<Currency> {
     private static final int RESOURCE = R.layout.currency_row;
     private LayoutInflater inflater;
 
-    static class ViewHolder {
+    private static class ViewHolder {
         TextView nameTxVw;
     }
 
@@ -27,8 +30,9 @@ public class CurrencyAdapter extends ArrayAdapter<Currency> {
         inflater = LayoutInflater.from( context );
     }
 
+    @NonNull
     @Override
-    public View getView( int position, View convertView, ViewGroup parent ) {
+    public View getView( int position, View convertView, @NonNull ViewGroup parent ) {
         ViewHolder holder;
 
         if( convertView == null ) {
@@ -44,9 +48,10 @@ public class CurrencyAdapter extends ArrayAdapter<Currency> {
         }
 
         Currency cat = getItem( position );
-
-        holder.nameTxVw.setText( cat.getName() );
-        holder.nameTxVw.setCompoundDrawables( cat.getImg(), null, null, null );
+        if( cat != null ) {
+            holder.nameTxVw.setText( cat.getName() );
+            holder.nameTxVw.setCompoundDrawables( cat.getImg(), null, null, null );
+        }
 
         return convertView;
     }

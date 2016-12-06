@@ -223,7 +223,7 @@ public class AlertDialogHelper {
         input.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD );
 
         // Sets the CheckBox function to show the input text or remember the password
-        final CheckBox cbOption = (CheckBox) layout.findViewById( R.id.cbOption );
+        /*final CheckBox cbOption = (CheckBox) layout.findViewById( R.id.cbOption );
         if( !remember ) {
             cbOption.setOnClickListener( new View.OnClickListener() {
                 @Override
@@ -266,6 +266,6 @@ public class AlertDialogHelper {
 
         builder.setNegativeButton( ac.getString( R.string.cancel ), null );
 
-        builder.show();
+        builder.show();*/
     }
 }
