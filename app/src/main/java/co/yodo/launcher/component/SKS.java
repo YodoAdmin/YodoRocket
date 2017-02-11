@@ -2,6 +2,8 @@ package co.yodo.launcher.component;
 
 import java.math.BigDecimal;
 
+import javax.crypto.spec.SecretKeySpec;
+
 /**
  * Created by hei on 18/08/16.
  * contains the structure of the SKS
@@ -42,13 +44,19 @@ public class SKS {
      * @param header The header with the main options
      * @param client The client encrypted data
      */
-    private SKS( String header, String client ) {
+    private SKS( String header, String client ) throws NumberFormatException {
         if( header != null ) {
             final String[] split = header.split( HDR_SEP );
 
-            this.mClient = client;
             this.mPayment = PAYMENT.values[ Integer.valueOf( split[ 0 ] ) ];
             this.mTip = new BigDecimal( split[ 1 ] ).movePointLeft( 2 );
+
+            if( this.mPayment.equals( PAYMENT.STATIC ) ) {
+                SecretKeySpec key = new SecretKeySpec( "sq;XS,td'ArsOkr.".getBytes(), "AES" );
+                this.mClient = AES.decrypt( client, key );
+            } else {
+                this.mClient = client;
+            }
         } else {
             String tempClient;
             PAYMENT tempPayment;
@@ -87,9 +95,8 @@ public class SKS {
             else {
                 throw new ArrayIndexOutOfBoundsException( "SKS with too many parameters" );
             }
-        } catch( ArrayIndexOutOfBoundsException ex ) {
+        } catch( ArrayIndexOutOfBoundsException | NumberFormatException ex ) {
             ex.printStackTrace();
-            return null;
         }
         return null;
     }

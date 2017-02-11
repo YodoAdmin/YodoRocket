@@ -187,6 +187,7 @@
 
     <!-- Preferences Categories -->
     <string name="config_pref_category_gui">Interface</string>
+    <string name="config_pref_category_printer">Printer</string>
 
     <!-- Preferences Options -->
     <string name="config_pref_languages">Language</string>
@@ -194,6 +195,9 @@
     <string name="config_pref_tip">Tip (%)</string>
     <string name="config_pref_advertising">Promotion Service</string>
     <string name="config_pref_location">Location Service</string>
+    <string name="config_pref_receipts_yodo">Yodo Receipts</string>
+    <string name="config_pref_receipts_static">Static Receipts</string>
+    <string name="config_pref_receipts_cash">Cash Receipts</string>
     <string name="config_pref_portrait">Portrait Mode</string>
     <string name="config_pref_background">Background Color</string>
 

@@ -1,14 +1,20 @@
 package co.yodo.launcher.ui;
 
 import android.Manifest;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
 
 import javax.inject.Inject;
 
@@ -18,6 +24,9 @@ import co.yodo.launcher.BuildConfig;
 import co.yodo.launcher.R;
 import co.yodo.launcher.YodoApplication;
 import co.yodo.launcher.component.Intents;
+import co.yodo.launcher.component.SKSCreater;
+import co.yodo.launcher.helper.BluetoothUtil;
+import co.yodo.launcher.helper.ESCUtil;
 import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
@@ -71,13 +80,39 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
 
         setupGUI();
         updateData();
+
+        /*Bitmap temp = SKSCreater.createSKS( this,"test", "test" );
+        //temp = ESCUtil.createContrast(temp, 50);
+
+        if( temp == null ) Log.e( TAG, "It is null" );
+
+        final BluetoothDevice printer = BluetoothUtil.getDevice();
+        byte[] data = ESCUtil.parseData(temp);
+
+        if( data != null ) {
+            BluetoothSocket socket = null;
+            try {
+                socket = BluetoothUtil.getSocket( printer );
+                BluetoothUtil.sendData( data, socket );
+            } catch( IOException e ) {
+                if( socket != null ) {
+                    try {
+                        socket.close();
+                    } catch( IOException e1 ) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        } else {
+            Log.e(TAG, "null data");
+        }*/
     }
 
-    @Override
+    /*@Override
     public void onResume() {
         super.onResume();
         mRequestManager.setListener( this );
-    }
+    }*/
 
     private void setupGUI() {
         // Get the context and handler for the messages

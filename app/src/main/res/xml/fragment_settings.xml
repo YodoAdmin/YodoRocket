@@ -25,6 +25,24 @@
         android:title="@string/config_pref_location"
         android:summary="@string/config_pref_location_summary" />
 
+    <PreferenceCategory
+        android:key="PrinterCategory"
+        android:title="@string/config_pref_category_printer" >
+
+        <CheckBoxPreference
+            android:key="SPYodoReceipts"
+            android:title="@string/config_pref_receipts_yodo" />
+
+        <CheckBoxPreference
+            android:key="SPStaticReceipts"
+            android:title="@string/config_pref_receipts_static" />
+
+        <CheckBoxPreference
+            android:key="SPCashReceipts"
+            android:title="@string/config_pref_receipts_cash" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/config_pref_category_gui" >
 
         <CheckBoxPreference

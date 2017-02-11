@@ -8,7 +8,7 @@ import co.yodo.restapi.network.ApiClient;
  */
 public class AppConfig {
     /** DEBUG flag: to print the logs in console */
-    public static final boolean DEBUG = false; // Should be false for release.
+    public static final boolean DEBUG = true; // Should be false for release.
 
     /** ID of the shared preferences file */
     public static final String SHARED_PREF_FILE = "YodoRocketSharedPref";
@@ -117,6 +117,21 @@ public class AppConfig {
     * type -- Integer
     */
     static final String SPREF_CURRENT_BACKGROUND = "SPBackgroundColor";
+
+    /* State for the printing of yodo transactions receipts.
+    * type -- Boolean
+    */
+    static final String SPREF_YODO_RECEIPTS = "SPYodoReceipts";
+
+    /* State for the printing of static transactions receipts.
+    * type -- Boolean
+    */
+    static final String SPREF_STATIC_RECEIPTS = "SPStaticReceipts";
+
+    /* State for the printing of cash transactions receipts.
+    * type -- Boolean
+    */
+    static final String SPREF_CASH_RECEIPTS = "SPCashReceipts";
 
     /**
      * Default values

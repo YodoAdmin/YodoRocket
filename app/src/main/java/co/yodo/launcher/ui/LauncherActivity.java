@@ -1,11 +1,14 @@
 package co.yodo.launcher.ui;
 
 import android.Manifest;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -40,6 +43,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
@@ -50,20 +54,23 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import co.yodo.launcher.R;
 import co.yodo.launcher.YodoApplication;
+import co.yodo.launcher.component.Intents;
 import co.yodo.launcher.component.SKS;
+import co.yodo.launcher.component.SKSCreater;
 import co.yodo.launcher.helper.AppConfig;
+import co.yodo.launcher.helper.BluetoothUtil;
+import co.yodo.launcher.helper.ESCUtil;
 import co.yodo.launcher.helper.FormatUtils;
 import co.yodo.launcher.helper.GUIUtils;
-import co.yodo.launcher.component.Intents;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
 import co.yodo.launcher.manager.PromotionManager;
 import co.yodo.launcher.service.LocationService;
 import co.yodo.launcher.ui.adapter.ScannerAdapter;
 import co.yodo.launcher.ui.notification.AlertDialogHelper;
+import co.yodo.launcher.ui.notification.MessageHandler;
 import co.yodo.launcher.ui.notification.ProgressDialogHelper;
 import co.yodo.launcher.ui.notification.ToastMaster;
-import co.yodo.launcher.ui.notification.MessageHandler;
 import co.yodo.launcher.ui.option.AboutOption;
 import co.yodo.launcher.ui.option.BalanceOption;
 import co.yodo.launcher.ui.option.CurrencyOption;
@@ -183,6 +190,9 @@ public class LauncherActivity extends AppCompatActivity implements
     private static final int EXCH_REQ    = 0x01;
     private static final int ALT_REQ     = 0x02;
     private static final int CURR_REQ    = 0x03;
+
+    /** If it should print the receipt */
+    private boolean mIsPrinting = false;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -398,20 +408,6 @@ public class LauncherActivity extends AppCompatActivity implements
                         QueryRequest.Record.MERCHANT_LOGO
                 )
         );
-        /*if( logo_url.equals( "" ) ) {
-            mRequestManager.invoke(
-                    new QueryRequest(
-                            QRY_LOG_REQ,
-                            mHardwareToken,
-                            QueryRequest.Record.MERCHANT_LOGO
-                    )
-            );
-        } else {
-            Picasso.with( ac )
-                    .load( logo_url )
-                    .error( R.drawable.no_image )
-                    .into( nivCompanyLogo );
-        }*/
     }
 
     /**
@@ -445,23 +441,30 @@ public class LauncherActivity extends AppCompatActivity implements
         sScannerSelector.setSelection( PrefUtils.getScanner( ac ) );
     }
 
+    private final TextWatcher onChange = new TextWatcher() {
+        // Last value of cashback
+        //private String lvCashBack = "";
+
+        @Override
+        public void beforeTextChanged( CharSequence s, int start, int count, int after ) {}
+
+        @Override
+        public void onTextChanged( CharSequence s, int start, int before, int count ) {}
+
+        @Override
+        public void afterTextChanged( Editable editable ) {
+            /*String nvCashBack = t//vCashback.getText().toString();
+            if( editable == tvCashback.getEditableText() && !nvCashBack.equals( lvCashBack ) ) {
+                lvCashBack = nvCashBack;*/
+                requestBalance();
+            //}
+        }
+    };
+
     /**
      * It re-calculates the balance every time the value TextViews change
      */
     private void initializeTextListeners() {
-        TextWatcher onChange = new TextWatcher() {
-            @Override
-            public void beforeTextChanged( CharSequence s, int start, int count, int after ) {}
-
-            @Override
-            public void onTextChanged( CharSequence s, int start, int before, int count ) {}
-
-            @Override
-            public void afterTextChanged( Editable s ) {
-                requestBalance();
-            }
-        };
-
         tvTotal.addTextChangedListener( onChange );
         tvCashtender.addTextChangedListener( onChange );
         tvCashback.addTextChangedListener( onChange );
@@ -688,14 +691,6 @@ public class LauncherActivity extends AppCompatActivity implements
     }
 
     /**
-     * Resets a value to 0.00
-     * @param v The View, not used
-     */
-    public void deleteClick(View v) {
-        tvSelected.setText( getString( R.string.zero ) );
-    }
-
-    /**
      * Handle numeric button clicked
      * @param v View, used to get the number
      */
@@ -754,16 +749,56 @@ public class LauncherActivity extends AppCompatActivity implements
      * Opens the scanner to realize a payment
      * @param v The View, not used
      */
-    public void yodoPayClick(View v) {
-        boolean cameraPermission = SystemUtils.requestPermission(
-                LauncherActivity.this,
-                R.string.message_permission_camera,
-                Manifest.permission.CAMERA,
-                PERMISSIONS_REQUEST_CAMERA
-        );
+    public void yodoPayClick( View v ) {
+        final String zero       = getString( R.string.zero );
+        final String total      = tvTotal.getText().toString();
+        final String cashtender = tvCashtender.getText().toString();
+        final String cashback   = tvCashback.getText().toString();
 
-        if( cameraPermission )
-            showCamera();
+        if( total.equals( zero ) && cashtender.equals( zero ) && cashback.equals( zero ) ) {
+            MessageHandler.sendMessage(
+                    mHandlerMessages,
+                    ERROR_FAILED,
+                    "Please insert the purchase value first"
+            );
+            return;
+        }
+
+        final String balance = tvBalance.getText().toString();
+        if( balance.equals( zero ) ) {
+            mProgressManager.createProgressDialog(
+                    LauncherActivity.this,
+                    ProgressDialogHelper.ProgressDialogType.TRANSPARENT
+            );
+
+            // Verifies if it should print the receipt
+            mIsPrinting = PrefUtils.isPrintingCash( ac );
+
+            mRequestManager.invoke(
+                    new AlternateRequest(
+                            ALT_REQ,
+                            "0", // Cash transaction
+                            mHardwareToken,
+                            "X",
+                            tvTotal.getText().toString(),
+                            tvCashtender.getText().toString(),
+                            tvCashback.getText().toString(),
+                            mLocation.getLatitude(),
+                            mLocation.getLongitude(),
+                            PrefUtils.getTenderCurrency( ac )
+                    )
+            );
+        } else {
+            boolean cameraPermission = SystemUtils.requestPermission(
+                    LauncherActivity.this,
+                    R.string.message_permission_camera,
+                    Manifest.permission.CAMERA,
+                    PERMISSIONS_REQUEST_CAMERA
+            );
+
+            if( cameraPermission )
+                showCamera();
+        }
     }
 
     /**
@@ -820,6 +855,9 @@ public class LauncherActivity extends AppCompatActivity implements
 
             switch( method ) {
                 case YODO:
+                    // Verifies if it should print the receipt
+                    mIsPrinting = PrefUtils.isPrintingYodo( ac );
+
                     mRequestManager.invoke(
                             new ExchangeRequest(
                                     EXCH_REQ,
@@ -837,6 +875,12 @@ public class LauncherActivity extends AppCompatActivity implements
 
                 case STATIC:
                 case HEART:
+                    // Verifies if it should print the receipt
+                    if( method.equals( SKS.PAYMENT.HEART ) )
+                        mIsPrinting = PrefUtils.isPrintingYodo( ac );
+                    else
+                        mIsPrinting = PrefUtils.isPrintingStatic( ac );
+
                     mRequestManager.invoke(
                             new AlternateRequest(
                                     ALT_REQ,
@@ -884,119 +928,172 @@ public class LauncherActivity extends AppCompatActivity implements
             mPromotionManager.publish();
         }
 
-        switch( responseCode ) {
+        try {
+            switch( responseCode ) {
+                case QRY_LOG_REQ:
+                    code = response.getCode();
 
-            case QRY_LOG_REQ:
-                code = response.getCode();
+                    if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                        String logoName = response.getParams().getLogo();
 
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    String logoName = response.getParams().getLogo();
-
-                    if( logoName != null ) {
-                        final String logo_url = AppConfig.LOGO_PATH + logoName;
-                        PrefUtils.saveLogoUrl( ac, logo_url );
-                        Picasso.with( ac )
-                                .load( logo_url )
-                                .error( R.drawable.no_image )
-                                .into( nivCompanyLogo );
+                        if( logoName != null ) {
+                            final String logo_url = AppConfig.LOGO_PATH + logoName;
+                            PrefUtils.saveLogoUrl( ac, logo_url );
+                            Picasso.with( ac )
+                                    .load( logo_url )
+                                    .error( R.drawable.no_image )
+                                    .into( nivCompanyLogo );
+                        }
                     }
-                }
-                break;
+                    break;
 
-            case CURR_REQ:
-                final String sMerchRate  = response.getParams().getMerchRate();
-                final String sTenderRate = response.getParams().getTenderRate();
+                case CURR_REQ:
+                    final String sMerchRate  = response.getParams().getMerchRate();
+                    final String sTenderRate = response.getParams().getTenderRate();
 
-                if( sMerchRate != null && sTenderRate != null ) {
-                    // Get the rates in BigDecimals
-                    BigDecimal merchRate  = new BigDecimal( sMerchRate );
-                    BigDecimal tenderRate = new BigDecimal( sTenderRate );
+                    if( sMerchRate != null && sTenderRate != null ) {
+                        // Get the rates in BigDecimals
+                        BigDecimal merchRate  = new BigDecimal( sMerchRate );
+                        BigDecimal tenderRate = new BigDecimal( sTenderRate );
 
-                    // Get the values of the money TextViews
-                    BigDecimal total      = new BigDecimal( tvTotal.getText().toString() );
-                    BigDecimal cashtender = new BigDecimal( tvCashtender.getText().toString() );
-                    BigDecimal cashback   = new BigDecimal( tvCashback.getText().toString() );
+                        // Get the values of the money TextViews
+                        BigDecimal total      = new BigDecimal( tvTotal.getText().toString() );
+                        BigDecimal cashtender = new BigDecimal( tvCashtender.getText().toString() );
+                        BigDecimal cashback   = new BigDecimal( tvCashback.getText().toString() );
 
-                    // Get the tender in merchant currency
-                    BigDecimal merchTender = cashtender.multiply(
-                            merchRate.divide( tenderRate, 4, RoundingMode.DOWN )
-                    );
+                        // Get the tender in merchant currency
+                        BigDecimal merchTender = cashtender.multiply(
+                                merchRate.divide( tenderRate, 4, RoundingMode.DOWN )
+                        );
 
-                    tvpTender.setText( FormatUtils.truncateDecimal( merchTender.toString() ) );
-                    pbpTender.setVisibility( View.GONE );
-                    tvpTender.setVisibility( View.VISIBLE );
+                        tvpTender.setText( FormatUtils.truncateDecimal( merchTender.toString() ) );
+                        pbpTender.setVisibility( View.GONE );
+                        tvpTender.setVisibility( View.VISIBLE );
 
-                    // Get subtotal with discount
-                    BigDecimal discount = new BigDecimal( PrefUtils.getDiscount( ac ) ).movePointLeft( 2 );
-                    BigDecimal subTotal = total.multiply(
-                            BigDecimal.ONE.subtract( discount )
-                    );
+                        // Get subtotal with discount
+                        BigDecimal discount = new BigDecimal( PrefUtils.getDiscount( ac ) ).movePointLeft( 2 );
+                        BigDecimal subTotal = total.multiply(
+                                BigDecimal.ONE.subtract( discount )
+                        );
 
-                    tvpDiscount.setText( FormatUtils.truncateDecimal( subTotal.toString() ) );
+                        tvpDiscount.setText( FormatUtils.truncateDecimal( subTotal.toString() ) );
 
-                    // Get balance
-                    BigDecimal balance = merchTender.subtract(
-                            subTotal.add( cashback )
-                    );
+                        if( tvSelected != null && tvSelected != tvCashback ) {
+                            cashback = merchTender.subtract( subTotal );
+                            tvCashback.removeTextChangedListener( onChange );
+                            if( cashback.compareTo( BigDecimal.ZERO ) == -1 )
+                                cashback = BigDecimal.ZERO;
+                            tvCashback.setText( FormatUtils.truncateDecimal( cashback.toString() ) );
+                            tvCashback.addTextChangedListener( onChange );
+                        }
 
-                    tvBalance.setText( FormatUtils.truncateDecimal( balance.toString() ) );
-                    tvBalance.setVisibility( View.VISIBLE );
-                    pgBalance.setVisibility( View.GONE );
-                }
+                        // Get balance
+                        BigDecimal balance = merchTender.subtract(
+                                subTotal.add( cashback )
+                        );
 
-                break;
+                        tvBalance.setText( FormatUtils.truncateDecimal( balance.toString() ) );
+                        tvBalance.setVisibility( View.VISIBLE );
+                        pgBalance.setVisibility( View.GONE );
+                    }
 
-            case EXCH_REQ:
-            case ALT_REQ:
-                code = response.getCode();
+                    break;
 
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    final String ex_code       = response.getCode();
-                    final String ex_authbumber = response.getAuthNumber();
-                    final String ex_message    = response.getMessage();
-                    final String ex_account    = response.getParams().getAccount();
-                    final String ex_purchase   = response.getParams().getPurchase();
-                    final String ex_delta      = response.getParams().getAmountDelta();
+                case EXCH_REQ:
+                case ALT_REQ:
+                    code = response.getCode();
 
-                    message = getString( R.string.exchange_auth ) + " " + ex_authbumber + "\n" +
-                              getString( R.string.exchange_message ) + " " + ex_message;
+                    if( code.equals( ServerResponse.AUTHORIZED ) ) {
+                        final String ex_code       = response.getCode();
+                        final String ex_authbumber = response.getAuthNumber();
+                        final String ex_message    = response.getMessage();
+                        final String ex_account    = response.getParams().getAccount();
+                        final String ex_purchase   = response.getParams().getPurchase();
+                        final String ex_delta      = response.getParams().getAmountDelta();
 
-                    DialogInterface.OnClickListener onClick;
+                        message = getString( R.string.exchange_auth ) + " " + ex_authbumber + "\n" +
+                                  getString( R.string.exchange_message ) + " " + ex_message;
 
-                    if( externBundle != null ) {
-                        final Intent data = new Intent();
-                        data.putExtra( Intents.RESULT_CODE, ex_code );
-                        data.putExtra( Intents.RESULT_AUTH, ex_authbumber );
-                        data.putExtra( Intents.RESULT_MSG, ex_message );
-                        data.putExtra( Intents.RESULT_ACC, ex_account );
-                        data.putExtra( Intents.RESULT_PUR, ex_purchase );
-                        data.putExtra( Intents.RESULT_TIP, ex_tip );
-                        data.putExtra( Intents.RESULT_DEL, ex_delta );
-                        setResult( RESULT_OK, data );
+                        DialogInterface.OnClickListener onClick;
 
-                        onClick = new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dialog, int item ) {
-                                finish();
+                        if( externBundle != null ) {
+                            final Intent data = new Intent();
+                            data.putExtra( Intents.RESULT_CODE, ex_code );
+                            data.putExtra( Intents.RESULT_AUTH, ex_authbumber );
+                            data.putExtra( Intents.RESULT_MSG, ex_message );
+                            data.putExtra( Intents.RESULT_ACC, ex_account );
+                            data.putExtra( Intents.RESULT_PUR, ex_purchase );
+                            data.putExtra( Intents.RESULT_TIP, ex_tip );
+                            data.putExtra( Intents.RESULT_DEL, ex_delta );
+                            setResult( RESULT_OK, data );
+
+                            onClick = new DialogInterface.OnClickListener() {
+                                public void onClick( DialogInterface dialog, int item ) {
+                                    finish();
+                                }
+                            };
+                        } else {
+                            onClick = new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick( DialogInterface dialog, int which ) {
+                                    setDefaultCurrency();
+                                    resetClick( null );
+                                }
+                            };
+                        }
+
+                        // 1: Get the printer
+                        final BluetoothDevice printer = BluetoothUtil.getDevice();
+                        if( printer != null && mIsPrinting ) {
+                            // 2: Get the cash values
+                            final String total = tvTotal.getText().toString();
+                            final String cashTender = tvCashtender.getText().toString();
+                            final String cashBack = tvCashback.getText().toString();
+                            final String currency = PrefUtils.getTenderCurrency( ac );
+
+                            // 3: Generate a order data
+                            byte[] data = ESCUtil.parseData(
+                                    response,
+                                    total,
+                                    cashTender,
+                                    cashBack,
+                                    currency
+                            );
+
+                            if( data != null ) {
+                                // 4: Using InnerPrinter print data
+                                BluetoothSocket socket = null;
+                                try {
+                                    socket = BluetoothUtil.getSocket( printer );
+                                    BluetoothUtil.sendData( data, socket );
+                                } catch( IOException e ) {
+                                    if( socket != null ) {
+                                        try {
+                                            socket.close();
+                                        } catch( IOException e1 ) {
+                                            e1.printStackTrace();
+                                        }
+                                    }
+                                }
                             }
-                        };
+                        }
+
+                        if( prompt_response )
+                            AlertDialogHelper.showAlertDialog( ac, response.getCode(), message , onClick );
+                        else finish();
                     } else {
-                        onClick = new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick( DialogInterface dialog, int which ) {
-                                setDefaultCurrency();
-                                resetClick( null );
-                            }
-                        };
+                        message = response.getMessage();
+                        MessageHandler.sendMessage( mHandlerMessages, code, message );
                     }
-
-                    if( prompt_response )
-                        AlertDialogHelper.showAlertDialog( ac, response.getCode(), message , onClick );
-                    else finish();
-                } else {
-                    message = response.getMessage();
-                    MessageHandler.sendMessage( mHandlerMessages, code, message );
-                }
-                break;
+                    break;
+            }
+        } catch( NullPointerException e ) {
+            e.printStackTrace();
+            MessageHandler.sendMessage(
+                    mHandlerMessages,
+                    ServerResponse.ERROR_UNKOWN,
+                    getString( R.string.message_error_transaction )
+            );
         }
     }
 
