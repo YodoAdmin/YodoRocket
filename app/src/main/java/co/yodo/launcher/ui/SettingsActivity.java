@@ -2,13 +2,13 @@ package co.yodo.launcher.ui;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
+import android.preference.PreferenceScreen;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,6 +16,7 @@ import android.view.MenuItem;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.AppConfig;
+import co.yodo.launcher.helper.BluetoothUtil;
 import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
@@ -71,8 +72,9 @@ public class SettingsActivity extends AppCompatActivity {
 
         /** GUI Controllers */
         private EditTextPreference ETP_SPREF_USERNAME;
-        private CheckBoxPreference ETP_ADVERTISING;
-        private CheckBoxPreference ETP_LOCATING;
+        private CheckBoxPreference CBP_ADVERTISING;
+        private CheckBoxPreference CBP_LOCATING;
+        private PreferenceCategory PC_PRINTER;
 
         @Override
         public void onCreate( final Bundle savedInstanceState ) {
@@ -94,21 +96,28 @@ public class SettingsActivity extends AppCompatActivity {
             ETP_SPREF_USERNAME = (EditTextPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_CURRENT_BEACON );
 
-            ETP_ADVERTISING = (CheckBoxPreference) getPreferenceScreen()
+            CBP_ADVERTISING = (CheckBoxPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_ADVERTISING_SERVICE );
 
-            ETP_LOCATING = (CheckBoxPreference) getPreferenceScreen()
+            CBP_LOCATING = (CheckBoxPreference) getPreferenceScreen()
                     .findPreference( AppConfig.SPREF_LOCATION_SERVICE );
+
+            PC_PRINTER = (PreferenceCategory) findPreference( "PrinterCategory" );
 
             if( PrefUtils.isLegacy( c ) ) {
                 ETP_SPREF_USERNAME.setEnabled( false );
-                ETP_ADVERTISING.setEnabled( false );
+                CBP_ADVERTISING.setEnabled( false );
             }
 
             if( PrefUtils.isLegacy( c ) || !LocationService.permission( getActivity(), null ) ) {
-                ETP_LOCATING.setEnabled( false );
+                CBP_LOCATING.setEnabled( false );
             } else if( LocationService.permission( getActivity(), null ) && !SystemUtils.hasLocationService( c ) ) {
-                ETP_LOCATING.setEnabled( false );
+                CBP_LOCATING.setEnabled( false );
+            }
+
+            PreferenceScreen screen = getPreferenceScreen();
+            if( BluetoothUtil.getDevice() == null ) {
+                screen.removePreference( PC_PRINTER );
             }
         }
 

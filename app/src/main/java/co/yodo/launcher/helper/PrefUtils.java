@@ -439,4 +439,34 @@ public class PrefUtils {
         SharedPreferences config = getSPrefConfig( c );
         return config.getInt( AppConfig.SPREF_CURRENT_BACKGROUND, -0x1 );
     }
+
+    /**
+     * If the rocket should print receipts after a yodo transaction
+     * @param c The Context of the Android system
+     * @return boolean True or false
+     */
+    public static boolean isPrintingYodo( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getBoolean( AppConfig.SPREF_YODO_RECEIPTS, false );
+    }
+
+    /**
+     * If the rocket should print receipts after a static transaction
+     * @param c The Context of the Android system
+     * @return boolean True or false
+     */
+    public static boolean isPrintingStatic( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getBoolean( AppConfig.SPREF_STATIC_RECEIPTS, false );
+    }
+
+    /**
+     * If the rocket should print receipts after a cash transaction
+     * @param c The Context of the Android system
+     * @return boolean True or false
+     */
+    public static boolean isPrintingCash( Context c ) {
+        SharedPreferences config = getSPrefConfig( c );
+        return config.getBoolean( AppConfig.SPREF_CASH_RECEIPTS, false );
+    }
 }
