@@ -33,7 +33,7 @@ public class YodoApplication extends Application {
     @Override
     protected void attachBaseContext( Context base ) {
         super.attachBaseContext( base );
-        //ACRA.init( this );
+        ACRA.init( this );
 
         // Sets the log flag and IP for the restapi
         ApiClient.IP = ApiClient.DEMO_IP;

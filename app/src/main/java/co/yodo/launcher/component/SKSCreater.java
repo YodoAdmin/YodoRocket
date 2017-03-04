@@ -1,10 +1,6 @@
 package co.yodo.launcher.component;
 
-import android.app.Activity;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
-import android.view.Window;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
@@ -29,23 +25,24 @@ public class SKSCreater {
 	/** QR code separator */
 	private static final String QR_SEP = "#";
 
+	/** Max size of the QR code supported by the thermal printer */
+	private static final int MAX_SIZE = 255;
+
 	/**
 	 * Encodes the user data as a SKS to build a Bitmap
-	 * @param parent The activity that is creating the SKS
 	 * @param code The user encrypted data
 	 * @return A bitmap with the SKS code (QR)
 	 */
-	public static Bitmap createSKS( Activity parent, String header, String code ) {
+	public static Bitmap createSKS( String header, String code ) {
 		Bitmap bitmap = null;
 
 		try {
-			SystemUtils.iLogger( TAG, header + QR_SEP + code + " - " + code.length() );
-
-			Integer QR_SIZE = getSKSSize( parent );
+			final String SKS = header + QR_SEP + code;
+			SystemUtils.iLogger( TAG, SKS + " - " + code.length() );
 			BitMatrix qrMatrix = new MultiFormatWriter().encode(
-					header + QR_SEP + code,
+					SKS,
 					BarcodeFormat.QR_CODE,
-					QR_SIZE, QR_SIZE,
+					MAX_SIZE, MAX_SIZE,
 					null
 			);
 
@@ -67,42 +64,5 @@ public class SKSCreater {
 		}
 
 		return bitmap;
-	}
-
-	/**
-	 * Gets the SKS size for the screen
-	 * @param activity The Context of the Android system (as activity)
-	 * @return int The size
-	 */
-	private static int getSKSSize( Activity activity ) {
-		int screenLayout = activity.getResources().getConfiguration().screenLayout;
-		screenLayout &= Configuration.SCREENLAYOUT_SIZE_MASK;
-
-		Rect displayRectangle = new Rect();
-		Window window = activity.getWindow();
-		window.getDecorView().getWindowVisibleDisplayFrame( displayRectangle );
-		int size, currentOrientation = activity.getResources().getConfiguration().orientation;
-
-		if( currentOrientation == Configuration.ORIENTATION_LANDSCAPE )
-			size = displayRectangle.height();
-		else
-			size = displayRectangle.width();
-
-		switch( screenLayout ) {
-			case Configuration.SCREENLAYOUT_SIZE_SMALL:
-				return (int)( size * 0.7f );
-
-			case Configuration.SCREENLAYOUT_SIZE_NORMAL:
-				return (int)( size * 0.7f );
-
-			case Configuration.SCREENLAYOUT_SIZE_LARGE:
-				return (int)( size * 0.4f );
-
-			case Configuration.SCREENLAYOUT_SIZE_XLARGE:
-				return (int)( size * 0.3f );
-
-			default:
-				return 300;
-		}
 	}
 }

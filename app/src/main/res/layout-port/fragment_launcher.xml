@@ -1,5 +1,6 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/llRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -152,10 +153,11 @@
                 android:orientation="horizontal"
                 android:weightSum="2">
 
-                <Button
+                <android.support.v7.widget.AppCompatButton
                     style="@style/StaticValueButton"
                     android:id="@+id/b0000"
-                    android:text="@string/coins_0"/>
+                    android:text="@string/coins_0"
+                    app:backgroundTint="@color/colorPrimaryRed"/>
 
                 <Button
                     style="@style/StaticValueButton"
