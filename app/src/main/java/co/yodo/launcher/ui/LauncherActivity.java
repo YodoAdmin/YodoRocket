@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -42,6 +41,7 @@ import com.squareup.picasso.Picasso;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -56,14 +56,16 @@ import co.yodo.launcher.R;
 import co.yodo.launcher.YodoApplication;
 import co.yodo.launcher.component.Intents;
 import co.yodo.launcher.component.SKS;
-import co.yodo.launcher.component.SKSCreater;
 import co.yodo.launcher.helper.AppConfig;
 import co.yodo.launcher.helper.BluetoothUtil;
 import co.yodo.launcher.helper.ESCUtil;
 import co.yodo.launcher.helper.FormatUtils;
 import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
+import co.yodo.launcher.helper.sunmi.DataModel;
+import co.yodo.launcher.helper.sunmi.SharedPreferencesUtil;
 import co.yodo.launcher.helper.SystemUtils;
+import co.yodo.launcher.helper.sunmi.UPacketFactory;
 import co.yodo.launcher.manager.PromotionManager;
 import co.yodo.launcher.service.LocationService;
 import co.yodo.launcher.ui.adapter.ScannerAdapter;
@@ -83,6 +85,10 @@ import co.yodo.restapi.network.request.AlternateRequest;
 import co.yodo.restapi.network.request.CurrenciesRequest;
 import co.yodo.restapi.network.request.ExchangeRequest;
 import co.yodo.restapi.network.request.QueryRequest;
+import sunmi.ds.DSKernel;
+import sunmi.ds.callback.ICheckFileCallback;
+import sunmi.ds.callback.IConnectionCallback;
+import sunmi.ds.callback.ISendCallback;
 
 import static co.yodo.restapi.network.model.ServerResponse.ERROR_FAILED;
 
@@ -323,6 +329,7 @@ public class LauncherActivity extends AppCompatActivity implements
         initializeTextListeners();
         initializePopups();
         setDefaultCurrency();
+        initSunmiSDK();
 
         // Set default Logo
         //nivCompanyLogo.setDefaultImageResId( R.drawable.no_image );
@@ -547,6 +554,11 @@ public class LauncherActivity extends AppCompatActivity implements
                 return false;
             }
         } );
+    }
+
+    private void initSunmiSDK() {
+        /*mDSKernel = DSKernel.newInstance();
+        mDSKernel.init(this, connCallback );*/
     }
 
     /**
@@ -1168,4 +1180,82 @@ public class LauncherActivity extends AppCompatActivity implements
                 break;
         }
     }
+
+    //////////////////////////////////////// SUNMI /////////////////////////////////////////////////
+    /*DSKernel mDSKernel;
+
+    IConnectionCallback connCallback = new IConnectionCallback() {
+        @Override
+        public void onDisConnect() {
+        }
+
+        @Override
+        public void onConnected(final ConnState state) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    switch (state) {
+                        case AIDL_CONN:
+                            break;
+
+                        case VICE_SERVICE_CONN:
+                            long fileId = SharedPreferencesUtil.getLong(LauncherActivity.this, SHOW_IMG_LIST_ID);
+                            long fileId1 = SharedPreferencesUtil.getLong(LauncherActivity.this, WELCOME_IMG_ID);
+
+                            if(fileId!=-1L)
+                                checkImg(fileId, SHOW_IMG_LIST_ID);
+                            if(fileId1!=-1L)
+                                checkImg(fileId1, WELCOME_IMG_ID);
+
+                            JSONObject json = new JSONObject();
+                            json.put("title", title);
+                            json.put("content", content);
+                            String titleContentJsonStr= json.toString();
+                            mDSKernel.sendFile(DSKernel.getDSDPackageName(), titleContentJsonStr,filePath, new ISendCallback() {
+                                @Override
+                                public void onSendSuccess(long fileId) {
+                                    showQRCode(fileId);//sending the qr-code image
+                                }
+                                public void onSendFail(int i, String s) {
+                                    //failure
+                                }
+                                public void onSendProcess(long l, long l1) {
+                                    //sending status
+                                }
+                            });
+
+                            break;
+
+                        case VICE_APP_CONN:
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                }
+            });
+        }
+    };
+
+    private void checkImg(long fileId, final String key){
+        mDSKernel.checkFileExist(fileId, new ICheckFileCallback() {
+            @Override
+            public void onCheckFail() {
+
+            }
+
+            @Override
+            public void onResult(boolean b) {
+                if(!b) {
+                    SharedPreferencesUtil.put(LauncherActivity.this, key, -1L);
+                }
+            }
+        });
+    }
+
+    private void showQRCode(long fileId) {
+        String json = UPacketFactory.createJson( DataModel.QRCODE, "");
+        mDSKernel.sendCMD(DSKernel.getDSDPackageName(), json, fileId, null);
+    }*/
 }

@@ -1,37 +1,25 @@
 package co.yodo.launcher.ui;
 
 import android.Manifest;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import java.io.IOException;
 
 import javax.inject.Inject;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
-import co.yodo.launcher.BuildConfig;
 import co.yodo.launcher.R;
 import co.yodo.launcher.YodoApplication;
 import co.yodo.launcher.component.Intents;
-import co.yodo.launcher.component.SKSCreater;
-import co.yodo.launcher.helper.BluetoothUtil;
-import co.yodo.launcher.helper.ESCUtil;
 import co.yodo.launcher.helper.GUIUtils;
 import co.yodo.launcher.helper.PrefUtils;
 import co.yodo.launcher.helper.SystemUtils;
-import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.launcher.ui.notification.MessageHandler;
+import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.restapi.network.ApiClient;
 import co.yodo.restapi.network.model.ServerResponse;
 import co.yodo.restapi.network.request.AuthenticateRequest;

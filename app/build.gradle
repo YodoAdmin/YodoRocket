@@ -38,12 +38,14 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.1.0'
     compile 'com.android.support:design:25.1.0'
     compile 'com.android.support:support-v4:25.1.0'
+
     // -- Google --
     compile 'com.google.zxing:core:3.3.0'
-    compile 'com.google.code.gson:gson:2.4'
+    compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.google.android.gms:play-services-location:10.0.1'
     compile 'com.google.android.gms:play-services-gcm:10.0.1'
     compile 'com.google.android.gms:play-services-nearby:10.0.1'
+
     // -- Squareup --
     compile 'com.squareup.retrofit2:retrofit:2.1.0'
     compile ('com.squareup.retrofit2:converter-simplexml:2.1.0') {
@@ -53,21 +55,32 @@ dependencies {
     }
     compile 'com.squareup.okhttp3:logging-interceptor:3.3.0'
     compile 'com.squareup.picasso:picasso:2.1.0'
+
     // -- Event Bus --
     compile 'org.greenrobot:eventbus:3.0.0'
+
     // -- Images --
     compile 'com.github.yukuku:ambilwarna:2.0'
+
     // -- ACRA --
     compile 'ch.acra:acra:4.8.5'
+
     // -- ButterKnife --
-    compile 'com.jakewharton:butterknife:8.2.1'
-    apt 'com.jakewharton:butterknife-compiler:8.2.1'
+    compile 'com.jakewharton:butterknife:8.5.1'
+    apt 'com.jakewharton:butterknife-compiler:8.5.1'
+
     // -- Dagger 2 --
-    apt 'com.google.dagger:dagger-compiler:2.5'
-    compile 'com.google.dagger:dagger:2.5'
+    apt 'com.google.dagger:dagger-compiler:2.9'
+    compile 'com.google.dagger:dagger:2.9'
     provided 'javax.annotation:jsr250-api:1.0'
+
+    // -- Sunmi --
+    compile 'com.sunmi:sunmiui:1.0.2'
+    compile 'com.sunmi:DS_Lib:1.0.3'
+
     // -- Credit card payments --
     compile 'com.stripe:stripe-android:2.0.2'
+
     // -- Others --
     compile(name: 'restapi-release', ext: 'aar')
     compile(name: 'ScanditBarcodeScanner', ext:'aar')

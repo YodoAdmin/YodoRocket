@@ -61,29 +61,40 @@
             </intent-filter>
         </activity>
 
-        <!-- Start Services -->
-
-        <service android:name=".service.LocationService"/>
-
-        <!-- End Services -->
-
         <activity
             android:name=".ui.LauncherActivity"
             android:label="@string/title_activity_pos"
             android:screenOrientation="sensorLandscape"
             android:windowSoftInputMode="adjustNothing">
         </activity>
+
         <activity
             android:name=".ui.RegistrationActivity"
             android:label="@string/title_activity_registration"
             android:screenOrientation="sensorLandscape"
             android:windowSoftInputMode="adjustResize">
         </activity>
+
         <activity
             android:name=".ui.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:theme="@style/AppTheme.Settings">
         </activity>
+
+        <!-- Start Services -->
+
+        <service android:name=".service.LocationService"/>
+
+        <!-- Receivers -->
+
+        <receiver
+            android:name="sunmi.ds.MsgReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.sunmi.hcservice"/>
+                <action android:name="com.sunmi.hcservice.status"/>
+            </intent-filter>
+        </receiver>
 
     </application>
 

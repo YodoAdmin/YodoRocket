@@ -10,6 +10,7 @@ import org.acra.annotation.ReportsCrashes;
 import org.acra.sender.HttpSender;
 
 import co.yodo.launcher.injection.component.ApplicationComponent;
+
 import co.yodo.launcher.injection.component.DaggerApplicationComponent;
 import co.yodo.launcher.injection.component.DaggerInjectionComponent;
 import co.yodo.launcher.injection.component.InjectionComponent;
@@ -27,6 +28,11 @@ import co.yodo.restapi.network.ApiClient;
                 resToastText = R.string.crash_toast_text
 )
 public class YodoApplication extends Application {
+    /** Switch server IP address */
+    public static final String PROD_IP = "http://50.56.180.133";   // Production
+    public static final String DEMO_IP = "http://162.244.228.84";  // Demo
+    public static final String DEV_IP  = "http://162.244.228.78";  // Development
+
     /** Component that build the dependencies */
     private static InjectionComponent mComponent;
 
