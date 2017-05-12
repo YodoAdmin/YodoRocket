@@ -2,141 +2,133 @@
 <resources>
 
     <!-- Main Strings -->
-    <string name="action_settings">Configuración</string>
-    <string name="version.label">Versión:</string>
-    <string name="desc">Desc</string>
-    <string name="register">REGISTRAR</string>
-    <string name="loading">Cargando</string>
-    <string name="ok">OK</string>
-    <string name="cancel">Cancelar</string>
+    <string name="text.register">REGISTRAR</string>
+    <string name="text.loading">Cargando</string>
+    <string name="text.cancel">Cancelar</string>
+    <string name="text.version">Versión:</string>
 
-    <!-- Error Application Messages -->
-    <string name="error">Esto es embarazoso! Ocurrio un error en el proceso</string>
-    <string name="no_balance">Lo sentimos, parece que no dispone de un balance</string>
-    <string name="message.no_internet">Lo sentimos, parece que no dispone de una conexion a Internet</string>
-    <string name="message.no_gps_support">Lo sentimos, parece que no dispone de servicio de localización</string>
-    <string name="message.no_hardware">Debe encender su bluetooth primero</string>
-    <string name="message.no_camera">Esta cámara no existe</string>
-    <string name="message.play_services">Google Play Services necesita estar instalado</string>
-    <string name="message.incorrect_pip">Contraseña incorrecta, intente de nuevo</string>
+    <!-- Registration Messages -->
+    <string name="text.register.hint">Ingrese el código de activación. Debe estar registrado como un merchant antes de la activación.</string>
+    <string name="text.register.contact">Contacto: support@yodo.co</string>
+    <string name="text.pos.code.hint">Código de Activación</string>
+    <string name="text.already.registered">Ya registrado? Reinicie</string>
 
-    <!-- Error Server Messages -->
-    <string name="message.error.code">Fallo al resolver error con código:</string>
-    <string name="message.error.no_connectivity">No hay conectividad, no se puede proceder. Arreglelo en \'Configuración\' e intente de nuevo.</string>
-    <string name="message.error.unknown">Esto es embarazoso! Ocurrió un error en el proceso</string>
-    <string name="message.error.network">Lo sentimos, parece que no dispone de una conexion a Internet en este momentow</string>
-    <string name="message.error.timeout">Lo sentimos, parece que el servidor está muy ocupado. Intente de nuevo luego</string>
-    <string name="message.error.server">Lo sentimos, el servidor respondió con un error. Intente de nuevo luegor</string>
-    <string name="message.error.transaction">Lo sentimos, el tipo de transacción no es válido. Intente de nuevo luegor</string>
-    <string name="message.error.amount_exceed">Transacción no permitida. Excedido el límite máximo.</string>
-    <string name="message.error.insufficient_funds">Fondos insuficientes en la cuenta primaria</string>
+    <!-- Navigation Messages -->
+    <string name="text.title.options">Opciones</string>
+    <string name="text.title.tools">Herramientas</string>
+    <string name="text.option.currency">Moneda</string>
+    <string name="text.option.discount">Descuento</string>
+    <string name="text.option.settings">Configuración</string>
+    <string name="text.tool.balance">Balance</string>
+    <string name="text.tool.about">Acerca de Yodo</string>
+    <string name="text.tool.logout">Salir</string>
 
     <!-- General Messages -->
-    <string name="input_pip">Merch Identity Phrase (MIP)</string>
-    <string name="pip_hint">Frase de Identificación del Merchant</string>
-    <string name="show_pass">Mostrar Contraseña</string>
-    <string name="remember_pass">Recordar Contraseña</string>
-    <string name="input_token">Inserte el Token Password</string>
-    <string name="merch_pip_hint">Código de Activación</string>
-    <string name="barcode_scanner">Escanee el código</string>
-    <string name="message.already_registered">Ya está registrado? Reinicie</string>
-    <string name="message.gps_enable">El GPS no está habilitado. Desea ir a configuraciones?</string>
-    <string name="register_hint">Debe estar registrado como un merchant antes de la activación.</string>
-    <string name="register_contact">Contacto: support@yodo.co</string>
-    <string name="about_message">Utilice el correo electrónico para ponerse en contacto con nosotros. Nosotros haremos todo lo posible para responder con rapidez. Tenga la seguridad, nunca vamos a vender o distribuir información personal que proporcione.</string>
+    <string name="text.pip.hint">Merch Identity Phrase (MIP)</string>
+    <string name="text.scanner">Escanee el código</string>
+    <string name="text.enable.gps">GPS no habilitado. Desea ir a las configuraciones?</string>
+
+    <!-- Values Labels -->
+    <string name="text.total">Total: </string>
+    <string name="text.cash.tender">Efectivo: </string>
+    <string name="text.cash.back">Vuelto: </string>
+    <string name="text.balance">Balance: </string>
+    <string name="text.zero">0.00</string>
+    <string name="text.no.item">- no item -</string>
+
+    <!-- About Messages -->
+    <string name="text.send.mail">Enviar Email</string>
+    <string name="text.about.message">Utilice el correo electrónico para ponerse en contacto con nosotros. Nosotros haremos todo lo posible para responder con rapidez. Tenga la seguridad, nunca vamos a vender o distribuir información personal que proporcione.</string>
 
     <!-- Exchange Response -->
     <string name="exchange_code">Código:</string>
     <string name="exchange_auth">Número de Autorización:</string>
     <string name="exchange_message">Mensaje:</string>
+    <string name="exchange_balance">Balance:</string>
     <string name="exchange_extra">Extra:</string>
     <string name="exchange_error">Tamaño SKS inválido. El cliente puede necesitar actualizar la aplicación YodoPayment.</string>
+    <string name="transaction_error">La transacción aún no es soportada.</string>
 
     <!-- Balance Messages -->
-    <string name="yodo_title">Merchant Balance Report</string>
-    <string name="yodo_cash">Yodo Cash</string>
-    <string name="yodo_debits">Yodo Debits</string>
-    <string name="yodo_cumulative_balance">Balance Acumulado:</string>
-    <string name="to_date">hasta la fecha:</string>
-    <string name="today">hoy:</string>
-    <string name="yodo_today_balance">Balance de Hoy:</string>
-
-    <!-- Labels -->
-    <string name="imei">IMEI:</string>
-    <string name="label.currency">Moneda:</string>
-    <string name="server_switch">Switch:</string>
-
-    <!-- Activity titles -->
-    <string name="title_activity_pos">Yodo Rocket</string>
-    <string name="title_activity_settings">Yodo Configuración</string>
-    <string name="title_activity_registration">Yodo Registration</string>
-
-    <!-- configuration labels -->
-    <string name="option_label">Opciones</string>
-    <string name="tools_label">Herramientas</string>
-
-    <!-- configuration options -->
-    <string name="set_language">Lenguajes</string>
-    <string name="set_currency">Moneda</string>
-    <string name="text.set_discount">Descuento</string>
-    <string name="settings">Configuración</string>
-    <string name="adv_service">Servicio de Publicidad</string>
-    <string name="get_balance">Obtener Balance</string>
-    <string name="about">Acerca de Yodo</string>
-    <string name="logout">Salir</string>
-
-    <!-- Messages for the permissions -->
-    <string name="message.permission.read_phone_state">Permiso necesario para identificar el dispositivo con el fin de acceder al servicio de Yodo en la nube </string>
-    <string name="message.permission.location">Permiso necesario para utilizar los servicios de ubicación para que las transacciones puedan ser geo-etiquetados</string>
-    <string name="message.permission.camera">Permiso necesario para utilizar la cámara con el fin de capturar las credenciales de pago</string>
-    <string name="message.permission.write_external_storage">Permiso necesario para almacenar los tipos de cambio</string>
-
-    <!-- Preview Messages -->
-    <string name="place_qrcode">Ubique el código SKS en esta ventana</string>
-
-    <!-- Values Labels -->
-    <string name="text.total_purchase">Total: </string>
-    <string name="cash_tender">Efectivo: </string>
-    <string name="cash_back">Vuelto: </string>
-    <string name="balance">Balance: </string>
-    <string name="zero">0.00</string>
-    <string name="no_item">- no item -</string>
+    <string name="text.balance.title">Merchant Balance Report</string>
+    <string name="text.balance.cash">Yodo Cash</string>
+    <string name="text.balance.debits">Yodo Debits</string>
+    <string name="text.balance.today">hoy:</string>
+    <string name="text.balance.to.date">hasta la fecha:</string>
+    <string name="text.balance.cumulative.total">Balance Acumulado:</string>
+    <string name="text.balance.cumulative.today">Balance de Hoy:</string>
 
     <!-- Supported scanners -->
-    <string name="name.scanner.hardware">Barcode Escaner</string>
-    <string name="name.scanner.software_front">Cámara Frontal</string>
-    <string name="name.scanner.software_back">Cámara Trasera</string>
+    <string name="text.scanner.hardware">Barcode Escaner</string>
+    <string name="text.scanner.software_front">Cámara Frontal</string>
+    <string name="text.scanner.software_back">Cámera Trasera</string>
+
+    <!-- Labels -->
+    <string name="text.imei">IMEI:</string>
+    <string name="text.currency">Moneda:</string>
+    <string name="text.server">Switch:</string>
+
+    <!-- Activity titles -->
+    <string name="title.activity.settings">Yodo Configuración</string>
+    <string name="title.activity.registration">Yodo Registro</string>
+
+    <!-- configuration options -->
+    <string name="text.settings.category.payments">Tipo de Pagos</string>
+    <string name="text.settings.category.gui">Interfaz</string>
+    <string name="text.settings.category.printer">Impresora</string>
+
+    <string name="text.settings.payments.cash">Dinero</string>
+    <string name="text.settings.languages">Lenguajes</string>
+    <string name="text.settings.currency">Moneda</string>
+    <string name="text.settings.advertising">Servicio de Promociones</string>
+    <string name="text.settings.portrait">Modo Retrato</string>
+    <string name="text.settings.background">Color de Fondo</string>
+    <string name="text.settings.username">Nombre Y-Beacon</string>
+    <string name="text.settings.location">Servicio de Ubicación</string>
+    <string name="text.settings.receipts.yodo">Recibos Yodo</string>
+    <string name="text.settings.receipts.static">Recibos Estáticos</string>
+    <string name="text.settings.receipts.cash">Recibos Cash</string>
+
+    <string name="text.settings.summary.advertising">Enviar promociones a clientes cercanos</string>
+    <string name="text.settings.summary.location">Envía la ubicación de las transacciones</string>
+    <string name="text.settings.summary.portrait">Establece la pantalla a modo de retrato</string>
+
+    <!-- Messages for the permissions -->
+    <string name="text.permission.read.phone.state">Permiso necesario para identificar el dispositivo con el fin de acceder al servicio de Yodo en la nube</string>
+    <string name="text.permission.location">Permiso necesario para utilizar los servicios de ubicación para que las transacciones puedan ser geo-etiquetados</string>
+    <string name="text.permission.camera">Permiso necesario para utilizar la cámara con el fin de capturar las credenciales de pago</string>
+    <string name="text.permission.write.external.storage">Permiso necesario para almacenar los tipos de cambio</string>
+
+    <!-- ACRA -->
+    <string name="text.crash.toast">Ooooops! Me he caído, pero un informe ha sido enviado a mi desarrollador para ayudar a solucionar el problema!</string>
+
+    <!-- Error Messages -->
+    <string name="error.unknown">Esto es embarazoso! Ocurrio un error en el proceso</string>
+    <string name="error.play.services">Google Play Services debe estar instalado</string>
+    <string name="error.required.field">Campo requerido</string>
+    <string name="error.incorrect.code">El código no es válido</string>
+    <string name="error.currency">Moneda no soportada</string>
+    <string name="error.mip">MIP incorrecto</string>
+    <string name="error.balance">Parece que no dispone de un balance</string>
+    <string name="error.sks">SKS no soportado</string>
+    <string name="error.gps.support">Lo sentimos, parece que no dispone de servicio de localización</string>
+    <string name="error.hardware">Debe encender su bluetooth primero</string>
+    <string name="error.camera">Esta cámara no existe</string>
+    <string name="error.supported">Dispositivo no soportado</string>
+    <string name="error.20">Error al crear el recurso. Probablemente tu cuenta Yodo está mal registrada</string>
+    <string name="error.21">Error al revisar la información</string>
+    <string name="error.payment">Ingrese el total primero</string>
+
+    <!-- Network errors -->
+    <string name="error.network">Lo sentimos, parece que no dispone de una conexion a Internet en este momento</string>
+    <string name="error.server">Lo sentimos, el servidor respondió con un error. Intente de nuevo más tarde</string>
 
     <!-- Languages -->
     <string-array name="languages_array">
         <item>Inglés</item>
         <item>Español</item>
-        <item>Chino</item>
-        <item>Ruso</item>
+        <!--<item>Chino</item>
+        <item>Ruso</item>-->
     </string-array>
-
-    <!-- Preferences Categories -->
-    <string name="config_pref_category_gui">Interfaz</string>
-
-    <!-- Preferences Options -->
-    <string name="config_pref_languages">Lenguajes</string>
-    <string name="config_pref_username">Nombre Y-Beacon</string>
-    <string name="config_pref_tip">Propina (%)</string>
-    <string name="config_pref_advertising">Servicio de Promoción</string>
-    <string name="config_pref_location">Servicio de Ubicación</string>
-    <string name="config_pref_background">Color de Fondo</string>
-
-    <!-- Preferences Summary -->
-    <string name="config_pref_advertising_summary">Enviar promociones a clientes cercanos</string>
-    <string name="config_pref_location_summary">Envía la ubicación de las transacciones</string>
-
-    <!-- Tutorial Instructions -->
-    <string name="tutorial_title">Navegador &amp; items</string>
-    <string name="tutorial_message">Deslice el dedo hacia la izquierda para ocultar el panel</string>
-
-    <!-- ACRA -->
-    <string name="crash_toast_text">Ooooops! Me he caído, pero un informe ha sido enviado a mi desarrollador para ayudar a solucionar el problema!</string>
-    <string name="config_pref_portrait">Modo Retrato</string>
-    <string name="config_pref_portrait_summary">Establece la pantalla a modo de retrato</string>
 
 </resources>

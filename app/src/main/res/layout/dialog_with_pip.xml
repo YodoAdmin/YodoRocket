@@ -2,8 +2,8 @@
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
-	style="@style/GeneralLayout"
 	android:id="@+id/dialog_with_password"
+	style="@style/GeneralLayout"
 	android:orientation="vertical">
 
 	<android.support.design.widget.TextInputLayout
@@ -13,7 +13,7 @@
 		app:passwordToggleEnabled="true">
 
 		<android.support.design.widget.TextInputEditText
-			style="@style/PIPInput"
+			style="@style/PIPInputText"
 			android:id="@+id/cetPIP" />
 
 	</android.support.design.widget.TextInputLayout>

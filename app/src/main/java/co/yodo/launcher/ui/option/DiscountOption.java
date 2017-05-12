@@ -7,29 +7,28 @@ import android.text.Spanned;
 import android.view.View;
 import android.widget.EditText;
 
+import java.util.Locale;
+
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.PrefUtils;
-import co.yodo.launcher.manager.PromotionManager;
-import co.yodo.launcher.ui.LauncherActivity;
-import co.yodo.launcher.ui.component.ClearEditText;
-import co.yodo.launcher.ui.notification.AlertDialogHelper;
-import co.yodo.launcher.ui.notification.MessageHandler;
-import co.yodo.launcher.ui.notification.ProgressDialogHelper;
+import co.yodo.launcher.business.manager.PromotionManager;
+import co.yodo.launcher.helper.AlertDialogHelper;
+import co.yodo.launcher.helper.ProgressDialogHelper;
+import co.yodo.launcher.ui.contract.BaseActivity;
 import co.yodo.launcher.ui.option.contract.IRequestOption;
-import co.yodo.restapi.network.ApiClient;
+import co.yodo.launcher.utils.ErrorUtils;
+import co.yodo.launcher.utils.PrefUtils;
+import co.yodo.restapi.YodoApi;
+import co.yodo.restapi.network.contract.RequestCallback;
 import co.yodo.restapi.network.model.ServerResponse;
-import co.yodo.restapi.network.request.AuthenticateRequest;
+import co.yodo.restapi.network.requests.AuthMerchDevicePipRequest;
 
 /**
  * Created by hei on 22/06/16.
  * Implements the Discount Option of the Launcher
  */
-public class DiscountOption extends IRequestOption implements ApiClient.RequestsListener {
+public class DiscountOption extends IRequestOption {
     /** Elements for the request */
-    private final PromotionManager mPromotionManager;
-
-    /** Response codes for the server requests */
-    private static final int AUTH_REQ = 0x00;
+    private final PromotionManager promotionManager;
 
     /** Handles the promotions */
     private boolean isPublishing = false;
@@ -38,126 +37,121 @@ public class DiscountOption extends IRequestOption implements ApiClient.Requests
      * Sets up the main elements of the options
      * @param activity The Activity to handle
      */
-    public DiscountOption( LauncherActivity activity, MessageHandler handlerMessages, PromotionManager promotionManager ) {
-        super( activity, handlerMessages );
+    public DiscountOption(final BaseActivity activity, final PromotionManager promotionManager) {
+        super(activity);
 
-        // Request
-        this.mPromotionManager = promotionManager;
+        // Get promotion manager
+        this.promotionManager = promotionManager;
 
         // Dialog
         final View layout = buildLayout();
         final View.OnClickListener okClick = new View.OnClickListener() {
             @Override
-            public void onClick( View view  ) {
-                mAlertDialog.dismiss();
-                final String pip = etInput.getText().toString();
-
-                mProgressManager.createProgressDialog(
-                        mActivity,
+            public void onClick(View view) {
+                progressManager.create(
+                        activity,
                         ProgressDialogHelper.ProgressDialogType.NORMAL
                 );
-                mRequestManager.setListener( DiscountOption.this );
-                mRequestManager.invoke(
-                        new AuthenticateRequest(
-                                AUTH_REQ,
-                                mHardwareToken,
-                                pip
-                        )
+
+                final String pip = etInput.getText().toString();
+                YodoApi.execute(
+                        new AuthMerchDevicePipRequest(pip),
+                        new RequestCallback() {
+                            @Override
+                            public void onPrepare() {
+                                if (PrefUtils.isAdvertising(activity)) {
+                                    promotionManager.unpublish();
+                                    isPublishing = true;
+                                }
+                            }
+
+                            @Override
+                            public void onResponse(ServerResponse response) {
+                                progressManager.destroy();
+                                // If it was publishing before the request
+                                if (isPublishing) {
+                                    isPublishing = false;
+                                    promotionManager.publish();
+                                }
+
+                                if (response.getCode().equals(ServerResponse.AUTHORIZED)) {
+                                    alertDialog.dismiss();
+                                    final String title = String.format(
+                                            Locale.getDefault(),
+                                            "%s (%%)", activity.getString(R.string.text_option_discount)
+                                    );
+                                    final EditText inputBox = new EditText(activity);
+                                    inputBox.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+
+                                    InputFilter filter = new InputFilter() {
+                                        final int maxDigitsBeforeDecimalPoint = 2;
+                                        final int maxDigitsAfterDecimalPoint = 2;
+
+                                        @Override
+                                        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                                            StringBuilder builder = new StringBuilder(dest);
+                                            builder.replace(dstart, dend, source.subSequence(start, end).toString());
+                                            if (!builder.toString().matches(
+                                                    "(([" + (maxDigitsBeforeDecimalPoint - 1) + "-9])([0-9]?)?)?(\\.[0-9]{0," + maxDigitsAfterDecimalPoint + "})?"
+
+                                            )) {
+                                                if (source.length() == 0)
+                                                    return dest.subSequence(dstart, dend);
+                                                return "";
+                                            }
+
+                                            return null;
+                                        }
+                                    };
+                                    inputBox.setFilters(new InputFilter[]{ filter });
+                                    inputBox.setText(String.valueOf(PrefUtils.getDiscount(activity)));
+
+                                    DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int item) {
+                                            PrefUtils.saveDiscount(activity, inputBox.getText().toString());
+                                            activity.updateUI();
+                                        }
+                                    };
+
+                                    AlertDialogHelper.create(
+                                            activity,
+                                            title,
+                                            inputBox,
+                                            onClick
+                                    );
+                                } else {
+                                    progressManager.destroy();
+                                    tilPip.setError(activity.getString(R.string.error_mip));
+                                }
+                            }
+
+                            @Override
+                            public void onError(Throwable error) {
+                                alertDialog.dismiss();
+                                progressManager.destroy();
+                                ErrorUtils.handleApiError(activity, error, false);
+
+                                // If it was publishing before the request
+                                if (isPublishing) {
+                                    isPublishing = false;
+                                    promotionManager.publish();
+                                }
+                            }
+                        }
                 );
             }
         };
 
-        mAlertDialog = AlertDialogHelper.create(
-                mActivity,
+        alertDialog = AlertDialogHelper.create(
+                activity,
                 layout,
-                buildOnClick( okClick )
+                buildOnClick(okClick)
         );
     }
 
     @Override
     public void execute() {
-        mAlertDialog.show();
+        alertDialog.show();
         clearGUI();
-    }
-
-    @Override
-    public void onPrepare() {
-        if( PrefUtils.isAdvertising( this.mActivity ) ) {
-            mPromotionManager.unpublish();
-            isPublishing = true;
-        }
-    }
-
-    @Override
-    public void onResponse( int responseCode, ServerResponse response ) {
-        // Set listener to the principal activity
-        mProgressManager.destroyProgressDialog();
-        mRequestManager.setListener( (LauncherActivity) mActivity );
-
-        // If it was publishing before the request
-        if( isPublishing )
-            mPromotionManager.publish();
-
-        String code    = response.getCode();
-        String message = response.getMessage();
-
-        switch( responseCode ) {
-            case AUTH_REQ:
-
-                switch( code ) {
-
-                    case ServerResponse.AUTHORIZED:
-                        final String title = mActivity.getString( R.string.text_set_discount ) + " (%)";
-                        final EditText inputBox = new ClearEditText( mActivity );
-                        inputBox.setInputType( InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL );
-
-                        InputFilter filter = new InputFilter() {
-                            final int maxDigitsBeforeDecimalPoint = 2;
-                            final int maxDigitsAfterDecimalPoint = 2;
-
-                            @Override
-                            public CharSequence filter( CharSequence source, int start, int end, Spanned dest, int dstart, int dend ) {
-                                StringBuilder builder = new StringBuilder( dest );
-                                builder.replace( dstart, dend, source.subSequence( start, end ).toString() );
-                                if( !builder.toString().matches(
-                                        "(([" + ( maxDigitsBeforeDecimalPoint - 1 ) + "-9])([0-9]?)?)?(\\.[0-9]{0," + maxDigitsAfterDecimalPoint + "})?"
-
-                                ) ) {
-                                    if( source.length() == 0 )
-                                        return dest.subSequence( dstart, dend );
-                                    return "";
-                                }
-
-                                return null;
-                            }
-                        };
-                        inputBox.setFilters( new InputFilter[]{ filter } );
-                        inputBox.setText( PrefUtils.getDiscount( mActivity ) );
-
-                        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dialog, int item ) {
-                                ((LauncherActivity) mActivity).discount( inputBox );
-                            }
-                        };
-
-                        AlertDialogHelper.showAlertDialog(
-                                mActivity,
-                                title,
-                                inputBox,
-                                onClick
-                        );
-                        break;
-
-                    case ServerResponse.ERROR_FAILED:
-                        message = this.mActivity.getString( R.string.message_incorrect_pip );
-                        MessageHandler.sendMessage( mHandlerMessages, code, message );
-                        break;
-
-                    default:
-                        MessageHandler.sendMessage( mHandlerMessages, code, message );
-                        break;
-                }
-                break;
-        }
     }
 }

@@ -5,18 +5,29 @@
         <item name="android:alertDialogTheme">@style/CustomDialogTheme</item>
     </style>
 
-    <style name="AppTheme.Base" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme.Base" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimaryRed</item>
         <item name="colorPrimaryDark">@color/colorPrimaryRedDark</item>
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:alertDialogTheme">@style/AppCompatAlertDialogStyle</item>
     </style>
 
+    <style name="AppTheme.Rocket" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimaryRed</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryRedDark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:alertDialogTheme">@style/AppCompatAlertDialogStyle</item>
+
+        <!-- Fullscreen -->
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
     <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowFullscreen">true</item>
-        <item name="android:windowBackground">@drawable/background_splash</item>
+        <item name="android:windowBackground">@drawable/bg_splash</item>
         <item name="colorAccent">@color/accent</item>
     </style>
 
@@ -39,15 +50,6 @@
         <item name="colorAccent">@color/accent</item>
     </style>
 
-    <!-- Widgets -->
-
-    <!-- ToolBar -->
-    <style name="ToolBarStyle" parent="Theme.AppCompat">
-        <item name="android:textColorPrimary">@android:color/white</item>
-        <item name="android:textColorSecondary">@android:color/white</item>
-        <item name="actionMenuTextColor">@android:color/white</item>
-    </style>
-
     <!-- Custom Dialog -->
     <style name="CustomDialogTheme" parent="@android:style/Theme.Holo.Light.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
@@ -67,78 +69,6 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- Text View Labels -->
-    <style name="LabelTextView">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">@dimen/data_margin</item>
-        <item name="android:layout_marginTop">@dimen/data_marginTop</item>
-        <item name="android:layout_marginBottom">@dimen/data_margin</item>
-        <item name="android:textSize">@dimen/text_size_values</item>
-    </style>
-
-    <!-- Text View Editable -->
-    <style name="EditTextView">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">@dimen/data_margin</item>
-        <item name="android:layout_marginTop">@dimen/data_margin</item>
-        <item name="android:layout_marginBottom">@dimen/data_margin</item>
-        <item name="android:gravity">end</item>
-        <item name="android:clickable">true</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:text">@string/zero</item>
-        <item name="android:onClick">selectClick</item>
-        <item name="android:textSize">@dimen/text_size_values</item>
-        <item name="android:background">@drawable/show_text_field</item>
-    </style>
-
-    <!-- Button Calculator -->
-    <style name="CalcButton">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_margin">@dimen/margin_buttons_calculator</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:onClick">valueClick</item>
-        <item name="android:textSize">@dimen/text_size_numbers</item>
-        <item name="android:background">@drawable/yellow_button</item>
-    </style>
-
-    <!-- Button Values -->
-    <style name="StaticValueButton" parent="@style/Widget.AppCompat.Button">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_margin">@dimen/margin_buttons</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:onClick">addClick</item>
-        <item name="android:textSize">@dimen/text_size_buttons</item>
-    </style>
-
-    <!-- Calculator Layout -->
-    <style name="CalcLayout">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:paddingLeft">@dimen/padding_calc</item>
-        <item name="android:paddingRight">@dimen/padding_calc</item>
-        <item name="android:gravity">center</item>
-        <item name="android:orientation">horizontal</item>
-        <item name="android:weightSum">3</item>
-        <item name="android:background">?android:attr/selectableItemBackground</item>
-    </style>
-
-    <!-- Image Styles -->
-    <style name="ImageButton">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:layout_margin">5dp</item>
-        <item name="android:padding">5dp</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:adjustViewBounds">true</item>
-        <item name="android:scaleType">centerInside</item>
-        <item name="android:background">@drawable/highlight_button</item>
-    </style>
-
     <!--  Transparent dialog -->
     <style name="TransparentProgressDialog">
         <item name="android:windowFrame">@null</item>
@@ -150,39 +80,6 @@
         <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>
         <item name="android:backgroundDimEnabled">true</item>
         <item name="android:background">@android:color/transparent</item>
-    </style>
-
-    <!--  Navigation Button -->
-    <style name="NavigationButton">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:drawablePadding">10dp</item>
-        <item name="android:background">@drawable/highlight_button</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:gravity">start|center_vertical</item>
-    </style>
-
-    <!-- PIP Input -->
-    <style name="PIPInput">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:drawableLeft">@android:drawable/ic_lock_lock</item>
-        <item name="android:inputType">textPassword</item>
-        <item name="android:maxLength">8</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:hint">@string/pip_hint</item>
-        <item name="android:digits">0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</item>
-    </style>
-
-    <!-- General Layout -->
-    <style name="GeneralLayout">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:paddingBottom">@dimen/activity_vertical_margin</item>
-        <item name="android:paddingLeft">@dimen/activity_horizontal_margin</item>
-        <item name="android:paddingRight">@dimen/activity_horizontal_margin</item>
-        <item name="android:paddingTop">@dimen/activity_vertical_margin</item>
     </style>
 
 </resources>

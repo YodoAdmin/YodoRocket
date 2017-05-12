@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--  Navigation button -->
+    <style name="NavigationButtonTheme">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:textColor">@color/colorTextWhite</item>
+        <item name="android:drawablePadding">10dp</item>
+        <item name="android:background">@drawable/bg_highlight_field</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:gravity">start|center_vertical</item>
+    </style>
+
+    <!-- Button Values -->
+    <style name="StaticValueButton" parent="@style/Widget.AppCompat.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">@dimen/margin_buttons</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:onClick">add</item>
+        <item name="android:textSize">@dimen/text_size_buttons</item>
+    </style>
+
+    <!-- Button Calculator -->
+    <style name="CalcButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_margin">@dimen/margin_buttons_calculator</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:onClick">value</item>
+        <item name="android:textSize">@dimen/text_size_numbers</item>
+        <item name="android:background">@drawable/bg_yellow_button</item>
+    </style>
+
+</resources>

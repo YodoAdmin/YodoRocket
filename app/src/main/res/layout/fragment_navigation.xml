@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="@dimen/navigation_drawer_width"
+    android:layout_width="300dp"
     android:layout_height="match_parent"
     android:layout_gravity="start"
-    android:background="@drawable/background">
+    android:background="@color/colorNavigation">
 
     <LinearLayout
         android:orientation="vertical"
@@ -14,40 +13,31 @@
         android:padding="10dp">
 
         <TextView
-            android:id="@+id/optionsView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@android:color/white"
-            android:text="@string/option_label" />
+            style="@style/NavigationTitleText"
+            android:text="@string/text.title.options" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:background="@android:color/darker_gray"/>
+        <View style="@style/SeparatorNavigationTheme"/>
 
         <Button
-            style="@style/NavigationButton"
-            android:drawableLeft="@drawable/set_currency"
-            android:drawableStart="@drawable/set_currency"
-            android:text="@string/set_currency"
-            android:onClick="setCurrencyClick" />
+            style="@style/NavigationButtonTheme"
+            android:drawableLeft="@mipmap/ic_monetization_on_white"
+            android:drawableStart="@mipmap/ic_monetization_on_white"
+            android:text="@string/text.option.currency"
+            android:onClick="currency"/>
 
         <Button
-            style="@style/NavigationButton"
-            android:drawableLeft="@drawable/set_discount"
-            android:drawableStart="@drawable/set_discount"
-            android:text="@string/text.set_discount"
-            android:onClick="setDiscountClick" />
+            style="@style/NavigationButtonTheme"
+            android:drawableLeft="@mipmap/ic_money_off_white"
+            android:drawableStart="@mipmap/ic_money_off_white"
+            android:text="@string/text.option.discount"
+            android:onClick="discount"/>
 
         <Button
-            style="@style/NavigationButton"
-            android:drawableLeft="@drawable/settings"
-            android:drawableStart="@drawable/settings"
-            android:text="@string/settings"
-            android:onClick="settingsClick"/>
+            style="@style/NavigationButtonTheme"
+            android:drawableLeft="@mipmap/ic_settings_white"
+            android:drawableStart="@mipmap/ic_settings_white"
+            android:onClick="settings"
+            android:text="@string/text.option.settings"/>
 
         <Spinner
             android:id="@+id/sScannerSelector"
@@ -55,44 +45,36 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_marginStart="5dp"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="30dp"/>
 
         <TextView
-            android:id="@+id/toolsView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:layout_marginTop="20dp"
-            android:textColor="@android:color/white"
-            android:text="@string/tools_label" />
+            style="@style/NavigationTitleText"
+            android:text="@string/text.title.tools" />
 
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:background="@android:color/darker_gray"/>
+        <View style="@style/SeparatorNavigationTheme"/>
 
         <Button
-            style="@style/NavigationButton"
-            android:drawableLeft="@drawable/get_balance"
-            android:drawableStart="@drawable/get_balance"
-            android:text="@string/get_balance"
-            android:onClick="getBalanceClick" />
+            style="@style/NavigationButtonTheme"
+            android:drawableLeft="@mipmap/ic_account_balance_white"
+            android:drawableStart="@mipmap/ic_account_balance_white"
+            android:onClick="balance"
+            android:text="@string/text.tool.balance"/>
 
         <Button
-            style="@style/NavigationButton"
-            android:drawableLeft="@drawable/about"
-            android:drawableStart="@drawable/about"
-            android:text="@string/about"
-            android:onClick="aboutClick" />
+            style="@style/NavigationButtonTheme"
+            android:drawableLeft="@mipmap/ic_info_white"
+            android:drawableStart="@mipmap/ic_info_white"
+            android:onClick="about"
+            android:text="@string/text.tool.about"/>
 
         <Button
-            style="@style/NavigationButton"
-            android:drawableLeft="@drawable/logout"
-            android:drawableStart="@drawable/logout"
-            android:text="@string/logout"
-            android:onClick="logoutClick" />
+            style="@style/NavigationButtonTheme"
+            android:drawableLeft="@mipmap/ic_exit_to_app_white"
+            android:drawableStart="@mipmap/ic_exit_to_app_white"
+            android:text="@string/text.tool.logout"
+            android:onClick="logout" />
 
     </LinearLayout>
+
 </ScrollView>

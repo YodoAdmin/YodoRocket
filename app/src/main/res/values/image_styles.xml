@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ImageView for the rocket options -->
+    <style name="RocketOptionImageButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:padding">@dimen/button_options_padding</item>
+    </style>
+
+    <!-- Image Styles -->
+    <style name="ImageButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:background">@drawable/bg_highlight_field</item>
+    </style>
+
+</resources>

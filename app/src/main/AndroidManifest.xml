@@ -24,7 +24,7 @@
         android:name=".YodoApplication"
         android:allowBackup="true"
         android:fullBackupContent="false"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
 
@@ -36,10 +36,11 @@
             android:name=".ui.MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="sensorLandscape"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/SplashTheme"
+            android:windowSoftInputMode="stateAlwaysHidden">
+
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.VIEW"/>
-
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
 
@@ -49,41 +50,50 @@
                     android:pathPrefix="/yodo"
                     android:scheme="http"/>
             </intent-filter>
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
             <intent-filter>
                 <action android:name="co.yodo.launcher.POS"/>
-
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
+
+        </activity>
+
+        <activity
+            android:name=".ui.RocketActivity"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/AppTheme.Rocket"
+            android:windowSoftInputMode="stateAlwaysHidden">
+
+        </activity>
+
+        <activity
+            android:name=".ui.RegistrationActivity"
+            android:label="@string/title.activity.registration"
+            android:screenOrientation="sensorLandscape"
+            android:windowSoftInputMode="stateAlwaysHidden">
+        </activity>
+
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:label="@string/title.activity.settings"
+            android:theme="@style/AppTheme.Settings"
+            android:windowSoftInputMode="stateAlwaysHidden">
         </activity>
 
         <!-- Start Services -->
 
-        <service android:name=".service.LocationService"/>
+        <service
+            android:name=".business.service.LocationService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
 
         <!-- End Services -->
-
-        <activity
-            android:name=".ui.LauncherActivity"
-            android:label="@string/title_activity_pos"
-            android:screenOrientation="sensorLandscape"
-            android:windowSoftInputMode="adjustNothing">
-        </activity>
-        <activity
-            android:name=".ui.RegistrationActivity"
-            android:label="@string/title_activity_registration"
-            android:screenOrientation="sensorLandscape"
-            android:windowSoftInputMode="adjustResize">
-        </activity>
-        <activity
-            android:name=".ui.SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:theme="@style/AppTheme.Settings">
-        </activity>
 
     </application>
 

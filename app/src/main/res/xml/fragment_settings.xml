@@ -3,57 +3,65 @@
 
     <ListPreference
         android:key="SPCurrentLanguage"
-        android:title="@string/config_pref_languages"
+        android:title="@string/text.settings.languages"
         android:summary="%s"
         android:entries="@array/languages_array"
         android:entryValues="@array/languages_array_values"
         android:defaultValue="en"/>
 
     <EditTextPreference
-        android:title="@string/config_pref_username"
+        android:title="@string/text.settings.username"
         android:key="SPCurrentBeacon"
         android:inputType="text"
         android:maxLength="20"/>
 
     <CheckBoxPreference
         android:key="SPAdvertisingService"
-        android:title="@string/config_pref_advertising"
-        android:summary="@string/config_pref_advertising_summary" />
+        android:title="@string/text.settings.advertising"
+        android:summary="@string/text.settings.summary.advertising" />
 
     <CheckBoxPreference
         android:key="SPLocationService"
-        android:title="@string/config_pref_location"
-        android:summary="@string/config_pref_location_summary" />
+        android:title="@string/text.settings.location"
+        android:summary="@string/text.settings.summary.location" />
 
-    <PreferenceCategory
-        android:key="PrinterCategory"
-        android:title="@string/config_pref_category_printer" >
+    <PreferenceCategory android:title="@string/text.settings.category.payments" >
 
         <CheckBoxPreference
-            android:key="SPYodoReceipts"
-            android:title="@string/config_pref_receipts_yodo" />
-
-        <CheckBoxPreference
-            android:key="SPStaticReceipts"
-            android:title="@string/config_pref_receipts_static" />
-
-        <CheckBoxPreference
-            android:key="SPCashReceipts"
-            android:title="@string/config_pref_receipts_cash" />
+            android:key="SPYodoPaymentCash"
+            android:title="@string/text.settings.payments.cash"/>
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/config_pref_category_gui" >
+    <PreferenceCategory
+        android:key="PrinterCategory"
+        android:title="@string/text.settings.category.printer" >
+
+        <CheckBoxPreference
+            android:key="SPYodoReceipts"
+            android:title="@string/text.settings.receipts.yodo" />
+
+        <CheckBoxPreference
+            android:key="SPStaticReceipts"
+            android:title="@string/text.settings.receipts.static" />
+
+        <CheckBoxPreference
+            android:key="SPCashReceipts"
+            android:title="@string/text.settings.receipts.cash" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/text.settings.category.gui" >
 
         <CheckBoxPreference
             android:key="SPPortraitMode"
-            android:title="@string/config_pref_portrait"
-            android:summary="@string/config_pref_portrait_summary" />
+            android:title="@string/text.settings.portrait"
+            android:summary="@string/text.settings.summary.portrait" />
 
         <yuku.ambilwarna.widget.AmbilWarnaPreference
             android:key="SPBackgroundColor"
             android:defaultValue="-1"
-            android:title="@string/config_pref_background"/>
+            android:title="@string/text.settings.background"/>
 
     </PreferenceCategory>
 
