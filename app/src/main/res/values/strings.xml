@@ -6,7 +6,7 @@
     <string name="text.desc" translatable="false">Desc</string>
     <string name="text.register">REGISTER</string>
     <string name="text.loading">Loading</string>
-    <string name="text.ok" translatable="false">OK</string>
+    <string name="text.ok">OK</string>
     <string name="text.cancel">Cancel</string>
     <string name="text.version">Version:</string>
 
@@ -121,7 +121,7 @@
     <string name="error.supported">This device is not supported</string>
     <string name="error.20">Error while creating new resource. Probably the Yodo account is also registered as POS</string>
     <string name="error.21">Error while checking information</string>
-    <string name="error.no.item" translatable="false">--item--</string>
+    <string name="error.no.item">--item--</string>
     <string name="error.payment">Please insert the purchase value first</string>
 
     <!-- Network errors -->
@@ -161,8 +161,8 @@
     <string-array name="languages_array">
         <item>English</item>
         <item>Spanish</item>
-        <!--<item>Chinese</item>
-        <item>Russian</item>-->
+        <item>Chinese</item>
+        <!--<item>Russian</item>-->
     </string-array>
 
     <string-array name="languages_array_values" translatable="false">

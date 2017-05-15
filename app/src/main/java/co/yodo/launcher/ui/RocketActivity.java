@@ -506,10 +506,10 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
         // Set values to 0
         tvCashtender.setText(zero);
         tvCashback.setText(zero);
-        tvBalance.setText(zero);
 
         // Set merchant currency (default) to tender
         PrefUtils.saveTenderCurrency(context, PrefUtils.getMerchantCurrency(context));
+        updateUI();
     }
 
     /**

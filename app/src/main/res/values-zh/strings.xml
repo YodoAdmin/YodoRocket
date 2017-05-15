@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Main Strings -->
+    <string name="text.register">注册</string>
+    <string name="text.loading">载入中</string>
+    <string name="text.ok">确认</string>
+    <string name="text.cancel">取消</string>
+    <string name="text.version">版本:</string>
+
+    <!-- Registration Messages -->
+    <string name="text.register.hint">请输入您的激活码，商家用户必须先激活账户才可注册.</string>
+    <string name="text.register.contact">联系: support@yodo.co</string>
+    <string name="text.pos.code.hint">激活码</string>
+    <string name="text.already.registered">已注册，请重新登陆</string>
+
+    <!-- Navigation Messages -->
+    <string name="text.title.options">选项</string>
+    <string name="text.title.tools">工具</string>
+    <string name="text.option.currency">货币选项</string>
+    <string name="text.option.discount">折扣</string>
+    <string name="text.option.settings">设置</string>
+    <string name="text.tool.balance">余额</string>
+    <string name="text.tool.about">关于Yodo</string>
+    <string name="text.tool.logout">登出</string>
+
+    <!-- General Messages -->
+    <string name="text.pip.hint">商户编号(MIP)</string>
+    <string name="text.scanner">扫描条码</string>
+    <string name="text.enable.gps">GPS尚未启动，需要前往设置菜单吗？</string>
+
+    <!-- Values Labels -->
+    <string name="text.total">购买: </string>
+    <string name="text.cash.tender">现金支出: </string>
+    <string name="text.cash.back">现金返还: </string>
+    <string name="text.balance">余额·: </string>
+    <string name="text.zero">0.00</string>
+    <string name="text.no.item">- 无项目 -</string>
+
+    <!-- About Messages -->
+    <string name="text.send.mail">发送邮件</string>
+    <string name="text.about.message">请使用以下的邮箱地址和我们联系，我们会尽快回复并且帮助您解决问题。同时请您放心我们将会对你的个人资料绝对保密。</string>
+
+    <!-- Exchange Response -->
+    <string name="exchange_code">代码:</string>
+    <string name="exchange_auth">授权号码:</string>
+    <string name="exchange_message">信息:</string>
+    <string name="exchange_balance">余额:</string>
+    <string name="exchange_extra">额外:</string>
+    <string name="exchange_error">无效SKS size. 客户需要更新YodoPayment软件.</string>
+    <string name="transaction_error">不支持此项交易活动</string>
+
+    <!-- Balance Messages -->
+    <string name="text.balance.title">商家营业额汇报</string>
+    <string name="text.balance.cash">Yodo现金</string>
+    <string name="text.balance.debits">Yodo储蓄</string>
+    <string name="text.balance.today">今日:</string>
+    <string name="text.balance.to.date">截至今日:</string>
+    <string name="text.balance.cumulative.total">累计余额·:</string>
+    <string name="text.balance.cumulative.today">今日结余:</string>
+
+    <!-- Supported scanners -->
+    <string name="text.scanner.hardware">条形码扫描</string>
+    <string name="text.scanner.software_front">前置摄像头</string>
+    <string name="text.scanner.software_back">后置摄像头</string>
+
+    <!-- Labels -->
+    <string name="text.imei">IMEI:</string>
+    <string name="text.currency">货币:</string>
+    <string name="text.server">转至其他服务器:</string>
+
+    <!-- Activity titles -->
+    <string name="title.activity.settings">Yodo设置</string>
+    <string name="title.activity.registration">注册成为Yodo用户</string>
+
+    <!-- configuration options -->
+    <string name="text.settings.category.payments">付款类型</string>
+    <string name="text.settings.category.gui">界面</string>
+    <string name="text.settings.category.printer">打印器</string>
+
+    <string name="text.settings.payments.cash">现金</string>
+    <string name="text.settings.languages">语言设定</string>
+    <string name="text.settings.currency">货币选项</string>
+    <string name="text.settings.advertising">促销活动服务</string>
+    <string name="text.settings.portrait">纵向模式</string>
+    <string name="text.settings.background">背景颜色</string>
+    <string name="text.settings.username">Y-Beacon用户名称</string>
+    <string name="text.settings.location">定位服务</string>
+    <string name="text.settings.receipts.yodo">Yodo收据</string>
+    <string name="text.settings.receipts.static">静态收据</string>
+    <string name="text.settings.receipts.cash">现金收据</string>
+
+    <string name="text.settings.summary.advertising">传送促销活动给附近的客人</string>
+    <string name="text.settings.summary.location">传送交易活动地点</string>
+    <string name="text.settings.summary.portrait">设置成纵向模式</string>
+
+    <!-- Messages for the permissions -->
+    <string name="text.permission.read.phone.state">如要使用yodo云服务，需要得到授权以此证明设备使用者身份</string>
+    <string name="text.permission.location">授权时，需要启动定位服务以此对交易活动进行地理位置标记</string>
+    <string name="text.permission.camera">授权时，需要使用摄像头以此获得账单凭据</string>
+    <string name="text.permission.write.external.storage">授权时，需要输入货币的现时汇率</string>
+
+    <!-- ACRA -->
+    <string name="text.crash.toast">现实服务瘫痪，已经将其汇报给我们的制作商并且会帮助您解决问题。</string>
+
+    <!-- Error Messages -->
+    <string name="error.unknown">抱歉，流程中出现错误</string>
+    <string name="error.play.services">需要安装Google Play服务</string>
+    <string name="error.required.field">必填项</string>
+    <string name="error.incorrect.code">代码已无效</string>
+    <string name="error.currency">不支持此种货币</string>
+    <string name="error.mip">不正确的商户编号（MIP）</string>
+    <string name="error.balance">抱歉，您的余额不足</string>
+    <string name="error.sks">不支持SKS</string>
+    <string name="error.gps.support">抱歉您的设备不支持定位服务</string>
+    <string name="error.hardware">请您先启动蓝牙</string>
+    <string name="error.camera">所选摄像头不存在</string>
+    <string name="error.supported">不支持此设备</string>
+    <string name="error.20">在新创资源的时候出现错误，也许Yodo账户已经以POS形式注册</string>
+    <string name="error.21">检查相关资料时出现错误</string>
+    <string name="error.no.item">--项目--</string>
+    <string name="error.payment">请先输入购买数目</string>
+
+    <!-- Network errors -->
+    <string name="error.network">抱歉，您暂时还没有连接网络噢！</string>
+    <string name="error.server">抱歉，出现错误请稍后重试</string>
+
+    <!-- Languages -->
+    <string-array name="languages_array">
+        <item>英语</item>
+        <item>西班牙语</item>
+        <item>中文</item>
+        <!--<item>Russian</item>-->
+    </string-array>
+
+</resources>

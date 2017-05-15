@@ -4,6 +4,7 @@
     <!-- Main Strings -->
     <string name="text.register">REGISTRAR</string>
     <string name="text.loading">Cargando</string>
+    <string name="text.ok">OK</string>
     <string name="text.cancel">Cancelar</string>
     <string name="text.version">Versión:</string>
 
@@ -118,6 +119,7 @@
     <string name="error.20">Error al crear el recurso. Probablemente tu cuenta Yodo está mal registrada</string>
     <string name="error.21">Error al revisar la información</string>
     <string name="error.payment">Ingrese el total primero</string>
+    <string name="error.no.item">--item--</string>
 
     <!-- Network errors -->
     <string name="error.network">Lo sentimos, parece que no dispone de una conexion a Internet en este momento</string>
@@ -127,8 +129,8 @@
     <string-array name="languages_array">
         <item>Inglés</item>
         <item>Español</item>
-        <!--<item>Chino</item>
-        <item>Ruso</item>-->
+        <item>Chino</item>
+        <!--<item>Ruso</item>-->
     </string-array>
 
 </resources>
