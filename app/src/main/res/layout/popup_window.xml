@@ -19,7 +19,7 @@
         style="@style/EditTextView"
         android:id="@+id/cashTenderText"
         android:drawablePadding="10dp"
-        android:drawableLeft="@drawable/canada"
-        android:drawableStart="@drawable/canada"/>
+        android:drawableLeft="@mipmap/canada"
+        android:drawableStart="@mipmap/canada"/>
 
 </LinearLayout>

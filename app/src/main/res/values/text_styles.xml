@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Navigation titles -->
+    <style name="NavigationTitleText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceLarge</item>
+        <item name="android:textColor">@color/colorTextWhite</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- PIP Input -->
+    <style name="PIPInputText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:drawableLeft">@android:drawable/ic_lock_lock</item>
+        <item name="android:inputType">textPassword</item>
+        <item name="android:maxLength">8</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:hint">@string/text.pip.hint</item>
+        <item name="android:digits">0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</item>
+    </style>
+
+    <!-- Text View Labels -->
+    <style name="LabelTextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">@dimen/data_margin</item>
+        <item name="android:layout_marginTop">@dimen/data_marginTop</item>
+        <item name="android:layout_marginBottom">@dimen/data_margin</item>
+        <item name="android:textSize">@dimen/text_size_values</item>
+    </style>
+
+    <!-- Text View Editable -->
+    <style name="EditTextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">@dimen/data_margin</item>
+        <item name="android:layout_marginTop">@dimen/data_margin</item>
+        <item name="android:layout_marginBottom">@dimen/data_margin</item>
+        <item name="android:gravity">end</item>
+        <item name="android:clickable">true</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:text">@string/text.zero</item>
+        <item name="android:onClick">select</item>
+        <item name="android:textSize">@dimen/text_size_values</item>
+        <item name="android:background">@drawable/bg_show_field</item>
+    </style>
+
+</resources>

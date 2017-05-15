@@ -14,20 +14,16 @@ import com.scandit.barcodepicker.ScanditLicense;
 import com.scandit.recognition.Barcode;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.SystemUtils;
+import co.yodo.launcher.ui.scanner.contract.QRScanner;
 
 /**
  * Created by luis on 10/01/16.
  * class that implements a handler for the scandit
  * scanner
  */
-class ScanditScanner extends QRScanner implements OnScanListener {
-    /** DEBUG */
-    @SuppressWarnings( "unused" )
-    private static final String TAG = ScanditScanner.class.getSimpleName();
-
+public class ScanditScanner extends QRScanner implements OnScanListener {
     /** The main object for recognizing a displaying barcodes. */
-    private BarcodePicker mBarcodePicker;
+    private BarcodePicker barcodePicker;
 
     /** Your Scandit SDK App key is available via your Scandit SDK web account. */
     private static final String sScanditSdkAppKey = "fKiwAnaUTbGsN9Us2fDIIyGYwxHaS3gwbOs21jWzSfU";
@@ -45,13 +41,16 @@ class ScanditScanner extends QRScanner implements OnScanListener {
     /** Handler used after the scan */
     private Handler handler = new Handler();
 
-    ScanditScanner( Activity activity ) {
-        super( activity );
-        SystemUtils.Logger( TAG, ">> Created" );
-        ScanditLicense.setAppKey( sScanditSdkAppKey );
+    public ScanditScanner(Activity activity) {
+        super(activity);
+
+        // Set the key
+        ScanditLicense.setAppKey(sScanditSdkAppKey);
+
         // Setup GUI
-        opPanel = (TableRow) act.findViewById( R.id.operationsPanel );
-        pvPanel = (RelativeLayout) act.findViewById( R.id.previewPanel );
+        opPanel = (TableRow) act.findViewById(R.id.trOperationsPanel);
+        pvPanel = (RelativeLayout) act.findViewById(R.id.previewPanel);
+
         // Initialize and start the bar code recognition.
         initializeBarcodeScanning();
     }
@@ -62,40 +61,41 @@ class ScanditScanner extends QRScanner implements OnScanListener {
      */
     private void initializeBarcodeScanning() {
         settings = ScanSettings.create();
-        settings.setSymbologyEnabled( Barcode.SYMBOLOGY_QR, true );
-        /*settings.setCodeDuplicateFilter( -1 );
-        settings.setMaxNumberOfCodesPerFrame( 1 );*/
-        settings.setCameraFacingPreference( ScanSettings.CAMERA_FACING_BACK );
-        BarcodePicker picker = new BarcodePicker( act, settings );
+        settings.setSymbologyEnabled(Barcode.SYMBOLOGY_QR, true);
+        settings.setCameraFacingPreference(ScanSettings.CAMERA_FACING_BACK);
+        BarcodePicker picker = new BarcodePicker(act, settings);
+
         // Create layout parameters to scale it to match the parent
         RelativeLayout.LayoutParams rParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.MATCH_PARENT );
-        rParams.addRule( RelativeLayout.CENTER_HORIZONTAL );
+                RelativeLayout.LayoutParams.MATCH_PARENT);
+        rParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+
         // Add the scan view to the root view.
-        pvPanel.addView( picker, rParams );
-        mBarcodePicker = picker;
+        pvPanel.addView(picker, rParams);
+        barcodePicker = picker;
+
         // Register listener, in order to be notified about relevant events
-        mBarcodePicker.setOnScanListener( this );
+        barcodePicker.setOnScanListener(this);
     }
 
     @Override
-    public void setFrontFaceCamera( boolean frontFacing ) {
-        if( frontFacing )
-            settings.setCameraFacingPreference( ScanSettings.CAMERA_FACING_FRONT );
-        else
-            settings.setCameraFacingPreference( ScanSettings.CAMERA_FACING_BACK );
-        mBarcodePicker.applyScanSettings( settings );
+    public void setFrontFaceCamera(boolean frontFacing) {
+        if (frontFacing) {
+            settings.setCameraFacingPreference(ScanSettings.CAMERA_FACING_FRONT);
+        } else {
+            settings.setCameraFacingPreference(ScanSettings.CAMERA_FACING_BACK);
+        }
+        barcodePicker.applyScanSettings(settings);
     }
 
     @Override
     public void startScan() {
-        if( !previewing ) {
-            mBarcodePicker.startScanning();
-            mBarcodePicker.resumeScanning();
+        if (!previewing) {
+            barcodePicker.startScanning();
 
-            opPanel.setVisibility( View.GONE );
-            pvPanel.setVisibility( View.VISIBLE );
+            opPanel.setVisibility(View.GONE);
+            pvPanel.setVisibility(View.VISIBLE);
 
             previewing = true;
         }
@@ -115,20 +115,20 @@ class ScanditScanner extends QRScanner implements OnScanListener {
      * Release the camera resources
      */
     private void releaseCamera() {
-        mBarcodePicker.stopScanning();
+        barcodePicker.stopScanning();
 
-        opPanel.setVisibility( View.VISIBLE );
-        pvPanel.setVisibility( View.GONE );
+        opPanel.setVisibility(View.VISIBLE);
+        pvPanel.setVisibility(View.GONE);
 
         previewing = false;
     }
 
     private Runnable runnable = new Runnable() {
         public void run() {
-            mBarcodePicker.pauseScanning();
+            barcodePicker.pauseScanning();
 
-            opPanel.setVisibility( View.VISIBLE );
-            pvPanel.setVisibility( View.GONE );
+            opPanel.setVisibility(View.VISIBLE);
+            pvPanel.setVisibility(View.GONE);
 
             previewing = false;
         }
@@ -136,20 +136,23 @@ class ScanditScanner extends QRScanner implements OnScanListener {
 
     @Override
     public void didScan( ScanSession session ) throws NullPointerException {
-        for( Barcode code : session.getAllRecognizedCodes() ) {
-            String trimmed = code.getData().replaceAll( "\\s+", "" );
-            listener.onScanResult( trimmed );
+        for (Barcode code : session.getAllRecognizedCodes()) {
+            String trimmed = code.getData().replaceAll("\\s+", "");
+            listener.onScanResult(trimmed);
         }
-        handler.post( runnable );
+
+        handler.post(runnable);
     }
 
     @Override
     public void destroy() {
         super.destroy();
+
         // Stops the camera
         releaseCamera();
+
         // Set to null all the variables
-        mBarcodePicker = null;
+        barcodePicker = null;
         opPanel = null;
         pvPanel = null;
         settings = null;

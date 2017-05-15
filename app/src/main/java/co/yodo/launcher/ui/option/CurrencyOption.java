@@ -1,19 +1,19 @@
 package co.yodo.launcher.ui.option;
 
-import android.app.Activity;
 import android.content.DialogInterface;
-import android.graphics.drawable.Drawable;
 import android.widget.ListAdapter;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.GUIUtils;
-import co.yodo.launcher.helper.PrefUtils;
-import co.yodo.launcher.ui.LauncherActivity;
+import co.yodo.launcher.helper.AlertDialogHelper;
+import co.yodo.launcher.ui.contract.BaseActivity;
+import co.yodo.launcher.utils.GuiUtils;
+import co.yodo.launcher.utils.PrefUtils;
 import co.yodo.launcher.ui.adapter.CurrencyAdapter;
 import co.yodo.launcher.ui.adapter.data.Currency;
-import co.yodo.launcher.ui.notification.AlertDialogHelper;
 import co.yodo.launcher.ui.option.contract.IOption;
 
 /**
@@ -22,52 +22,68 @@ import co.yodo.launcher.ui.option.contract.IOption;
  */
 public class CurrencyOption extends IOption {
     /** Elements for the AlertDialog */
-    private final String mTitle;
-    private final String[] mCurrencies;
-    private final String[] mIcons;
-    private final ListAdapter mAdapter;
+    private final String title;
+    private final ListAdapter adapter;
+    private final int current;
 
     /**
      * Sets up the main elements of the options
      * @param activity The Activity to handle
      */
-    public CurrencyOption( Activity activity ) {
-        super( activity );
-        // AlertDialog
-        this.mTitle = this.mActivity.getString( R.string.set_currency );
-        this.mCurrencies = this.mActivity.getResources().getStringArray( R.array.currency_array );
-        this.mIcons = this.mActivity.getResources().getStringArray( R.array.currency_icon_array );
+    public CurrencyOption(BaseActivity activity) {
+        super(activity);
+
+        title = activity.getString(R.string.text_option_currency);
+        final String[] currencies = activity.getResources().getStringArray(R.array.currency_array);
+        final String[] icons = activity.getResources().getStringArray(R.array.currency_icon_array);
 
         // Set adapter
-        Currency[] currencyList = new Currency[mCurrencies.length];
-        for( int i = 0; i < mCurrencies.length; i++ )
-            currencyList[i] = new Currency(
-                    mCurrencies[i],
-                    GUIUtils.getDrawableByName( mActivity, mIcons[i] )
+        Currency[] currenciesArray = new Currency[currencies.length];
+        for (int i = 0; i < currencies.length; ++i) {
+            currenciesArray[i] = new Currency(
+                    currencies[i],
+                    GuiUtils.getDrawableByName(activity, icons[i])
             );
-        mAdapter = new CurrencyAdapter( mActivity, currencyList );
+        }
+
+        Collections.sort(Arrays.asList(currenciesArray), new Comparator<Currency>() {
+            @Override
+            public int compare( Currency lhs, Currency rhs ) {
+                return lhs.getName().compareTo(rhs.getName());
+            }
+        });
+
+        // Get selected currency
+        adapter = new CurrencyAdapter(activity, currenciesArray);
+        current = Collections.binarySearch(
+                Arrays.asList(currenciesArray),
+                new Currency(PrefUtils.getTenderCurrency(activity), null),
+                new Comparator<Currency>() {
+                    @Override
+                    public int compare( Currency lhs, Currency rhs ) {
+                        return lhs.getName().compareTo(rhs.getName());
+                    }
+                }
+        );
     }
 
     @Override
     public void execute() {
-        final int current = Arrays.asList( this.mCurrencies ).indexOf( PrefUtils.getTenderCurrency( mActivity ) );
-
-        DialogInterface.OnClickListener onClick = new DialogInterface.OnClickListener() {
+        DialogInterface.OnClickListener okClick = new DialogInterface.OnClickListener() {
             public void onClick( DialogInterface dialog, int item ) {
-                PrefUtils.saveTenderCurrency( mActivity, mCurrencies[item] );
-
-                Drawable icon = GUIUtils.getDrawableByName( mActivity, mIcons[ item ] );
-                ( (LauncherActivity) mActivity ).currency( icon );
+                Currency currency = (Currency) adapter.getItem(item);
+                PrefUtils.saveTenderCurrency(activity, currency.getName());
                 dialog.dismiss();
+                activity.updateUI();
             }
         };
 
-        AlertDialogHelper.showAlertDialog(
-                this.mActivity,
-                this.mTitle,
-                this.mAdapter,
+        AlertDialogHelper.create(
+                activity,
+                title,
+                adapter,
                 current,
-                onClick
+                okClick
         );
     }
 }

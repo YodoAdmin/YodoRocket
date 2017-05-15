@@ -1,91 +1,105 @@
 package co.yodo.launcher.ui.option;
 
 import android.view.View;
-import android.widget.Toast;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.PrefUtils;
-import co.yodo.launcher.manager.PromotionManager;
-import co.yodo.launcher.ui.LauncherActivity;
+import co.yodo.launcher.business.manager.PromotionManager;
+import co.yodo.launcher.helper.AlertDialogHelper;
+import co.yodo.launcher.helper.ProgressDialogHelper;
+import co.yodo.launcher.ui.contract.BaseActivity;
 import co.yodo.launcher.ui.dialog.BalanceDialog;
-import co.yodo.launcher.ui.notification.AlertDialogHelper;
-import co.yodo.launcher.ui.notification.MessageHandler;
-import co.yodo.launcher.ui.notification.ProgressDialogHelper;
-import co.yodo.launcher.ui.notification.ToastMaster;
 import co.yodo.launcher.ui.option.contract.IRequestOption;
-import co.yodo.restapi.network.ApiClient;
+import co.yodo.launcher.utils.ErrorUtils;
+import co.yodo.launcher.utils.PrefUtils;
+import co.yodo.restapi.YodoApi;
+import co.yodo.restapi.network.contract.RequestCallback;
 import co.yodo.restapi.network.model.Params;
 import co.yodo.restapi.network.model.ServerResponse;
-import co.yodo.restapi.network.request.QueryRequest;
+import co.yodo.restapi.network.requests.QueryHistoryBalanceRequest;
+import co.yodo.restapi.network.requests.QueryTodayBalanceRequest;
 
 /**
  * Created by hei on 21/06/16.
  * Implements the Balance Option of the Launcher
  */
-public class BalanceOption extends IRequestOption implements ApiClient.RequestsListener {
+public class BalanceOption extends IRequestOption {
     /** Elements for the request */
-    private final PromotionManager mPromotionManager;
-
-    /** Response codes for the server requests */
-    private static final int QRY_HBAL_REQ = 0x00; // History Balance
-    private static final int QRY_TBAL_REQ = 0x01; // Today Balance
-
-    /** Response params temporal */
-    private Params mTempData = null;
-
-    /** PIP temporal */
-    private String mTempPIP = null;
+    private final PromotionManager promotionManager;
 
     /** Handles the promotions */
     private boolean isPublishing = false;
+
+    /** PIP temporal */
+    private String tempPip = null;
 
     /**
      * Sets up the main elements of the options
      * @param activity The Activity to handle
      */
-    public BalanceOption( LauncherActivity activity, MessageHandler handlerMessages, PromotionManager promotionManager ) {
-        super( activity, handlerMessages );
+    public BalanceOption(final BaseActivity activity, final PromotionManager promotionManager) {
+        super(activity);
 
-        // Request
-        this.mPromotionManager = promotionManager;
+        // Get the promotion manager
+        this.promotionManager = promotionManager;
 
         // Dialog
         final View layout = buildLayout();
         final View.OnClickListener okClick = new View.OnClickListener() {
             @Override
-            public void onClick( View view  ) {
-                mAlertDialog.dismiss();
-                setTempPIP( etInput.getText().toString() );
+            public void onClick(View view) {
+                setTempPIP(etInput.getText().toString());
 
-                mProgressManager.createProgressDialog(
-                        mActivity,
+                progressManager.create(
+                        activity,
                         ProgressDialogHelper.ProgressDialogType.NORMAL
                 );
-                mRequestManager.setListener( BalanceOption.this );
-                mRequestManager.invoke(
-                        new QueryRequest(
-                                QRY_HBAL_REQ,
-                                mHardwareToken,
-                                mTempPIP,
-                                QueryRequest.Record.HISTORY_BALANCE
-                        )
+
+                YodoApi.execute(
+                        new QueryHistoryBalanceRequest(tempPip),
+                        new RequestCallback() {
+                            @Override
+                            public void onPrepare() {
+                                if (PrefUtils.isAdvertising(activity)) {
+                                    promotionManager.unpublish();
+                                    isPublishing = true;
+                                }
+                            }
+
+                            @Override
+                            public void onResponse(ServerResponse response) {
+                                if (response.getCode().equals(ServerResponse.AUTHORIZED)) {
+                                    alertDialog.dismiss();
+                                    requestTodayBalance(response.getParams());
+                                } else {
+                                    progressManager.destroy();
+                                    tilPip.setError(activity.getString(R.string.error_mip));
+                                }
+                            }
+
+                            @Override
+                            public void onError(Throwable error) {
+                                alertDialog.dismiss();
+                                progressManager.destroy();
+                                ErrorUtils.handleApiError(activity, error, false);
+                                startPublishing();
+                            }
+                        }
                 );
             }
         };
 
-        mAlertDialog = AlertDialogHelper.create(
-                mActivity,
+        alertDialog = AlertDialogHelper.create(
+                activity,
                 layout,
-                buildOnClick( okClick )
+                buildOnClick(okClick)
         );
     }
 
     @Override
     public void execute() {
-        mAlertDialog.show();
+        alertDialog.show();
         clearGUI();
     }
 
@@ -93,108 +107,73 @@ public class BalanceOption extends IRequestOption implements ApiClient.RequestsL
      * Sets the temporary PIP to a string value
      * @param pip The String PIP
      */
-    private void setTempPIP( String pip ) {
-        this.mTempPIP = pip;
+    private void setTempPIP(String pip) {
+        this.tempPip = pip;
     }
 
     /**
-     * Sets the temporary Data to a MapValue (response params)
-     * @param response The ServerResponse params
+     * Starts publishing again if it was publishing
+     * before the request
      */
-    private void setTempData( Params response ) {
-        this.mTempData = response;
-    }
-
-    @Override
-    public void onPrepare() {
-        if( PrefUtils.isAdvertising( this.mActivity ) ) {
-            mPromotionManager.unpublish();
-            isPublishing = true;
+    private void startPublishing() {
+        if (isPublishing) {
+            isPublishing = false;
+            promotionManager.publish();
         }
     }
 
-    @Override
-    public void onResponse( int responseCode, ServerResponse response ) {
-        // Set listener to the principal activity
-        mProgressManager.destroyProgressDialog();
-        mRequestManager.setListener( (LauncherActivity) mActivity );
+    /**
+     * Requests the balance for the current day
+     * @param totalParams The total balance, used to be displayed in dialog
+     */
+    private void requestTodayBalance(final Params totalParams) {
+        YodoApi.execute(
+                new QueryTodayBalanceRequest(tempPip),
+                new RequestCallback() {
+                    @Override
+                    public void onPrepare() {
+                    }
 
-        // If it was publishing before the request
-        if( isPublishing )
-            mPromotionManager.publish();
+                    @Override
+                    public void onResponse( ServerResponse response ) {
+                        progressManager.destroy();
 
-        String code = response.getCode();
-        String message = response.getMessage();
-
-        switch( code ) {
-            case ServerResponse.AUTHORIZED:
-
-                switch( responseCode ) {
-                    case QRY_HBAL_REQ:
-                        if( response.getParams().getCredit() == null ) {
-                            ToastMaster.makeText( mActivity, R.string.no_balance, Toast.LENGTH_SHORT ).show();
-                            return;
-                        }
-
-                        setTempData( response.getParams() );
-                        mProgressManager.createProgressDialog(
-                                mActivity,
-                                ProgressDialogHelper.ProgressDialogType.NORMAL
-                        );
-
-                        mRequestManager.setListener( BalanceOption.this );
-                        mRequestManager.invoke(
-                                new QueryRequest(
-                                        QRY_TBAL_REQ,
-                                        mHardwareToken,
-                                        mTempPIP,
-                                        QueryRequest.Record.TODAY_BALANCE
-                                )
-                        );
-                        break;
-
-                    case QRY_TBAL_REQ:
+                        // Sets all the balance data in the dialog
                         BigDecimal todayBalance = BigDecimal.ZERO;
-                        BigDecimal todayCredits = new BigDecimal( response.getParams().getCredit() );
-                        BigDecimal todayDebits = new BigDecimal( response.getParams().getDebit() );
+                        BigDecimal todayCredits = new BigDecimal(response.getParams().getCredit());
+                        BigDecimal todayDebits = new BigDecimal(response.getParams().getDebit());
 
                         todayBalance = todayBalance
-                                .add( todayCredits )
-                                .subtract( todayDebits );
+                                .add(todayCredits)
+                                .subtract(todayDebits);
 
                         BigDecimal historyBalance = BigDecimal.ZERO;
-                        BigDecimal historyCredits = new BigDecimal( mTempData.getCredit() );
-                        BigDecimal historyDebits = new BigDecimal( mTempData.getDebit() );
+                        BigDecimal historyCredits = new BigDecimal(totalParams.getCredit());
+                        BigDecimal historyDebits = new BigDecimal(totalParams.getDebit());
 
                         historyBalance = historyBalance
-                                .add( historyCredits )
-                                .subtract( historyDebits );
+                                .add(historyCredits)
+                                .subtract(historyDebits);
 
-                        new BalanceDialog.Builder( mActivity )
-                                .todayCredits( todayCredits.toString() )
-                                .todayDebits( todayDebits.toString() )
-                                .todayBalance( todayBalance.toString() )
-                                .historyCredits( historyCredits.toString() )
-                                .historyDebits( historyDebits.toString() )
-                                .historyBalance( historyBalance.toString() )
+                        new BalanceDialog.Builder(activity)
+                                .todayCredits(todayCredits.toString())
+                                .todayDebits(todayDebits.toString())
+                                .todayBalance(todayBalance.toString())
+                                .historyCredits(historyCredits.toString())
+                                .historyDebits(historyDebits.toString())
+                                .historyBalance(historyBalance.toString())
                                 .build();
-                        setTempData( null );
-                        break;
+
+                        startPublishing();
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        progressManager.destroy();
+                        ErrorUtils.handleApiError(activity, error, false);
+                        startPublishing();
+                    }
                 }
-                break;
-
-            case ServerResponse.ERROR_FAILED:
-                message = mActivity.getString( R.string.message_incorrect_pip );
-                MessageHandler.sendMessage( mHandlerMessages, code, message );
-                setTempData( null );
-                break;
-
-            default:
-                MessageHandler.sendMessage( mHandlerMessages, code, message );
-                setTempData( null );
-                break;
-        }
-
-        setTempPIP( null );
+        );
     }
 }

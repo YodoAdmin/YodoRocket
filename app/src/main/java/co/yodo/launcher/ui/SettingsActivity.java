@@ -2,67 +2,61 @@ package co.yodo.launcher.ui;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.preference.PreferenceScreen;
 import android.view.MenuItem;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.AppConfig;
-import co.yodo.launcher.helper.GUIUtils;
-import co.yodo.launcher.helper.PrefUtils;
-import co.yodo.launcher.helper.SystemUtils;
-import co.yodo.launcher.service.LocationService;
+import co.yodo.launcher.ui.contract.BaseActivity;
+import co.yodo.launcher.utils.AppConfig;
+import co.yodo.launcher.utils.BluetoothUtil;
+import co.yodo.launcher.utils.GuiUtils;
+import co.yodo.launcher.utils.PrefUtils;
+import co.yodo.launcher.utils.SystemUtils;
 
 /**
  * Created by luis on 3/08/15.
  * Settings for the Rocket
  */
-public class SettingsActivity extends AppCompatActivity {
-    /** Request codes for the permissions */
-    private static final int PERMISSIONS_REQUEST_LOCATION = 1;
-
+public class SettingsActivity extends BaseActivity {
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
-        GUIUtils.setLanguage( this );
-        setContentView( R.layout.activity_settings );
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_settings);
 
         setupGUI();
+        updateData();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
-        switch( itemId ) {
+        switch (itemId) {
             case android.R.id.home:
                 finish();
                 break;
         }
-        return super.onOptionsItemSelected( item );
+        return super.onOptionsItemSelected(item);
     }
 
     /**
      * Configures the main GUI Controllers
      */
-    private void setupGUI() {
-        // Only used at creation
-        Toolbar toolbar = (Toolbar) findViewById( R.id.toolbar );
-
+    @Override
+    protected void setupGUI() {
         // Setup the toolbar
-        setSupportActionBar( toolbar );
-        ActionBar actionbar = getSupportActionBar();
-        if( actionbar != null )
-            actionbar.setDisplayHomeAsUpEnabled( true );
+        GuiUtils.setActionBar(this);
 
-        getFragmentManager().beginTransaction().replace( R.id.content, new PrefsFragmentInner() ).commit();
+        getFragmentManager().beginTransaction().replace(R.id.content, new PrefsFragmentInner()).commit();
+    }
+
+    @Override
+    protected void updateData() {
     }
 
     public static class PrefsFragmentInner extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -71,18 +65,19 @@ public class SettingsActivity extends AppCompatActivity {
 
         /** GUI Controllers */
         private EditTextPreference ETP_SPREF_USERNAME;
-        private CheckBoxPreference ETP_ADVERTISING;
-        private CheckBoxPreference ETP_LOCATING;
+        private CheckBoxPreference CBP_ADVERTISING;
+        private CheckBoxPreference CBP_LOCATING;
+        private PreferenceCategory PC_PRINTER;
 
         @Override
-        public void onCreate( final Bundle savedInstanceState ) {
-            super.onCreate( savedInstanceState );
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
 
             PreferenceManager prefMgr = getPreferenceManager();
-            prefMgr.setSharedPreferencesName( AppConfig.SHARED_PREF_FILE );
-            prefMgr.setSharedPreferencesMode( MODE_PRIVATE );
+            prefMgr.setSharedPreferencesName(AppConfig.SHARED_PREF_FILE);
+            prefMgr.setSharedPreferencesMode(MODE_PRIVATE);
 
-            addPreferencesFromResource( R.xml.fragment_settings );
+            addPreferencesFromResource(R.xml.fragment_settings);
 
             setupGUI();
         }
@@ -92,29 +87,34 @@ public class SettingsActivity extends AppCompatActivity {
             c = getActivity();
 
             ETP_SPREF_USERNAME = (EditTextPreference) getPreferenceScreen()
-                    .findPreference( AppConfig.SPREF_CURRENT_BEACON );
+                    .findPreference(AppConfig.SPREF_CURRENT_BEACON);
 
-            ETP_ADVERTISING = (CheckBoxPreference) getPreferenceScreen()
-                    .findPreference( AppConfig.SPREF_ADVERTISING_SERVICE );
+            CBP_ADVERTISING = (CheckBoxPreference) getPreferenceScreen()
+                    .findPreference(AppConfig.SPREF_ADVERTISING_SERVICE);
 
-            ETP_LOCATING = (CheckBoxPreference) getPreferenceScreen()
-                    .findPreference( AppConfig.SPREF_LOCATION_SERVICE );
+            CBP_LOCATING = (CheckBoxPreference) getPreferenceScreen()
+                    .findPreference(AppConfig.SPREF_LOCATION_SERVICE);
 
-            if( PrefUtils.isLegacy( c ) ) {
-                ETP_SPREF_USERNAME.setEnabled( false );
-                ETP_ADVERTISING.setEnabled( false );
+            PC_PRINTER = (PreferenceCategory) findPreference("PrinterCategory");
+
+            if (PrefUtils.isLegacy(c)) {
+                ETP_SPREF_USERNAME.setEnabled(false);
+                CBP_ADVERTISING.setEnabled(false);
             }
 
-            if( PrefUtils.isLegacy( c ) || !LocationService.permission( getActivity(), null ) ) {
-                ETP_LOCATING.setEnabled( false );
-            } else if( LocationService.permission( getActivity(), null ) && !SystemUtils.hasLocationService( c ) ) {
-                ETP_LOCATING.setEnabled( false );
+            if (PrefUtils.isLegacy(c) || !SystemUtils.hasLocationService(c)) {
+                CBP_LOCATING.setEnabled(false);
+            }
+
+            PreferenceScreen screen = getPreferenceScreen();
+            if (BluetoothUtil.getDevice() == null) {
+                screen.removePreference(PC_PRINTER);
             }
         }
 
-        private void updateStatus( String key ) {
-            if( key.equals( AppConfig.SPREF_CURRENT_LANGUAGE ) ) {
-                getActivity().setResult( RESULT_FIRST_USER );
+        private void updateStatus(String key) {
+            if (key.equals(AppConfig.SPREF_CURRENT_LANGUAGE)) {
+                getActivity().setResult(RESULT_FIRST_USER);
                 getActivity().finish();
             }
         }
@@ -123,7 +123,7 @@ public class SettingsActivity extends AppCompatActivity {
         public void onResume() {
             super.onResume();
             // register listener to update when value change
-            getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener( this );
+            getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
             setAllSummaries();
         }
 
@@ -131,17 +131,17 @@ public class SettingsActivity extends AppCompatActivity {
         public void onPause() {
             super.onPause();
             // unregister listener
-            getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener( this );
+            getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         }
 
         private void setAllSummaries() {
-            ETP_SPREF_USERNAME.setSummary( PrefUtils.getBeaconName( c ) );
+            ETP_SPREF_USERNAME.setSummary(PrefUtils.getBeaconName(c));
         }
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             setAllSummaries();
-            updateStatus( key );
+            updateStatus(key);
         }
     }
 }

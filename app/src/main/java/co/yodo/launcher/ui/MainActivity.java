@@ -6,45 +6,26 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import javax.inject.Inject;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import co.yodo.launcher.BuildConfig;
 import co.yodo.launcher.R;
 import co.yodo.launcher.YodoApplication;
-import co.yodo.launcher.component.Intents;
-import co.yodo.launcher.helper.GUIUtils;
-import co.yodo.launcher.helper.PrefUtils;
-import co.yodo.launcher.helper.SystemUtils;
-import co.yodo.launcher.ui.notification.ToastMaster;
-import co.yodo.launcher.ui.notification.MessageHandler;
-import co.yodo.restapi.network.ApiClient;
+import co.yodo.launcher.business.component.Intents;
+import co.yodo.launcher.ui.contract.BaseActivity;
+import co.yodo.launcher.utils.ErrorUtils;
+import co.yodo.launcher.utils.PrefUtils;
+import co.yodo.launcher.utils.SystemUtils;
+import co.yodo.restapi.YodoApi;
+import co.yodo.restapi.network.contract.RequestCallback;
 import co.yodo.restapi.network.model.ServerResponse;
-import co.yodo.restapi.network.request.AuthenticateRequest;
-import co.yodo.restapi.network.request.QueryRequest;
+import co.yodo.restapi.network.requests.AuthMerchDeviceRequest;
+import co.yodo.restapi.network.requests.QueryCurrencyRequest;
 
-public class MainActivity extends AppCompatActivity implements ApiClient.RequestsListener {
-    /** DEBUG */
-    @SuppressWarnings( "unused" )
-    private static final String TAG = MainActivity.class.getSimpleName();
-
-    /** The context object */
-    private Context ac;
-
-    /** Hardware Token */
-    private String mHardwareToken;
-
-    /** Messages Handler */
-    private MessageHandler mHandlerMessages;
-
-    /** Manager for the server requests */
+public class MainActivity extends BaseActivity {
+    /** The application context */
     @Inject
-    ApiClient mRequestManager;
+    Context context;
 
     /** Code for the error dialog */
     private static final int REQUEST_CODE_RECOVER_PLAY_SERVICES = 0;
@@ -54,196 +35,51 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
 
     /** Request Code (Activity Results) */
     private static final int ACTIVITY_REGISTRATION_REQUEST = 1;
-    private static final int ACTIVITY_LAUNCHER_REQUEST     = 2;
-
-    /** Response codes for the server requests */
-    private static final int AUTH_REQ  = 0x00;
-    private static final int QUERY_REQ = 0x01;
+    private static final int ACTIVITY_LAUNCHER_REQUEST = 2;
 
     /** Bundle in case of external call */
     private Bundle bundle;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
-        GUIUtils.setLanguage( this );
-        setContentView( R.layout.activity_splash );
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         setupGUI();
         updateData();
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        mRequestManager.setListener( this );
-    }
-
-    private void setupGUI() {
-        // Get the context and handler for the messages
-        ac = MainActivity.this;
-        mHandlerMessages = new MessageHandler( MainActivity.this );
-
+    protected void setupGUI() {
         // Inject
-        ButterKnife.bind( this );
-        YodoApplication.getComponent().inject( this );
-        mRequestManager.setListener( this );
+        YodoApplication.getComponent().inject(this);
     }
 
-    private void updateData() {
-        /*********** Handle external Requests *************/
-        /**************************************************/
+    @Override
+    protected void updateData() {
+        // Handle external requests
         Intent intent = getIntent();
-        if( intent != null ) {
+        if (intent != null) {
             String action = intent.getAction();
-            if( Intents.ACTION.equals( action ) ) {
+            if (Intents.ACTION.equals(action)) {
                 bundle = intent.getExtras();
             }
         }
-        /**************************************************/
 
         // Get the main system booleans
         boolean hasServices = SystemUtils.isGooglePlayServicesAvailable(
-                MainActivity.this,
+                this,
                 REQUEST_CODE_RECOVER_PLAY_SERVICES
         );
-        boolean isLegacy = PrefUtils.isLegacy( ac );
-
-        // Get the main user booleans
-        boolean isLoggedIn = PrefUtils.isLoggedIn( ac );
-        boolean hasMerchCurr = PrefUtils.getMerchantCurrency( ac ) != null;
-        boolean hasTenderCurr = PrefUtils.getTenderCurrency( ac ) != null;
+        boolean isLegacy = PrefUtils.isLegacy(context);
 
         // Verify Google Play Services
-        if( hasServices || isLegacy ) {
-            mHardwareToken = PrefUtils.getHardwareToken( ac );
-            if( mHardwareToken == null ) {
-                setupPermissions();
-            } else if( !isLoggedIn || !hasMerchCurr || !hasTenderCurr ) {
-                mRequestManager.invoke(
-                        new AuthenticateRequest(
-                                AUTH_REQ,
-                                mHardwareToken
-                        )
-                );
-            } else {
-                intent = new Intent( ac, LauncherActivity.class );
-                if( bundle != null ) intent.putExtras( bundle );
-                startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
+        if (hasServices || isLegacy) {
+            // If has services, then it is not legacy
+            if (hasServices) {
+                PrefUtils.setLegacy(context, false);
             }
-        }
-    }
 
-    /**
-     * Request the necessary permissions for this activity
-     */
-    private void setupPermissions() {
-        boolean phoneStatePermission = SystemUtils.requestPermission(
-                MainActivity.this,
-                R.string.message_permission_read_phone_state,
-                Manifest.permission.READ_PHONE_STATE,
-                PERMISSIONS_REQUEST_READ_PHONE_STATE
-        );
-
-        if( phoneStatePermission )
-            authenticateUser();
-    }
-
-    /**
-     * Generates the hardware token after we have the permission
-     * and verifies if it is null or not. Null could be caused
-     * if the bluetooth is off
-     */
-    private void authenticateUser() {
-        mHardwareToken = PrefUtils.generateHardwareToken( ac );
-        if( mHardwareToken == null ) {
-            ToastMaster.makeText( ac, R.string.message_no_hardware, Toast.LENGTH_LONG ).show();
-            finish();
-        } else {
-            // We have the hardware token, now let's verify if the user exists
-            PrefUtils.saveHardwareToken( ac, mHardwareToken );
-            mRequestManager.invoke(
-                    new AuthenticateRequest(
-                            AUTH_REQ,
-                            mHardwareToken
-                    )
-            );
-        }
-    }
-
-    @Override
-    public void onPrepare() {
-    }
-
-    @Override
-    public void onResponse( int responseCode, ServerResponse response ) {
-        // Get response values
-        String code    = response.getCode();
-        String message = response.getMessage();
-
-        switch( responseCode ) {
-            case AUTH_REQ:
-
-                switch( code ) {
-                    case ServerResponse.AUTHORIZED:
-                        // Get the merchant currency
-                        mRequestManager.invoke(
-                                new QueryRequest(
-                                        QUERY_REQ,
-                                        mHardwareToken,
-                                        QueryRequest.Record.MERCHANT_CURRENCY
-                                )
-                        );
-                        break;
-
-                    case ServerResponse.ERROR_FAILED:
-                        PrefUtils.saveLoginStatus( ac, false );
-                        Intent intent = new Intent( ac, RegistrationActivity.class );
-                        startActivityForResult( intent, ACTIVITY_REGISTRATION_REQUEST );
-                        break;
-
-                    default:
-                        MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
-                                mHandlerMessages,
-                                code,
-                                message
-                        );
-                        break;
-                }
-
-                break;
-
-            case QUERY_REQ:
-
-                if( code.equals( ServerResponse.AUTHORIZED ) ) {
-                    // Set currencies
-                    String currency = response.getParams().getCurrency();
-                    final boolean savedMCurr = PrefUtils.saveMerchantCurrency( ac, currency );
-                    final boolean savedTCurr = PrefUtils.saveTenderCurrency( ac, currency );
-
-                    if( savedMCurr && savedTCurr ) {
-                        // Start the app
-                        PrefUtils.saveLoginStatus( ac, true );
-                        Intent intent = new Intent( ac, LauncherActivity.class );
-                        if( bundle != null ) intent.putExtras( bundle );
-                        startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
-                    } else {
-                        MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
-                                mHandlerMessages,
-                                ServerResponse.ERROR_FAILED,
-                                "Currency not supported"
-                        );
-                    }
-
-                } else {
-                    MessageHandler.sendMessage( MessageHandler.INIT_ERROR,
-                            mHandlerMessages,
-                            code,
-                            message
-                    );
-                }
-
-                break;
+            setupPermissions();
         }
     }
 
@@ -253,61 +89,55 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
      * @param resultCode If the result was ok or not
      * @param data The result intent sent by the activity
      */
-    protected void onActivityResult( int requestCode, int resultCode, Intent data ) {
-        if( resultCode == RESULT_OK ) {
-            switch( requestCode ) {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
                     // Google play services installed, start the app again
-                    PrefUtils.setLegacy( ac, false );
-                    Intent iSplash = new Intent( this, MainActivity.class );
-                    iSplash.putExtras( bundle );
-                    startActivity( iSplash );
+                    PrefUtils.setLegacy(context, false);
+                    Intent intent = new Intent(context, MainActivity.class);
+                    if (bundle != null) intent.putExtras(bundle);
+                    startActivity(intent);
                     finish();
                     break;
 
                 case ACTIVITY_REGISTRATION_REQUEST:
                     // Get the merchant currency
-                    mRequestManager.invoke(
-                            new QueryRequest(
-                                    QUERY_REQ,
-                                    mHardwareToken,
-                                    QueryRequest.Record.MERCHANT_CURRENCY
-                            )
-                    );
+                    syncCurrencies();
                     break;
 
                 case ACTIVITY_LAUNCHER_REQUEST:
-                    setResult( RESULT_OK, data );
+                    setResult(RESULT_OK, data);
                     finish();
                     break;
             }
         }
-        else if( resultCode == RESULT_CANCELED ) {
+        else if (resultCode == RESULT_CANCELED) {
             finish();
-            switch( requestCode ) {
+            switch (requestCode) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
                     // Denied to install, restart in legacy mode
-                    PrefUtils.setLegacy( ac, true );
-                    Intent iSplash = new Intent( ac, MainActivity.class );
-                    iSplash.putExtras( bundle );
-                    startActivity( iSplash );
-                    finish();
+                    PrefUtils.setLegacy(context, true);
+                    Intent intent = new Intent(context, MainActivity.class);
+                    if (bundle != null) intent.putExtras(bundle);
+                    startActivity(intent);
                     break;
             }
         }
-        else if( resultCode == RESULT_FIRST_USER ) {
-            Intent intent = new Intent( ac, LauncherActivity.class );
-            if( bundle != null ) intent.putExtras( bundle );
-            startActivityForResult( intent, ACTIVITY_LAUNCHER_REQUEST );
+        else if (resultCode == RESULT_FIRST_USER) {
+            Intent intent = new Intent(context, RocketActivity.class);
+            if (bundle != null) intent.putExtras(bundle);
+            startActivityForResult(intent, ACTIVITY_LAUNCHER_REQUEST);
         }
     }
 
     @Override
-    public void onRequestPermissionsResult( int requestCode, @NonNull String permissions[], @NonNull int[] grantResults ) {
-        switch( requestCode ) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
             case PERMISSIONS_REQUEST_READ_PHONE_STATE:
                 // If request is cancelled, the result arrays are empty.
-                if( grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
                     authenticateUser();
                 } else {
@@ -317,7 +147,142 @@ public class MainActivity extends AppCompatActivity implements ApiClient.Request
                 break;
 
             default:
-                super.onRequestPermissionsResult( requestCode, permissions, grantResults );
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+
+    /**
+     * Request the necessary permissions for this activity
+     */
+    private void setupPermissions() {
+        boolean phoneStatePermission = SystemUtils.requestPermission(
+                MainActivity.this,
+                R.string.text_permission_read_phone_state,
+                Manifest.permission.READ_PHONE_STATE,
+                PERMISSIONS_REQUEST_READ_PHONE_STATE
+        );
+
+        if (phoneStatePermission) {
+            authenticateUser();
+        }
+    }
+
+    /**
+     * Gets the permission to generate a hardware token
+     * and authenticates the user
+     */
+    private void authenticateUser() {
+        // Get the main user booleans
+        boolean isLoggedIn = PrefUtils.isLoggedIn(context);
+        boolean hasMerchCurr = PrefUtils.getMerchantCurrency(context) != null;
+        boolean hasTenderCurr = PrefUtils.getTenderCurrency(context) != null;
+
+        if (isLoggedIn && hasMerchCurr && hasTenderCurr) {
+            Intent intent = new Intent(context, RocketActivity.class);
+            if (bundle != null) intent.putExtras(bundle);
+            startActivityForResult(intent, ACTIVITY_LAUNCHER_REQUEST);
+        } else {
+            YodoApi.execute(
+                    new AuthMerchDeviceRequest(),
+                    new RequestCallback() {
+                        @Override
+                        public void onPrepare() {
+                        }
+
+                        @Override
+                        public void onResponse(ServerResponse response) {
+                            final String code = response.getCode();
+                            switch (code) {
+                                case ServerResponse.AUTHORIZED:
+                                    syncCurrencies();
+                                    break;
+
+                                case ServerResponse.ERROR_FAILED:
+                                    PrefUtils.setLoggedIn(context, false);
+                                    Intent intent = new Intent(context, RegistrationActivity.class);
+                                    if (bundle != null) intent.putExtras(bundle);
+                                    startActivityForResult(intent, ACTIVITY_REGISTRATION_REQUEST);
+                                    break;
+
+                                default:
+                                    handleServerError(R.string.error_server);
+                                    break;
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable throwable) {
+                            handleApiError(throwable);
+                        }
+                    }
+            );
+        }
+    }
+
+    /**
+     * Request the merchant currency to the server
+     */
+    private void syncCurrencies() {
+        YodoApi.execute(
+                new QueryCurrencyRequest(),
+                new RequestCallback() {
+                    @Override
+                    public void onPrepare() {
+                    }
+
+                    @Override
+                    public void onResponse(ServerResponse response) {
+                        final String code = response.getCode();
+                        if (code.equals(ServerResponse.AUTHORIZED)) {
+                            // Set currencies
+                            String currency = response.getParams().getCurrency();
+                            final boolean savedMCurr = PrefUtils.saveMerchantCurrency(context, currency);
+                            final boolean savedTCurr = PrefUtils.saveTenderCurrency(context, currency);
+
+                            if (savedMCurr && savedTCurr) {
+                                // Start the app
+                                PrefUtils.setLoggedIn(context, true);
+                                Intent intent = new Intent(context, RocketActivity.class);
+                                if (bundle != null) intent.putExtras(bundle);
+                                startActivityForResult(intent, ACTIVITY_LAUNCHER_REQUEST);
+                            } else {
+                                handleServerError(R.string.error_currency);
+                            }
+                        } else {
+                            handleServerError(R.string.error_server);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        handleApiError(throwable);
+                    }
+                }
+        );
+    }
+
+    /**
+     * Takes an action over an error from the server
+     * @param error The resource message
+     */
+    private void handleServerError(int error) {
+        ErrorUtils.handleError(
+                MainActivity.this,
+                error,
+                true
+        );
+    }
+
+    /**
+     * Takes an action over the errors in the requests
+     * @param throwable The exception
+     */
+    private void handleApiError(Throwable throwable) {
+        ErrorUtils.handleApiError(
+                MainActivity.this,
+                throwable,
+                true
+        );
     }
 }

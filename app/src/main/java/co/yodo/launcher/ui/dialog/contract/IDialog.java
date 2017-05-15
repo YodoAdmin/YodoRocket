@@ -11,23 +11,23 @@ import co.yodo.launcher.R;
  */
 public abstract class IDialog {
     /** Dialog to be build */
-    protected final AlertDialog mDialog;
+    private final AlertDialog dialog;
 
     /**
      * Constructor that shows the dialog
      * based in the DialogBuilder
      * @param builder The DialogBuilder
      */
-    protected IDialog( DialogBuilder builder ) {
-        this.mDialog = builder.mDialog;
-        this.mDialog.show();
+    protected IDialog(DialogBuilder builder) {
+        dialog = builder.dialog;
+        dialog.show();
     }
 
     /**
      * Show the inner dialog
      */
     public void show() {
-        this.mDialog.show();
+        dialog.show();
     }
 
     /**
@@ -35,28 +35,25 @@ public abstract class IDialog {
      */
     protected static abstract class DialogBuilder {
         /** Context object */
-        protected final Context mContext;
+        protected final Context context;
 
         /** Dialog to be build */
-        protected final AlertDialog mDialog;
+        protected final AlertDialog dialog;
 
         /**
          * Builder constructor with the mandatory elements
          * @param context The application context
          * @param layout The layout for the dialog
          */
-        protected DialogBuilder( Context context, int layout, int title ) {
-            this.mContext = context;
-            AlertDialog.Builder mBuilder = new AlertDialog.Builder(
-                    this.mContext,
-                    R.style.AppCompatAlertDialogStyle
-            );
-            mBuilder.setIcon( R.drawable.icon );
-            mBuilder.setTitle( title );
-            mBuilder.setView( layout );
-            mBuilder.setCancelable( false );
-            mBuilder.setPositiveButton( R.string.ok, null );
-            this.mDialog = mBuilder.show();
+        protected DialogBuilder(Context context, int layout, int title) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setIcon(R.mipmap.icon);
+            builder.setTitle(title);
+            builder.setView(layout);
+            builder.setCancelable(false);
+            builder.setPositiveButton(R.string.text_ok, null);
+            this.context = context;
+            this.dialog = builder.show();
         }
 
         /**

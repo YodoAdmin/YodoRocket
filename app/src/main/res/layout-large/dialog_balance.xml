@@ -1,132 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/layoutDialogRoot"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/layoutDialogRoot"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
 	android:padding="10dp"
-    android:orientation="vertical" >
+	android:orientation="vertical" >
 
 	<!-- Today -->
-
 	<TextView
 		style="@style/DialogLabel"
-		android:text="@string/today"
+		android:text="@string/text.balance.today"
 		android:textStyle="bold"
 		android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <LinearLayout 
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
-	    
-	    <TextView
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal" >
+
+		<TextView
 			style="@style/DialogLabel"
-	        android:text="@string/yodo_cash"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-	    
-	    <TextView
+			android:text="@string/text.balance.cash"
+			android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		<TextView
 			style="@style/DialogContent"
-	        android:id="@+id/tvTodayCredits"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-	    
-	    <LinearLayout 
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="end"
-            android:orientation="horizontal" >
-	    
-		    <TextView
+			android:id="@+id/tvTodayCredits"
+			android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:gravity="end"
+			android:orientation="horizontal" >
+
+			<TextView
 				style="@style/DialogLabel"
-		        android:text="@string/yodo_debits"
-		        android:textAppearance="?android:attr/textAppearanceMedium" />
-		    
-		    <TextView
+				android:text="@string/text.balance.debits"
+				android:textAppearance="?android:attr/textAppearanceMedium" />
+
+			<TextView
 				style="@style/DialogContent"
-		        android:id="@+id/tvTodayDebits"
-		        android:textAppearance="?android:attr/textAppearanceMedium" />
+				android:id="@+id/tvTodayDebits"
+				android:textAppearance="?android:attr/textAppearanceMedium" />
 
-	    </LinearLayout>
+		</LinearLayout>
 
-    </LinearLayout>
-    
-    <LinearLayout 
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:orientation="horizontal">
-	    
-        <TextView
+	</LinearLayout>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:gravity="end"
+		android:orientation="horizontal">
+
+		<TextView
 			style="@style/DialogLabel"
-	        android:text="@string/yodo_today_balance"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-	    
-	    <TextView
+			android:text="@string/text.balance.cumulative.today"
+			android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		<TextView
 			style="@style/DialogContent"
-	        android:id="@+id/tvTodayBalance"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-	    
-    </LinearLayout>
+			android:id="@+id/tvTodayBalance"
+			android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	</LinearLayout>
 
 	<!-- To Date -->
 
 	<TextView
 		style="@style/DialogLabel"
-		android:text="@string/to_date"
+		android:text="@string/text.balance.to.date"
 		android:textStyle="bold"
 		android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <LinearLayout 
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
-	    
-	    <TextView
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal" >
+
+		<TextView
 			style="@style/DialogLabel"
-	        android:text="@string/yodo_cash"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-	    
-	    <TextView
+			android:text="@string/text.balance.cash"
+			android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		<TextView
 			style="@style/DialogContent"
-	        android:id="@+id/tvHistoryCredits"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-	    
-	    <LinearLayout 
+			android:id="@+id/tvHistoryCredits"
+			android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:gravity="end"
 			android:orientation="horizontal" >
-	    
-		    <TextView
+
+			<TextView
 				style="@style/DialogLabel"
-		        android:text="@string/yodo_debits"
-		        android:textAppearance="?android:attr/textAppearanceMedium" />
-		    
-		    <TextView
+				android:text="@string/text.balance.debits"
+				android:textAppearance="?android:attr/textAppearanceMedium" />
+
+			<TextView
 				style="@style/DialogContent"
-		        android:id="@+id/tvHistoryDebits"
-		        android:textAppearance="?android:attr/textAppearanceMedium" />
+				android:id="@+id/tvHistoryDebits"
+				android:textAppearance="?android:attr/textAppearanceMedium" />
 
-	    </LinearLayout>
+		</LinearLayout>
 
-    </LinearLayout>
-    
-    <LinearLayout 
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:orientation="horizontal">
-	    
-        <TextView
+	</LinearLayout>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:gravity="end"
+		android:orientation="horizontal">
+
+		<TextView
 			style="@style/DialogLabel"
-	        android:text="@string/yodo_cumulative_balance"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-	    
-	    <TextView
+			android:text="@string/text.balance.cumulative.total"
+			android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		<TextView
 			style="@style/DialogContent"
-	        android:id="@+id/tvHistoryBalance"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-	    
-    </LinearLayout>
+			android:id="@+id/tvHistoryBalance"
+			android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	</LinearLayout>
 
 </LinearLayout>
