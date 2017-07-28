@@ -367,4 +367,26 @@ public class PrefUtils {
         SharedPreferences config = getSPrefConfig( c );
         return config.getBoolean( AppConfig.SPREF_CASH_RECEIPTS, false );
     }
+
+    /**
+     * Gets the task id for the splash image
+     * @param c The application context
+     * @param taskId The id of the task for the image
+     */
+    static void setSplashImageId(Context c, long taskId) {
+        SharedPreferences config = getSPrefConfig(c);
+        SharedPreferences.Editor writer = config.edit();
+        writer.putLong(AppConfig.SPREF_SPLASH_IMAGE, taskId);
+        writer.apply();
+    }
+
+    /**
+     * Gets the task id of the splash image
+     * @param c The application context
+     * @return The id as long
+     */
+    static long getSplashImageId(Context c) {
+        SharedPreferences config = getSPrefConfig(c);
+        return config.getLong(AppConfig.SPREF_SPLASH_IMAGE, -1L);
+    }
 }

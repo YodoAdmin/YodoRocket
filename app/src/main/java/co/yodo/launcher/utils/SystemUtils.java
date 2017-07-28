@@ -5,14 +5,23 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Criteria;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import co.yodo.launcher.R;
 import co.yodo.launcher.helper.AlertDialogHelper;
@@ -24,6 +33,13 @@ import timber.log.Timber;
  * google services or logger
  */
 public class SystemUtils {
+    /** Folder to store the resources */
+    private static final String FOLDER = "Yodo";
+    public static final String RESOURCES_PATH =
+            Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + FOLDER;
+
+    private SystemUtils() {}
+
     /**
      * Verify if a service is running
      * @param c The Context of the Android system.
@@ -154,5 +170,92 @@ public class SystemUtils {
             });
             mp.start();
         }
+    }
+
+    /**
+     * Copy assets to the storage
+     * @param context The application context
+     * @return The file
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    static File getCacheSplash(Context context) {
+        File outDir = new File(SystemUtils.RESOURCES_PATH);
+        if (!outDir.exists()) {
+            outDir.mkdir();
+        }
+
+        File outFile = new File(outDir, "splash.png");
+        if (!outFile.exists()) {
+            try {
+                InputStream in = context.getAssets().open("splash.png");
+                FileOutputStream out = new FileOutputStream(outFile);
+
+                byte[] buffer = new byte[1024];
+                int read;
+                while ((read = in.read(buffer)) > 0) {
+                    out.write(buffer, 0, read);
+                }
+
+                in.close();
+                out.flush();
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return outFile;
+    }
+
+    /**
+     * Saves the merchant logo into the storage
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void saveMerchantLogo(Context context) {
+        final String url = PrefUtils.getLogoUrl(context);
+        if (url != null) {
+            Picasso.with(context)
+                    .load(url)
+                    .into(getTarget());
+        }
+    }
+
+    /**
+     * Target to save the file
+     * @return The target object
+     */
+    private static Target getTarget(){
+        return new Target() {
+            @Override
+            public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
+                new Thread(new Runnable() {
+                    @SuppressWarnings("ResultOfMethodCallIgnored")
+                    @Override
+                    public void run() {
+                        File outDir = new File(RESOURCES_PATH);
+                        if (!outDir.exists()) {
+                            outDir.mkdir();
+                        }
+
+                        File outFile = new File(outDir, "logo.png");
+                        if (!outFile.exists()) {
+                            try {
+                                outFile.createNewFile();
+                                FileOutputStream ostream = new FileOutputStream(outFile);
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, ostream);
+                                ostream.flush();
+                                ostream.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }).start();
+            }
+
+            @Override
+            public void onBitmapFailed() {
+            }
+        };
     }
 }

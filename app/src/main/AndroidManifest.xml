@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="co.yodo.launcher">
+    package="co.yodo.launcher"
+    android:installLocation="internalOnly">
 
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -12,6 +13,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
 
     <supports-screens
         android:anyDensity="true"
@@ -94,6 +96,19 @@
         </service>
 
         <!-- End Services -->
+
+        <receiver android:name="sunmi.ds.MsgReceiver">
+            <intent-filter>
+                <action android:name="com.sunmi.hcservice" />
+                <action android:name="com.sunmi.hcservice.status" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".ds.ShutDownBroadcastRecevier">
+            <intent-filter android:priority="1000">
+                <action android:name="com.sunmi.action_shutdown_client" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

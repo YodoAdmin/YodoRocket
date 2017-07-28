@@ -129,6 +129,11 @@ public class AppConfig {
     */
     static final String SPREF_CASH_RECEIPTS = "SPCashReceipts";
 
+    /* Task id for the splash image.
+    * type -- Long
+    */
+    static final String SPREF_SPLASH_IMAGE = "SPSplashImage";
+
     /**
      * Default values
      * {{ ======================================================================

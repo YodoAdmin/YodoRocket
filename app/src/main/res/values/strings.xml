@@ -101,7 +101,7 @@
     <string name="text.permission.read.phone.state">Permission required to identify the device in order to access Yodo\'s cloud service</string>
     <string name="text.permission.location">Permission required to use Location services so fare transactions can be geo-tagged</string>
     <string name="text.permission.camera">Permission required to use the camera in order to capture payment credentials</string>
-    <string name="text.permission.write.external.storage">Permission required to store the currency rates</string>
+    <string name="text.permission.write.external.storage">Permission required for the secondary screen and currencies</string>
 
     <!-- ACRA -->
     <string name="text.crash.toast">Ooooops! I crashed, but a report has been sent to my developer to help fix the issue!</string>
@@ -124,7 +124,10 @@
     <string name="error.no.item">--item--</string>
     <string name="error.payment">Please insert the purchase value first</string>
 
-    <!-- Network errors -->
+    <!-- Sunmi Error Messages -->
+    <string name="error.sunmi.file">No file!</string>
+
+    <!-- Network Error Messages -->
     <string name="error.network">Sorry, seems that you don\'t have an Internet connection right now</string>
     <string name="error.server">Sorry, the server responded with an error. Try again later</string>
 

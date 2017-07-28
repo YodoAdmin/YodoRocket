@@ -4,12 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.animation.Animation;
@@ -17,19 +15,25 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Locale;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.ui.contract.BaseActivity;
+import co.yodo.launcher.ds.data.DataModel;
+import co.yodo.launcher.ds.data.UPacketFactory;
 import co.yodo.launcher.ui.RocketActivity;
-import timber.log.Timber;
+import co.yodo.launcher.ui.contract.BaseActivity;
+import sunmi.ds.DSKernel;
+import sunmi.ds.callback.ISendCallback;
 
 /**
  * Created by hei on 20/06/16.
@@ -193,6 +197,109 @@ public final class GuiUtils {
             final String sAmount = amount.setScale(2, RoundingMode.DOWN).toString();
             textView.setText(sAmount);
         }
+    }
+
+    /**
+     * Sends some text to the secondary sunmi screen
+     * @param sDSKernel The sdk of sunmi
+     * @param content The content text
+     */
+    public static void sendTextContentToSecondaryScreen(final DSKernel sDSKernel, String content) {
+        if (sDSKernel == null) {
+            return;
+        }
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put("title", content);
+            json.put("content", "");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        File file = new File(SystemUtils.RESOURCES_PATH, "logo.png");
+        if (!file.exists()) {
+            sDSKernel.sendData(UPacketFactory.buildShowText(DSKernel.getDSDPackageName(), json.toString(),
+                    new ISendCallback() {
+                        @Override
+                        public void onSendSuccess(long l) {
+                        }
+
+                        @Override
+                        public void onSendFail(int i, String s) {
+                        }
+
+                        @Override
+                        public void onSendProcess(long l, long l1) {
+                        }
+                    })
+            );
+        } else {
+            sDSKernel.sendFile(DSKernel.getDSDPackageName(), json.toString(), file.getPath(),
+                    new ISendCallback() {
+                        @Override
+                        public void onSendSuccess(long fileId) {
+                            sDSKernel.sendCMD(DSKernel.getDSDPackageName(),
+                                    UPacketFactory.createJson(DataModel.QRCODE, ""),
+                                    fileId,
+                                    null
+                            );
+                        }
+
+                        @Override
+                        public void onSendFail(int i, String s) {
+                        }
+
+                        @Override
+                        public void onSendProcess(long l, long l1) {
+                        }
+                    });
+        }
+    }
+
+    public static void sendImageContentToSecondaryScreen(final DSKernel sDSKernel, final Context context) {
+        if (sDSKernel == null) {
+            return;
+        }
+
+        long taskId = PrefUtils.getSplashImageId(context);
+        if (taskId != -1L) {
+            showImgSplash(sDSKernel, taskId);
+            return;
+        }
+
+        /*File outDir = new File(SystemUtils.RESOURCES_PATH);
+        File file = new File(outDir, "splash.png");*/
+        File file = SystemUtils.getCacheSplash(context);
+        if (!file.exists()) {
+            Toast.makeText(context, R.string.error_sunmi_file, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        sDSKernel.sendFile(DSKernel.getDSDPackageName(), file.getPath(), new ISendCallback() {
+            @Override
+            public void onSendSuccess(long taskId) {
+                PrefUtils.setSplashImageId(context, taskId);
+                showImgSplash(sDSKernel, taskId);
+            }
+
+            @Override
+            public void onSendFail(int i, String s) {
+                Toast.makeText(context, s, Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSendProcess(long l, long l1) {
+            }
+        });
+    }
+
+    private static void showImgSplash(DSKernel sDSKernel, long taskId) {
+        sDSKernel.sendCMD(DSKernel.getDSDPackageName(),
+                UPacketFactory.createJson(DataModel.SHOW_IMG_WELCOME, ""),
+                taskId,
+                null
+        );
     }
 
     /**

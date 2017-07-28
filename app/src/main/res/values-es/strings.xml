@@ -121,6 +121,9 @@
     <string name="error.payment">Ingrese el total primero</string>
     <string name="error.no.item">--item--</string>
 
+    <!-- Sunmi Error Messages -->
+    <string name="error.sunmi.file">No hay archivo!</string>
+
     <!-- Network errors -->
     <string name="error.network">Lo sentimos, parece que no dispone de una conexion a Internet en este momento</string>
     <string name="error.server">Lo sentimos, el servidor respondió con un error. Intente de nuevo más tarde</string>

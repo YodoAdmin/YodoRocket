@@ -21,11 +21,21 @@ import co.yodo.restapi.network.contract.RequestCallback;
 import co.yodo.restapi.network.model.ServerResponse;
 import co.yodo.restapi.network.requests.AuthMerchDeviceRequest;
 import co.yodo.restapi.network.requests.QueryCurrencyRequest;
+import sunmi.ds.DSKernel;
+import sunmi.ds.callback.IConnectionCallback;
+import sunmi.ds.callback.IReceiveCallback;
+import sunmi.ds.data.DSData;
+import sunmi.ds.data.DSFile;
+import sunmi.ds.data.DSFiles;
 
 public class MainActivity extends BaseActivity {
     /** The application context */
     @Inject
     Context context;
+
+    /** Sunmi */
+    @Inject
+    DSKernel sDSKernel;
 
     /** Code for the error dialog */
     private static final int REQUEST_CODE_RECOVER_PLAY_SERVICES = 0;
@@ -40,12 +50,41 @@ public class MainActivity extends BaseActivity {
     /** Bundle in case of external call */
     private Bundle bundle;
 
+    private IConnectionCallback connCallback = new IConnectionCallback() {
+        @Override
+        public void onDisConnect() {
+        }
+
+        @Override
+        public void onConnected(final ConnState state) {
+        }
+    };
+
+    private IReceiveCallback receiveCallback = new IReceiveCallback() {
+        @Override
+        public void onReceiveFile(DSFile arg0) {
+        }
+
+        @Override
+        public void onReceiveFiles(DSFiles dsFiles) {
+        }
+
+        @Override
+        public void onReceiveData(DSData data) {
+        }
+
+        @Override
+        public void onReceiveCMD(DSData arg0) {
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setupGUI();
         updateData();
+        //initSDK();
     }
 
     @Override
@@ -151,6 +190,13 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Init the sunmi second screen SDK
+     */
+    private void initSDK() {
+        sDSKernel.init(this, connCallback);
+        sDSKernel.addReceiveCallback(receiveCallback);
+    }
 
     /**
      * Request the necessary permissions for this activity
