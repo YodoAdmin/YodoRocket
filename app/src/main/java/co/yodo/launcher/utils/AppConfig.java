@@ -104,6 +104,11 @@ public class AppConfig {
 	 */
     public static final String SPREF_LOCATION_SERVICE = "SPLocationService";
 
+    /*
+     * Resets everything
+	 */
+    public static final String SPREF_RESET = "SPReset";
+
     /* The current background of the Rocket.
     * type -- Integer
     */
@@ -128,6 +133,11 @@ public class AppConfig {
     * type -- Boolean
     */
     static final String SPREF_CASH_RECEIPTS = "SPCashReceipts";
+
+    /* Task id for the splash image.
+    * type -- Long
+    */
+    static final String SPREF_SPLASH_IMAGE = "SPSplashImage";
 
     /**
      * Default values

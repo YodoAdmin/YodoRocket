@@ -21,11 +21,21 @@ import co.yodo.restapi.network.contract.RequestCallback;
 import co.yodo.restapi.network.model.ServerResponse;
 import co.yodo.restapi.network.requests.AuthMerchDeviceRequest;
 import co.yodo.restapi.network.requests.QueryCurrencyRequest;
+import sunmi.ds.DSKernel;
+import sunmi.ds.callback.IConnectionCallback;
+import sunmi.ds.callback.IReceiveCallback;
+import sunmi.ds.data.DSData;
+import sunmi.ds.data.DSFile;
+import sunmi.ds.data.DSFiles;
 
 public class MainActivity extends BaseActivity {
     /** The application context */
     @Inject
     Context context;
+
+    /** Sunmi */
+    @Inject
+    DSKernel sDSKernel;
 
     /** Code for the error dialog */
     private static final int REQUEST_CODE_RECOVER_PLAY_SERVICES = 0;
@@ -150,7 +160,6 @@ public class MainActivity extends BaseActivity {
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
-
 
     /**
      * Request the necessary permissions for this activity
