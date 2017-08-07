@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SlidingPaneLayout;
-import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -68,6 +67,12 @@ import co.yodo.restapi.network.requests.AltExchangeRequest;
 import co.yodo.restapi.network.requests.CurrenciesRequest;
 import co.yodo.restapi.network.requests.ExchRetailRequest;
 import co.yodo.restapi.network.requests.QueryLogoRequest;
+import sunmi.ds.DSKernel;
+import sunmi.ds.callback.IConnectionCallback;
+import sunmi.ds.callback.IReceiveCallback;
+import sunmi.ds.data.DSData;
+import sunmi.ds.data.DSFile;
+import sunmi.ds.data.DSFiles;
 import timber.log.Timber;
 
 public class RocketActivity extends BaseActivity implements PromotionManager.IPromotionListener,
@@ -79,6 +84,9 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
     /** Progress dialog for the requests */
     @Inject
     ProgressDialogHelper progressManager;
+
+    /** Sunmi */
+    private DSKernel sDSKernel;
 
     /** GUI controllers */
     @BindView(R.id.splActivityLauncher)
@@ -143,6 +151,7 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
     /** Request codes for the permissions */
     private static final int PERMISSIONS_REQUEST_CAMERA = 1;
     private static final int PERMISSIONS_REQUEST_LOCATION = 2;
+    private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 3;
 
     /** External data */
     private Bundle externBundle;
@@ -151,6 +160,40 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
 
     /** If it should print the receipt */
     private boolean isPrinting = false;
+
+    private IConnectionCallback connCallback = new IConnectionCallback() {
+        @Override
+        public void onDisConnect() {
+        }
+
+        @Override
+        public void onConnected(final ConnState state) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    SystemUtils.initAssets(context);
+                }
+            });
+        }
+    };
+
+    private IReceiveCallback receiveCallback = new IReceiveCallback() {
+        @Override
+        public void onReceiveFile(DSFile arg0) {
+        }
+
+        @Override
+        public void onReceiveFiles(DSFiles dsFiles) {
+        }
+
+        @Override
+        public void onReceiveData(DSData data) {
+        }
+
+        @Override
+        public void onReceiveCMD(DSData arg0) {
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,7 +204,6 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
         setupGUI();
         updateData();
     }
-
 
     @Override
     public void onStart() {
@@ -188,6 +230,11 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
             currentScanner.startScan();
         }
 
+        /*if (sDSKernel != null) {
+            sDSKernel.addConnCallback(connCallback);
+            sDSKernel.addReceiveCallback(receiveCallback);
+        }
+*/
         updateUI();
     }
 
@@ -199,6 +246,11 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
             isScanning = true;
             currentScanner.stopScan();
         }
+
+      /*  if (sDSKernel != null) {
+            sDSKernel.removeConnCallback(connCallback);
+            sDSKernel.removeReceiveCallback(receiveCallback);
+        }*/
     }
 
     @Override
@@ -214,6 +266,9 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
 
     @Override
     public void onBackPressed() {
+        // Send image to secondary screen
+        GuiUtils.sendImageContentToSecondaryScreen(sDSKernel, context);
+
         // If we are scanning, first close the camera
         if (currentScanner != null && currentScanner.isScanning()) {
             currentScanner.stopScan();
@@ -227,6 +282,18 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
         // Injection
         ButterKnife.bind(this);
         YodoApplication.getComponent().inject(this);
+
+        boolean writePermission = SystemUtils.requestPermission(
+                RocketActivity.this,
+                R.string.text_permission_write_external_storage,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE
+        );
+
+        if (writePermission) {
+            // Initialize the Sunmi SDK
+            initSDK();
+        }
 
         // Gets the zero value
         zero = getString(R.string.text_zero);
@@ -379,6 +446,15 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
                 } else {
                     // Permission Denied
                     PrefUtils.saveLocating(context, false);
+                }
+                break;
+
+            case PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE:
+                // If request is cancelled, the result arrays are empty.
+                if( grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
+                    // Permission Granted
+                    initSDK();
+                    SystemUtils.saveMerchantLogo(context);
                 }
                 break;
 
@@ -700,6 +776,15 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
     }
 
     /**
+     * Init the sunmi second screen SDK
+     */
+    private void initSDK() {
+        sDSKernel = DSKernel.newInstance();
+        sDSKernel.init(this, connCallback);
+        sDSKernel.addReceiveCallback(receiveCallback);
+    }
+
+    /**
      * Loads the logo in UI and saves the path
      * @param url The string with the path
      */
@@ -711,6 +796,10 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
                     .placeholder(R.drawable.ic_loading)
                     .error(R.mipmap.ic_no_image)
                     .into(nivCompanyLogo);
+
+            if (sDSKernel != null) {
+                SystemUtils.saveMerchantLogo(context);
+            }
         }
     }
 
@@ -785,6 +874,11 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
                             tvBalance.setText(FormatUtils.truncateDecimal(balance.toString()));
                             tvBalance.setVisibility(View.VISIBLE);
                             pgBalance.setVisibility(View.GONE);
+
+                            // Update sunmi secondary screen
+                            updateSecondaryScreen(FormatUtils.truncateDecimal(
+                                    merchTender.toString()
+                            ));
                         }
                     }
 
@@ -829,67 +923,74 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
             }
 
             final String code = response.getCode();
-            if (code.equals(ServerResponse.AUTHORIZED)) {
-                final String ex_code = response.getCode();
-                final String ex_authbumber = response.getAuthNumber();
-                final String ex_message = response.getMessage();
-                final String ex_account = response.getParams().getAccount();
-                final String ex_purchase = response.getParams().getPurchase();
-                final String ex_delta = response.getParams().getAmountDelta();
+            switch (code) {
+                case ServerResponse.AUTHORIZED:
+                    final String ex_code = response.getCode();
+                    final String ex_authbumber = response.getAuthNumber();
+                    final String ex_message = response.getMessage();
+                    final String ex_account = response.getParams().getAccount();
+                    final String ex_purchase = response.getParams().getPurchase();
+                    final String ex_delta = response.getParams().getAmountDelta();
 
-                final String message = getString(R.string.exchange_auth) + " " + ex_authbumber + "\n" +
-                        getString(R.string.exchange_message) + " " + ex_message;
+                    final String message = getString(R.string.exchange_auth) + " " + ex_authbumber + "\n" +
+                            getString(R.string.exchange_message) + " " + ex_message;
 
-                DialogInterface.OnClickListener onClick;
+                    DialogInterface.OnClickListener onClick;
 
-                if (externBundle != null) {
-                    final Intent data = new Intent();
-                    data.putExtra(Intents.RESULT_CODE, ex_code);
-                    data.putExtra(Intents.RESULT_AUTH, ex_authbumber);
-                    data.putExtra(Intents.RESULT_MSG, ex_message);
-                    data.putExtra(Intents.RESULT_ACC, ex_account);
-                    data.putExtra(Intents.RESULT_PUR, ex_purchase);
-                    data.putExtra(Intents.RESULT_TIP, ex_tip);
-                    data.putExtra(Intents.RESULT_DEL, ex_delta);
-                    setResult(RESULT_OK, data);
+                    if (externBundle != null) {
+                        final Intent data = new Intent();
+                        data.putExtra(Intents.RESULT_CODE, ex_code);
+                        data.putExtra(Intents.RESULT_AUTH, ex_authbumber);
+                        data.putExtra(Intents.RESULT_MSG, ex_message);
+                        data.putExtra(Intents.RESULT_ACC, ex_account);
+                        data.putExtra(Intents.RESULT_PUR, ex_purchase);
+                        data.putExtra(Intents.RESULT_TIP, ex_tip);
+                        data.putExtra(Intents.RESULT_DEL, ex_delta);
+                        setResult(RESULT_OK, data);
 
-                    onClick = new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int item) {
-                            finish();
-                        }
-                    };
-                } else {
-                    onClick = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            reset(null);
-                        }
-                    };
-                }
+                        onClick = new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int item) {
+                                finish();
+                            }
+                        };
+                    } else {
+                        onClick = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                reset(null);
+                            }
+                        };
+                    }
 
-                // Verify if there is a printer
-                if (BluetoothUtil.getDevice() != null && isPrinting) {
-                    // Get the cash values
-                    final String total = tvTotal.getText().toString();
-                    final String cashTender = tvCashtender.getText().toString();
-                    final String cashBack = tvCashback.getText().toString();
-                    final String currency = PrefUtils.getTenderCurrency(context);
+                    // Verify if there is a printer
+                    if (BluetoothUtil.getDevice() != null && isPrinting) {
+                        // Get the cash values
+                        final String total = tvTotal.getText().toString();
+                        final String cashTender = tvCashtender.getText().toString();
+                        final String cashBack = tvCashback.getText().toString();
+                        final String currency = PrefUtils.getTenderCurrency(context);
 
-                    // Print data
-                    BluetoothUtil.printData(
-                            ESCUtil.parseData(response, total, cashTender, cashBack, currency)
-                    );
-                }
+                        // Print data
+                        BluetoothUtil.printData(
+                                ESCUtil.parseData(response, total, cashTender, cashBack, currency)
+                        );
+                    }
 
-                if (promptResponse) {
-                    AlertDialogHelper.create(RocketActivity.this, message, onClick);
-                } else {
-                    finish();
-                }
-            } else if (code.equals(ServerResponse.ERROR_DUP_AUTH)) {
-                ErrorUtils.handleError(RocketActivity.this, R.string.error_20, false);
-            } else {
-                ErrorUtils.handleError(RocketActivity.this, R.string.error_server, false);
+                    if (promptResponse) {
+                        AlertDialogHelper.create(RocketActivity.this, message, onClick);
+                    } else {
+                        GuiUtils.sendImageContentToSecondaryScreen(sDSKernel, context);
+                        finish();
+                    }
+                    break;
+
+                case ServerResponse.ERROR_DUP_AUTH:
+                    ErrorUtils.handleError(RocketActivity.this, R.string.error_20, false);
+                    break;
+
+                default:
+                    ErrorUtils.handleError(RocketActivity.this, R.string.error_server, false);
+                    break;
             }
         }
 
@@ -906,4 +1007,19 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
         }
     };
 
+    private void updateSecondaryScreen(String cashTender) {
+        final String currency = PrefUtils.getMerchantCurrency(context);
+        final String purchase = tvTotal.getText().toString();
+        final String cashBack = tvCashback.getText().toString();
+        final String balance = tvBalance.getText().toString();
+        final String format = "%s %s\n";
+
+        GuiUtils.sendTextContentToSecondaryScreen(sDSKernel,
+                currency + "\n" +
+                String.format(format, getString(R.string.text_total), purchase) +
+                String.format(format, getString(R.string.text_cash_tender ), cashTender) +
+                String.format(format, getString(R.string.text_cash_back), cashBack) +
+                String.format(format, getString(R.string.text_balance), balance)
+        );
+    }
 }

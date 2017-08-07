@@ -13,7 +13,7 @@ import co.yodo.launcher.R;
  * Created by luis on 16/12/14.
  * Helper to create alert dialogs
  */
-public class AlertDialogHelper {
+public class  AlertDialogHelper {
     /**
      * Shows a dialog for alert messages
      * @param c The context of the application

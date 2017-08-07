@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="sunmi.ds"
+    android:versionCode="4"
+    android:versionName="1.0.3" >
+
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="22" />
+
+    <application android:allowBackup="true" >
+
+        <!-- <service -->
+        <!-- android:name="sunmi.ds.verify.InitCoreService" -->
+        <!-- android:exported="false" > -->
+        <!-- </service> -->
+        <receiver android:name="sunmi.ds.MsgReceiver" >
+            <intent-filter>
+                <action android:name="com.sunmi.hcservice" />
+                <action android:name="com.sunmi.hcservice.status" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="SUNMI_APPKEY"
+            android:value="DEFAULT" />
+    </application>
+
+</manifest>

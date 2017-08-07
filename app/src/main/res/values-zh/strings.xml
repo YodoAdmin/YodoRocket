@@ -86,6 +86,7 @@
     <string name="text.settings.background">背景颜色</string>
     <string name="text.settings.username">Y-Beacon用户名称</string>
     <string name="text.settings.location">定位服务</string>
+    <string name="text.settings.reset">重启</string>
     <string name="text.settings.receipts.yodo">Yodo收据</string>
     <string name="text.settings.receipts.static">静态收据</string>
     <string name="text.settings.receipts.cash">现金收据</string>
@@ -93,6 +94,9 @@
     <string name="text.settings.summary.advertising">传送促销活动给附近的客人</string>
     <string name="text.settings.summary.location">传送交易活动地点</string>
     <string name="text.settings.summary.portrait">设置成纵向模式</string>
+    <string name="text.settings.summary.reset">清除所有配置</string>
+
+    <string name="text.settings.reset.confirmation">您确定要重置应用程序吗?</string>
 
     <!-- Messages for the permissions -->
     <string name="text.permission.read.phone.state">如要使用yodo云服务，需要得到授权以此证明设备使用者身份</string>
@@ -120,6 +124,9 @@
     <string name="error.21">检查相关资料时出现错误</string>
     <string name="error.no.item">--项目--</string>
     <string name="error.payment">请先输入购买数目</string>
+
+    <!-- Sunmi Error Messages -->
+    <string name="error.sunmi.file">无文件!</string>
 
     <!-- Network errors -->
     <string name="error.network">抱歉，您暂时还没有连接网络噢！</string>

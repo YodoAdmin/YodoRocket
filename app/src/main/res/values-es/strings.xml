@@ -86,6 +86,7 @@
     <string name="text.settings.background">Color de Fondo</string>
     <string name="text.settings.username">Nombre Y-Beacon</string>
     <string name="text.settings.location">Servicio de Ubicación</string>
+    <string name="text.settings.reset">Reset</string>
     <string name="text.settings.receipts.yodo">Recibos Yodo</string>
     <string name="text.settings.receipts.static">Recibos Estáticos</string>
     <string name="text.settings.receipts.cash">Recibos Cash</string>
@@ -93,6 +94,9 @@
     <string name="text.settings.summary.advertising">Enviar promociones a clientes cercanos</string>
     <string name="text.settings.summary.location">Envía la ubicación de las transacciones</string>
     <string name="text.settings.summary.portrait">Establece la pantalla a modo de retrato</string>
+    <string name="text.settings.summary.reset">Borra todos los datos de configuración</string>
+
+    <string name="text.settings.reset.confirmation">Está seguro que desea borrar los datos de la aplicación?</string>
 
     <!-- Messages for the permissions -->
     <string name="text.permission.read.phone.state">Permiso necesario para identificar el dispositivo con el fin de acceder al servicio de Yodo en la nube</string>
@@ -120,6 +124,9 @@
     <string name="error.21">Error al revisar la información</string>
     <string name="error.payment">Ingrese el total primero</string>
     <string name="error.no.item">--item--</string>
+
+    <!-- Sunmi Error Messages -->
+    <string name="error.sunmi.file">No hay archivo!</string>
 
     <!-- Network errors -->
     <string name="error.network">Lo sentimos, parece que no dispone de una conexion a Internet en este momento</string>

@@ -9,11 +9,17 @@ import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.acra.sender.HttpSender;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import co.yodo.launcher.business.injection.component.ApplicationComponent;
 import co.yodo.launcher.business.injection.component.DaggerApplicationComponent;
 import co.yodo.launcher.business.injection.component.DaggerInjectionComponent;
 import co.yodo.launcher.business.injection.component.InjectionComponent;
 import co.yodo.launcher.business.injection.module.ApplicationModule;
+import co.yodo.launcher.utils.SystemUtils;
 import co.yodo.restapi.YodoApi;
 import timber.log.Timber;
 
@@ -60,6 +66,7 @@ public class YodoApplication extends Application {
             ACRA.init(this);
         }
 
+        // Starts the Yodo API for requests
         YodoApi.init(this)
                 .setLog(BuildConfig.DEBUG)
                 .server(YodoApi.DEMO_IP, "E")

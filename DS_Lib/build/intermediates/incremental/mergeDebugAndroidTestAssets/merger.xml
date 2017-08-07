@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="debug"><source path="D:\Project\DualScreenMessager-Lib\DSC\DS_Lib\build\intermediates\bundles\debug\assets"/></dataSet><dataSet config="main"><source path="D:\Project\DualScreenMessager-Lib\DSC\DS_Lib\src\androidTest\assets"/><source path="D:\Project\DualScreenMessager-Lib\DSC\DS_Lib\build\generated\assets\shaders\androidTest\debug"/></dataSet></merger>
