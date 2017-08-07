@@ -37,6 +37,8 @@ public class SystemUtils {
     private static final String FOLDER = "Yodo";
     public static final String RESOURCES_PATH =
             Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + FOLDER;
+    static final String IMG_LOGO = "logo.png";
+    static final String IMG_SPLASH = "splash.png";
 
     private SystemUtils() {}
 
@@ -178,16 +180,16 @@ public class SystemUtils {
      * @return The file
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    static File getCacheSplash(Context context) {
+    public static File initAssets(Context context) {
         File outDir = new File(SystemUtils.RESOURCES_PATH);
         if (!outDir.exists()) {
             outDir.mkdir();
         }
 
-        File outFile = new File(outDir, "splash.png");
+        File outFile = new File(outDir, IMG_SPLASH);
         if (!outFile.exists()) {
             try {
-                InputStream in = context.getAssets().open("splash.png");
+                InputStream in = context.getAssets().open(IMG_SPLASH);
                 FileOutputStream out = new FileOutputStream(outFile);
 
                 byte[] buffer = new byte[1024];
@@ -200,6 +202,7 @@ public class SystemUtils {
                 out.flush();
                 out.close();
             } catch (IOException e) {
+                outFile.delete();
                 e.printStackTrace();
             }
         }
@@ -237,7 +240,7 @@ public class SystemUtils {
                             outDir.mkdir();
                         }
 
-                        File outFile = new File(outDir, "logo.png");
+                        File outFile = new File(outDir, IMG_LOGO);
                         if (!outFile.exists()) {
                             try {
                                 outFile.createNewFile();
@@ -246,6 +249,7 @@ public class SystemUtils {
                                 ostream.flush();
                                 ostream.close();
                             } catch (IOException e) {
+                                outFile.delete();
                                 e.printStackTrace();
                             }
                         }
@@ -257,5 +261,24 @@ public class SystemUtils {
             public void onBitmapFailed() {
             }
         };
+    }
+
+    /**
+     * For to Delete the directory inside list of files and inner Directory
+     * @param dir The directory
+     * @return True if it was success or false if not
+     */
+    public static boolean deleteDir( File dir ) {
+        if( dir.isDirectory() ) {
+            String[] children = dir.list();
+            for( String aChildren : children ) {
+                boolean success = deleteDir( new File( dir, aChildren ) );
+                if( !success )
+                    return false;
+            }
+        }
+
+        // The directory is now empty so delete it
+        return dir.delete();
     }
 }

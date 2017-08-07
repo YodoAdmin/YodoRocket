@@ -104,6 +104,11 @@ public class AppConfig {
 	 */
     public static final String SPREF_LOCATION_SERVICE = "SPLocationService";
 
+    /*
+     * Resets everything
+	 */
+    public static final String SPREF_RESET = "SPReset";
+
     /* The current background of the Rocket.
     * type -- Integer
     */

@@ -3,6 +3,8 @@ package co.yodo.launcher.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.orhanobut.hawk.Hawk;
+
 import java.util.Arrays;
 
 import co.yodo.launcher.R;
@@ -388,5 +390,14 @@ public class PrefUtils {
     static long getSplashImageId(Context c) {
         SharedPreferences config = getSPrefConfig(c);
         return config.getLong(AppConfig.SPREF_SPLASH_IMAGE, -1L);
+    }
+
+    /**
+     * Clear all the preferences
+     * @param context The application context
+     */
+    public static boolean clearPrefConfig( Context context ) {
+        Hawk.deleteAll();
+        return getSPrefConfig( context ).edit().clear().commit();
     }
 }

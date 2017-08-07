@@ -25,6 +25,13 @@
         android:title="@string/text.settings.location"
         android:summary="@string/text.settings.summary.location" />
 
+    <Preference
+        android:key="SPReset"
+        android:title="@string/text.settings.reset"
+        android:summary="@string/text.settings.summary.reset">
+
+    </Preference>
+
     <PreferenceCategory android:title="@string/text.settings.category.payments" >
 
         <CheckBoxPreference

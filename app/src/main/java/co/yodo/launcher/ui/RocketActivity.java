@@ -168,6 +168,12 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
 
         @Override
         public void onConnected(final ConnState state) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    SystemUtils.initAssets(context);
+                }
+            });
         }
     };
 

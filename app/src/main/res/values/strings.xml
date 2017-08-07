@@ -89,6 +89,7 @@
     <string name="text.settings.background">Background Color</string>
     <string name="text.settings.username">Y-Beacon Name</string>
     <string name="text.settings.location">Location Service</string>
+    <string name="text.settings.reset">Reset</string>
     <string name="text.settings.receipts.yodo">Yodo Receipts</string>
     <string name="text.settings.receipts.static">Static Receipts</string>
     <string name="text.settings.receipts.cash">Cash Receipts</string>
@@ -96,6 +97,9 @@
     <string name="text.settings.summary.advertising">Send promotions to nearby clients</string>
     <string name="text.settings.summary.location">Send the location of transactions</string>
     <string name="text.settings.summary.portrait">Sets the layout to portrait mode</string>
+    <string name="text.settings.summary.reset">Clears all the configurations</string>
+
+    <string name="text.settings.reset.confirmation">Are you sure you want to reset the configurations?</string>
 
     <!-- Messages for the permissions -->
     <string name="text.permission.read.phone.state">Permission required to identify the device in order to access Yodo\'s cloud service</string>

@@ -50,41 +50,12 @@ public class MainActivity extends BaseActivity {
     /** Bundle in case of external call */
     private Bundle bundle;
 
-    private IConnectionCallback connCallback = new IConnectionCallback() {
-        @Override
-        public void onDisConnect() {
-        }
-
-        @Override
-        public void onConnected(final ConnState state) {
-        }
-    };
-
-    private IReceiveCallback receiveCallback = new IReceiveCallback() {
-        @Override
-        public void onReceiveFile(DSFile arg0) {
-        }
-
-        @Override
-        public void onReceiveFiles(DSFiles dsFiles) {
-        }
-
-        @Override
-        public void onReceiveData(DSData data) {
-        }
-
-        @Override
-        public void onReceiveCMD(DSData arg0) {
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setupGUI();
         updateData();
-        //initSDK();
     }
 
     @Override
@@ -188,14 +159,6 @@ public class MainActivity extends BaseActivity {
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
-    }
-
-    /**
-     * Init the sunmi second screen SDK
-     */
-    private void initSDK() {
-        sDSKernel.init(this, connCallback);
-        sDSKernel.addReceiveCallback(receiveCallback);
     }
 
     /**

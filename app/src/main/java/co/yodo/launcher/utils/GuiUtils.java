@@ -217,7 +217,7 @@ public final class GuiUtils {
             e.printStackTrace();
         }
 
-        File file = new File(SystemUtils.RESOURCES_PATH, "logo.png");
+        File file = new File(SystemUtils.RESOURCES_PATH, SystemUtils.IMG_LOGO);
         if (!file.exists()) {
             sDSKernel.sendData(UPacketFactory.buildShowText(DSKernel.getDSDPackageName(), json.toString(),
                     new ISendCallback() {
@@ -268,9 +268,7 @@ public final class GuiUtils {
             return;
         }
 
-        /*File outDir = new File(SystemUtils.RESOURCES_PATH);
-        File file = new File(outDir, "splash.png");*/
-        File file = SystemUtils.getCacheSplash(context);
+        File file = new File(SystemUtils.RESOURCES_PATH, SystemUtils.IMG_SPLASH);
         if (!file.exists()) {
             Toast.makeText(context, R.string.error_sunmi_file, Toast.LENGTH_SHORT).show();
             return;
