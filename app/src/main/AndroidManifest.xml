@@ -28,6 +28,8 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
 
+        <meta-data android:name="sunmi_dual" android:value="open"/>
+
         <meta-data
             android:name="com.google.android.nearby.messages.API_KEY"
             android:value="AIzaSyAYpz-7ntQwogET5W7wExJcciBhZ9QL1C8"/>

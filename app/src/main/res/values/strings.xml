@@ -119,7 +119,7 @@
     <string name="error.hardware">You must turn on your bluetooth first</string>
     <string name="error.camera">This camera doesn\'t exist</string>
     <string name="error.supported">This device is not supported</string>
-    <string name="error.20">Error while creating new resource. Probably the Yodo account is also registered as POS</string>
+    <string name="error.20">Error while creating new resource. Probably the Yodo account is also registered as a secondary client</string>
     <string name="error.21">Error while checking information</string>
     <string name="error.no.item">--item--</string>
     <string name="error.payment">Please insert the purchase value first</string>
