@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -19,7 +18,6 @@ import android.view.MenuItem;
 import java.io.File;
 
 import co.yodo.launcher.R;
-import co.yodo.launcher.helper.AlertDialogHelper;
 import co.yodo.launcher.ui.contract.BaseActivity;
 import co.yodo.launcher.utils.AppConfig;
 import co.yodo.launcher.utils.BluetoothUtil;

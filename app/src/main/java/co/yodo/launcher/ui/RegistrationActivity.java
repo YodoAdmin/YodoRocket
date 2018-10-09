@@ -6,11 +6,16 @@ import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
+
+import java.util.Locale;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import co.yodo.launcher.BuildConfig;
 import co.yodo.launcher.R;
 import co.yodo.launcher.YodoApplication;
 import co.yodo.launcher.helper.ProgressDialogHelper;
@@ -31,6 +36,9 @@ public class RegistrationActivity extends BaseActivity {
     /** GUI Controllers */
     @BindView(R.id.tietActivationCode)
     TextInputEditText tietActivationCode;
+
+    @BindView(R.id.tvVersion)
+    TextView tvVersion;
 
     /** Progress dialog for the requests */
     @Inject
@@ -71,12 +79,19 @@ public class RegistrationActivity extends BaseActivity {
         if (PrefUtils.isLoggedIn(context)) {
             finish();
         }
+        final String message = String.format(Locale.getDefault(), "%s %s/%s",
+                getString(R.string.text_version),
+                BuildConfig.VERSION_NAME,
+                YodoApi.getAlias()
+        );
+        tvVersion.setText(message);
     }
 
     /**
      * Realize a registration request
      * @param v View of the button, not used
      */
+    @OnClick(R.id.acbRegistration)
     public void register(View v) {
         // Get the token
         String token = tietActivationCode.getText().toString();

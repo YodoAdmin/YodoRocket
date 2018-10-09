@@ -34,6 +34,7 @@ import co.yodo.launcher.ui.RocketActivity;
 import co.yodo.launcher.ui.contract.BaseActivity;
 import sunmi.ds.DSKernel;
 import sunmi.ds.callback.ISendCallback;
+import timber.log.Timber;
 
 /**
  * Created by hei on 20/06/16.
@@ -270,7 +271,8 @@ public final class GuiUtils {
 
         File file = new File(SystemUtils.RESOURCES_PATH, SystemUtils.IMG_SPLASH);
         if (!file.exists()) {
-            Toast.makeText(context, R.string.error_sunmi_file, Toast.LENGTH_SHORT).show();
+            //Toast.makeText(context, R.string.error_sunmi_file, Toast.LENGTH_SHORT).show();
+            Timber.d(context.getString(R.string.error_sunmi_file));
             return;
         }
 

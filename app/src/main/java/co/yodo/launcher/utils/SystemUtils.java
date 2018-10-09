@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
@@ -48,10 +49,10 @@ public class SystemUtils {
      * @param serviceName The name of the service.
      * @return Boolean true if is running otherwise false
      */
-    public static boolean isMyServiceRunning( Context c, String serviceName) {
-        ActivityManager manager = (ActivityManager) c.getSystemService( Context.ACTIVITY_SERVICE );
-        for( ActivityManager.RunningServiceInfo service : manager.getRunningServices( Integer.MAX_VALUE ) )  {
-            if( serviceName.equals( service.service.getClassName() ) )
+    public static boolean isMyServiceRunning(Context c, String serviceName) {
+        ActivityManager manager = (ActivityManager) c.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices( Integer.MAX_VALUE))  {
+            if (serviceName.equals( service.service.getClassName()))
                 return true;
         }
         return false;
@@ -216,6 +217,7 @@ public class SystemUtils {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void saveMerchantLogo(Context context) {
         final String url = PrefUtils.getLogoUrl(context);
+
         if (url != null) {
             Picasso.with(context)
                     .load(url)
@@ -227,7 +229,7 @@ public class SystemUtils {
      * Target to save the file
      * @return The target object
      */
-    private static Target getTarget(){
+    private static Target getTarget() {
         return new Target() {
             @Override
             public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
@@ -241,24 +243,31 @@ public class SystemUtils {
                         }
 
                         File outFile = new File(outDir, IMG_LOGO);
-                        if (!outFile.exists()) {
-                            try {
+                        try {
+                            if (!outFile.exists()) {
                                 outFile.createNewFile();
-                                FileOutputStream ostream = new FileOutputStream(outFile);
-                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, ostream);
-                                ostream.flush();
-                                ostream.close();
-                            } catch (IOException e) {
-                                outFile.delete();
-                                e.printStackTrace();
                             }
+
+                            FileOutputStream ostream = new FileOutputStream(outFile);
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, ostream);
+                            ostream.flush();
+                            ostream.close();
+                        } catch (IOException e) {
+                            outFile.delete();
+                            e.printStackTrace();
                         }
                     }
                 }).start();
             }
 
             @Override
-            public void onBitmapFailed() {
+            public void onBitmapFailed(Drawable errorDrawable) {
+
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+
             }
         };
     }

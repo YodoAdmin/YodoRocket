@@ -17,7 +17,7 @@ import java.util.UUID;
 public class BluetoothUtil {
     /** Address of the printer */
     private static final String mInnerPrinterAddress = "00:11:22:33:44:55";
-    private static final UUID PRINTER_UUID = UUID.fromString( "00001101-0000-1000-8000-00805F9B34FB" );
+    private static final UUID PRINTER_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     /** Gets the BT adapter */
     private static BluetoothAdapter getBTAdapter() {

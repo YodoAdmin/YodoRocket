@@ -59,6 +59,7 @@
         </android.support.design.widget.TextInputLayout>
 
         <android.support.v7.widget.AppCompatButton
+            android:id="@+id/acbRegistration"
             style="@style/RegistrationLayout"
             android:onClick="register"
             android:textStyle="bold"
@@ -73,6 +74,13 @@
             android:onClick="restart"
             android:textStyle="bold"
             android:text="@string/text.already.registered"/>
+
+        <TextView
+            android:id="@+id/tvVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="center"/>
 
     </LinearLayout>
 

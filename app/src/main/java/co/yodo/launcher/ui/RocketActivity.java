@@ -1,13 +1,17 @@
 package co.yodo.launcher.ui;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SlidingPaneLayout;
@@ -74,9 +78,25 @@ import sunmi.ds.data.DSData;
 import sunmi.ds.data.DSFile;
 import sunmi.ds.data.DSFiles;
 import timber.log.Timber;
+import woyou.aidlservice.jiuiv5.IWoyouService;
+
 
 public class RocketActivity extends BaseActivity implements PromotionManager.IPromotionListener,
         QRScanner.QRScannerListener {
+    private IWoyouService woyouService;
+    private ServiceConnection connService = new ServiceConnection() {
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            woyouService = null;
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            woyouService = IWoyouService.Stub.asInterface(service);
+            sendText("Yodo");
+        }
+    };
+
     /** The context object */
     @Inject
     Context context;
@@ -230,11 +250,6 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
             currentScanner.startScan();
         }
 
-        /*if (sDSKernel != null) {
-            sDSKernel.addConnCallback(connCallback);
-            sDSKernel.addReceiveCallback(receiveCallback);
-        }
-*/
         updateUI();
     }
 
@@ -246,11 +261,6 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
             isScanning = true;
             currentScanner.stopScan();
         }
-
-      /*  if (sDSKernel != null) {
-            sDSKernel.removeConnCallback(connCallback);
-            sDSKernel.removeReceiveCallback(receiveCallback);
-        }*/
     }
 
     @Override
@@ -262,6 +272,18 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
 
         // Stops location if running
         LocationService.stop(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (connService != null) {
+            try {
+                unbindService(connService);
+            } catch (IllegalArgumentException ex) {
+                Timber.e(ex);
+            }
+        }
     }
 
     @Override
@@ -432,7 +454,7 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
         switch (requestCode) {
             case PERMISSIONS_REQUEST_CAMERA:
                 // If request is cancelled, the result arrays are empty.
-                if( grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
                     // Permission Granted
                     showCamera();
                 }
@@ -451,7 +473,7 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
 
             case PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE:
                 // If request is cancelled, the result arrays are empty.
-                if( grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
                     initSDK();
                     SystemUtils.saveMerchantLogo(context);
@@ -491,6 +513,16 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
 
         // Process the Event
         this.location = location;
+    }
+
+    private void sendText(String text) {
+        try {
+            if (woyouService != null) {
+                woyouService.sendLCDString(text, null);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -858,7 +890,7 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
                                 if (tvSelected != null && tvSelected != tvCashback) {
                                     cashback = merchTender.subtract(subTotal);
                                     tvCashback.removeTextChangedListener(onChange);
-                                    if (cashback.compareTo(BigDecimal.ZERO) == -1) {
+                                    if (cashback.compareTo(BigDecimal.ZERO) < 0) {
                                         cashback = BigDecimal.ZERO;
                                     }
                                     tvCashback.setText(FormatUtils.truncateDecimal(cashback.toString()));
@@ -984,6 +1016,10 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
                     }
                     break;
 
+                case ServerResponse.ERROR_NO_BALANCE:
+                    ErrorUtils.handleError(RocketActivity.this, R.string.error_21, false);
+                    break;
+
                 case ServerResponse.ERROR_DUP_AUTH:
                     ErrorUtils.handleError(RocketActivity.this, R.string.error_20, false);
                     break;
@@ -1014,6 +1050,7 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
         final String balance = tvBalance.getText().toString();
         final String format = "%s %s\n";
 
+        sendText(purchase);
         GuiUtils.sendTextContentToSecondaryScreen(sDSKernel,
                 currency + "\n" +
                 String.format(format, getString(R.string.text_total), purchase) +
