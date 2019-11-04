@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="ExtraTranslation">
 
     <!-- Main Strings -->
     <string name="text.register">REGISTRAR</string>
@@ -10,7 +11,7 @@
 
     <!-- Registration Messages -->
     <string name="text.register.hint">Ingrese el código de activación. Debe estar registrado como un merchant antes de la activación.</string>
-    <string name="text.register.contact">Contacto: support@yodo.co</string>
+    <string name="text.register.contact">Contacto: support@ayodo.org</string>
     <string name="text.pos.code.hint">Código de Activación</string>
     <string name="text.already.registered">Ya registrado? Reinicie</string>
 

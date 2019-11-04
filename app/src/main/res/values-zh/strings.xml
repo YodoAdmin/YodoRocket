@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="ExtraTranslation">
 
     <!-- Main Strings -->
     <string name="text.register">注册</string>
@@ -10,7 +11,7 @@
 
     <!-- Registration Messages -->
     <string name="text.register.hint">请输入您的激活码，商家用户必须先激活账户才可注册.</string>
-    <string name="text.register.contact">联系: support@yodo.co</string>
+    <string name="text.register.contact">联系: support@ayodo.org</string>
     <string name="text.pos.code.hint">激活码</string>
     <string name="text.already.registered">已注册，请重新登陆</string>
 

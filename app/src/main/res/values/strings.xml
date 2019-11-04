@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="ExtraTranslation">
 
     <!-- Main Strings -->
     <string name="app_name" translatable="false">YodoRocket</string>
@@ -12,7 +13,7 @@
 
     <!-- Registration Messages -->
     <string name="text.register.hint">Enter your activation code. You must be registered as a merchant prior to activation.</string>
-    <string name="text.register.contact">Contact: support@yodo.co</string>
+    <string name="text.register.contact">Contact: support@ayodo.org</string>
     <string name="text.pos.code.hint">Activation Code</string>
     <string name="text.already.registered">Already registered? Restart</string>
 
@@ -41,7 +42,7 @@
 
     <!-- About Messages -->
     <string name="text.send.mail">Send Email</string>
-    <string name="text.about.email" translatable="false">support@yodo.co</string>
+    <string name="text.about.email" translatable="false">support@ayodo.org</string>
     <string name="text.about.message">Please use the email below to contact us. We\'ll do everything we can to respond to you as quickly as possible. Please be assured, we will never sell or distribute the personal information you provide to us.</string>
 
     <!-- Exchange Response -->

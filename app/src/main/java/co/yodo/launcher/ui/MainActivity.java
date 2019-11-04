@@ -5,8 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 
 import javax.inject.Inject;
 
@@ -102,6 +103,7 @@ public class MainActivity extends BaseActivity {
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
@@ -123,8 +125,7 @@ public class MainActivity extends BaseActivity {
                     finish();
                     break;
             }
-        }
-        else if (resultCode == RESULT_CANCELED) {
+        } else if (resultCode == RESULT_CANCELED) {
             finish();
             switch (requestCode) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
@@ -135,8 +136,7 @@ public class MainActivity extends BaseActivity {
                     startActivity(intent);
                     break;
             }
-        }
-        else if (resultCode == RESULT_FIRST_USER) {
+        } else if (resultCode == RESULT_FIRST_USER) {
             Intent intent = new Intent(context, RocketActivity.class);
             if (bundle != null) intent.putExtras(bundle);
             startActivityForResult(intent, ACTIVITY_LAUNCHER_REQUEST);

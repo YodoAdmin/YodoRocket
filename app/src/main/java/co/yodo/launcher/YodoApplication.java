@@ -1,8 +1,9 @@
 package co.yodo.launcher;
 
 import android.app.Application;
-import android.support.annotation.NonNull;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.crashlytics.android.Crashlytics;
 
@@ -51,7 +52,7 @@ public class YodoApplication extends Application {
         // Starts the Yodo API for requests
         YodoApi.init(this)
                 .setLog(BuildConfig.DEBUG)
-                .server(YodoApi.DEMO_IP, "E")
+                .server(YodoApi.PROD_IP, "P")
                 .build();
     }
 

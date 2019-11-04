@@ -12,9 +12,10 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.widget.SlidingPaneLayout;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.slidingpanelayout.widget.SlidingPaneLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -50,6 +51,7 @@ import co.yodo.launcher.business.manager.PromotionManager;
 import co.yodo.launcher.business.service.LocationService;
 import co.yodo.launcher.helper.AlertDialogHelper;
 import co.yodo.launcher.helper.ProgressDialogHelper;
+import co.yodo.launcher.model.ReceiptDto;
 import co.yodo.launcher.ui.adapter.ScannerAdapter;
 import co.yodo.launcher.ui.contract.BaseActivity;
 import co.yodo.launcher.ui.dialog.PopupImpl;
@@ -963,9 +965,18 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
                     final String ex_account = response.getParams().getAccount();
                     final String ex_purchase = response.getParams().getPurchase();
                     final String ex_delta = response.getParams().getAmountDelta();
+                    final String ex_static_balance = response.getParams().getStaticBalance();
+                    final String ex_static_currency = response.getParams().getStaticCurrency();
 
-                    final String message = getString(R.string.exchange_auth) + " " + ex_authbumber + "\n" +
+                    String staticBalance = null;
+                    String message = getString(R.string.exchange_auth) + " " + ex_authbumber + "\n" +
                             getString(R.string.exchange_message) + " " + ex_message;
+
+                    if (ex_static_balance != null && ex_static_currency != null) {
+                        staticBalance = getString(R.string.exchange_balance) + " " +
+                                new BigDecimal(ex_static_balance).setScale(2, RoundingMode.DOWN).toString() + " " + ex_static_currency;
+                        message += "\n" + staticBalance;
+                    }
 
                     DialogInterface.OnClickListener onClick;
 
@@ -1002,10 +1013,16 @@ public class RocketActivity extends BaseActivity implements PromotionManager.IPr
                         final String cashBack = tvCashback.getText().toString();
                         final String currency = PrefUtils.getTenderCurrency(context);
 
+                        final ReceiptDto receipt = new ReceiptDto();
+                        receipt.response = response;
+                        receipt.total = total;
+                        receipt.cashTender = cashTender;
+                        receipt.cashBack = cashBack;
+                        receipt.currency = currency;
+                        receipt.staticBalance = staticBalance;
+
                         // Print data
-                        BluetoothUtil.printData(
-                                ESCUtil.parseData(response, total, cashTender, cashBack, currency)
-                        );
+                        BluetoothUtil.printData(ESCUtil.parseData(receipt));
                     }
 
                     if (promptResponse) {
