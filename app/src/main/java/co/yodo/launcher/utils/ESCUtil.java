@@ -2,6 +2,7 @@ package co.yodo.launcher.utils;
 
 import java.io.UnsupportedEncodingException;
 
+import co.yodo.launcher.model.ReceiptDto;
 import co.yodo.restapi.network.model.ServerResponse;
 
 /**
@@ -273,33 +274,36 @@ public class ESCUtil {
         return null;
     }*/
 
-    public static byte[] parseData( ServerResponse response, String total, String cashTender, String cashBack, String currency ) {
+    public static byte[] parseData(ReceiptDto receipt) {
         try {
             byte[] next2Line = ESCUtil.nextLine( 2 );
-            byte[] title = response.getParams().getMerchant().getBytes( "gb2312" );
+            byte[] title = receipt.response.getParams().getMerchant().getBytes( "gb2312" );
 
             next2Line = ESCUtil.nextLine( 2 );
 
-            byte[] priceCashTenderInfo = ( " Cash Tender: " + cashTender + " " + currency ).getBytes( "gb2312" );
+            byte[] priceCashTenderInfo = ( " Cash Tender: " + receipt.cashTender + " " + receipt.currency ).getBytes( "gb2312" );
             byte[] nextLine = ESCUtil.nextLine( 1 );
-            byte[] priceCashBackInfo = ( " Cash Back： " + cashBack ).getBytes( "gb2312" );
+            byte[] priceCashBackInfo = ( " Cash Back： " + receipt.cashBack ).getBytes( "gb2312" );
             nextLine = ESCUtil.nextLine( 1 );
 
-            byte[] boldOn =  boldOn = ESCUtil.boldOn();
+            byte[] boldOn = boldOn = ESCUtil.boldOn();
             byte[] fontSize1Big = ESCUtil.fontSizeSetBig( 2 );
-            byte[] FocusOrderTotal = ( "Paid: " + total ).getBytes( "gb2312" );
+            byte[] FocusOrderTotal = ( "Paid: " + receipt.total ).getBytes( "gb2312" );
             byte[] boldOff = ESCUtil.boldOff();
             byte[] fontSize1Small = ESCUtil.fontSizeSetSmall( 2 );
+
+            String balance = receipt.staticBalance != null ? receipt.staticBalance : " -- ";
+            byte[] FocusStaticBalance = balance.getBytes("gb2312");
 
             boldOn = ESCUtil.boldOn();
             byte[] fontSize2Big = ESCUtil.fontSizeSetBig( 3 );
             byte[] center = ESCUtil.alignCenter();
-            byte[] Focus = ( "AU# " + response.getAuthNumber() ).getBytes( "gb2312" );
+            byte[] Focus = ( "AU# " + receipt.response.getAuthNumber() ).getBytes( "gb2312" );
             boldOff = ESCUtil.boldOff();
             byte[] fontSize2Small = ESCUtil.fontSizeSetSmall( 3 );
 
             nextLine = ESCUtil.nextLine( 1 );
-            byte[] orderTime = FormatUtils.UTCtoCurrent( response.getParams().getCreated() ).getBytes( "gb2312" );
+            byte[] orderTime = FormatUtils.UTCtoCurrent( receipt.response.getParams().getCreated() ).getBytes( "gb2312" );
             byte[] next4Line = ESCUtil.nextLine( 4 );
 
             byte[] breakPartial = ESCUtil.feedPaperCutPartial();
@@ -309,6 +313,7 @@ public class ESCUtil {
                     center, fontSize2Small, priceCashTenderInfo, nextLine,
                     center, fontSize2Small, priceCashBackInfo, next2Line,
                     center, boldOn, fontSize1Big, FocusOrderTotal, boldOff, next2Line,
+                    center, boldOn, fontSize1Big, FocusStaticBalance, boldOff, next2Line,
 
                     center, boldOn, fontSize2Small, orderTime, boldOff, nextLine,
                     center, boldOn, fontSize1Small, Focus, boldOff,

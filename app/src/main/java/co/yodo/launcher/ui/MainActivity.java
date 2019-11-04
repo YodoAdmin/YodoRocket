@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.view.View;
+
+import androidx.annotation.NonNull;
 
 import javax.inject.Inject;
 
@@ -21,11 +23,21 @@ import co.yodo.restapi.network.contract.RequestCallback;
 import co.yodo.restapi.network.model.ServerResponse;
 import co.yodo.restapi.network.requests.AuthMerchDeviceRequest;
 import co.yodo.restapi.network.requests.QueryCurrencyRequest;
+import sunmi.ds.DSKernel;
+import sunmi.ds.callback.IConnectionCallback;
+import sunmi.ds.callback.IReceiveCallback;
+import sunmi.ds.data.DSData;
+import sunmi.ds.data.DSFile;
+import sunmi.ds.data.DSFiles;
 
 public class MainActivity extends BaseActivity {
     /** The application context */
     @Inject
     Context context;
+
+    /** Sunmi */
+    @Inject
+    DSKernel sDSKernel;
 
     /** Code for the error dialog */
     private static final int REQUEST_CODE_RECOVER_PLAY_SERVICES = 0;
@@ -91,6 +103,7 @@ public class MainActivity extends BaseActivity {
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
@@ -112,8 +125,7 @@ public class MainActivity extends BaseActivity {
                     finish();
                     break;
             }
-        }
-        else if (resultCode == RESULT_CANCELED) {
+        } else if (resultCode == RESULT_CANCELED) {
             finish();
             switch (requestCode) {
                 case REQUEST_CODE_RECOVER_PLAY_SERVICES:
@@ -124,8 +136,7 @@ public class MainActivity extends BaseActivity {
                     startActivity(intent);
                     break;
             }
-        }
-        else if (resultCode == RESULT_FIRST_USER) {
+        } else if (resultCode == RESULT_FIRST_USER) {
             Intent intent = new Intent(context, RocketActivity.class);
             if (bundle != null) intent.putExtras(bundle);
             startActivityForResult(intent, ACTIVITY_LAUNCHER_REQUEST);
@@ -150,7 +161,6 @@ public class MainActivity extends BaseActivity {
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
-
 
     /**
      * Request the necessary permissions for this activity

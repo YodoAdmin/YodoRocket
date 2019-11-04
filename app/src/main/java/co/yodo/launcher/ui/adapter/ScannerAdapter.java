@@ -2,13 +2,14 @@ package co.yodo.launcher.ui.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import co.yodo.launcher.ui.scanner.factory.QRScannerFactory;
 import co.yodo.launcher.utils.PrefUtils;

@@ -2,7 +2,7 @@ package co.yodo.launcher.helper;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListAdapter;
@@ -13,7 +13,7 @@ import co.yodo.launcher.R;
  * Created by luis on 16/12/14.
  * Helper to create alert dialogs
  */
-public class AlertDialogHelper {
+public class  AlertDialogHelper {
     /**
      * Shows a dialog for alert messages
      * @param c The context of the application

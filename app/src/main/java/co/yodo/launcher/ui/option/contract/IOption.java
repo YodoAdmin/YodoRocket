@@ -1,6 +1,6 @@
 package co.yodo.launcher.ui.option.contract;
 
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 
 import co.yodo.launcher.ui.contract.BaseActivity;
 

@@ -3,11 +3,9 @@ package co.yodo.launcher;
 import android.app.Application;
 import android.util.Log;
 
-import org.acra.ACRA;
-import org.acra.ReportField;
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
-import org.acra.sender.HttpSender;
+import androidx.annotation.NonNull;
+
+import com.crashlytics.android.Crashlytics;
 
 import co.yodo.launcher.business.injection.component.ApplicationComponent;
 import co.yodo.launcher.business.injection.component.DaggerApplicationComponent;
@@ -15,17 +13,9 @@ import co.yodo.launcher.business.injection.component.DaggerInjectionComponent;
 import co.yodo.launcher.business.injection.component.InjectionComponent;
 import co.yodo.launcher.business.injection.module.ApplicationModule;
 import co.yodo.restapi.YodoApi;
+import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-@ReportsCrashes(formUri = "http://198.101.209.120/MAB-LAB/report/report.php",
-                customReportContent = { ReportField.APP_VERSION_CODE, ReportField.APP_VERSION_NAME, ReportField.ANDROID_VERSION, ReportField.PHONE_MODEL, ReportField.CUSTOM_DATA, ReportField.STACK_TRACE, ReportField.LOGCAT },
-                formUriBasicAuthLogin = "yodo",
-                formUriBasicAuthPassword = "letryodo",
-                httpMethod = HttpSender.Method.POST,
-                reportType = HttpSender.Type.JSON,
-                mode = ReportingInteractionMode.TOAST,
-                resToastText = R.string.text_crash_toast
-)
 public class YodoApplication extends Application {
     /** Component that build the dependencies */
     private static InjectionComponent component;
@@ -33,6 +23,8 @@ public class YodoApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Fabric.with(this, new Crashlytics());
 
         // Injection
         ApplicationComponent appComponent = DaggerApplicationComponent.builder()
@@ -48,21 +40,19 @@ public class YodoApplication extends Application {
             // Develop -- All logs on
             Timber.plant(new Timber.DebugTree() {
                 @Override
-                protected String createStackElementTag(StackTraceElement element) {
+                protected String createStackElementTag(@NonNull StackTraceElement element) {
                     return super.createStackElementTag(element) + ':' + element.getLineNumber();
                 }
             });
         } else {
             // Release -- Remove unimportant logs
             Timber.plant(new CrashReportingTree());
-
-            // Use acra
-            ACRA.init(this);
         }
 
+        // Starts the Yodo API for requests
         YodoApi.init(this)
                 .setLog(BuildConfig.DEBUG)
-                .server(YodoApi.DEMO_IP, "E")
+                .server(YodoApi.PROD_IP, "P")
                 .build();
     }
 
@@ -75,7 +65,7 @@ public class YodoApplication extends Application {
         /** The max size of a line */
         private static final int MAX_LOG_LENGTH = 4000;
         @Override
-        protected void log(int priority, String tag, String message, Throwable t) {
+        protected void log(int priority, String tag, @NonNull String message, Throwable t) {
             if (priority == Log.VERBOSE || priority == Log.DEBUG || priority == Log.INFO) {
                 return;
             }

@@ -7,7 +7,7 @@ import android.view.WindowManager;
 
 public class DisplayUtils {
     public static Point getScreenResolution(Context context) {
-        WindowManager wm = (WindowManager) context.getSystemService( Context.WINDOW_SERVICE );
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point screenResolution = new Point();
         display.getSize( screenResolution );

@@ -41,14 +41,14 @@
             android:textStyle="bold"
             android:text="@string/text.register.contact" />
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilActivationCode"
             style="@style/RegistrationLayout"
             android:layout_marginTop="10dp"
             app:errorEnabled="true"
             app:passwordToggleEnabled="true">
 
-            <android.support.design.widget.TextInputEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/tietActivationCode"
                 style="@style/RegistrationLayout"
                 android:maxLines="1"
@@ -56,9 +56,10 @@
                 android:hint="@string/text.pos.code.hint"
                 android:maxLength="20" />
 
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <android.support.v7.widget.AppCompatButton
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/acbRegistration"
             style="@style/RegistrationLayout"
             android:onClick="register"
             android:textStyle="bold"
@@ -73,6 +74,13 @@
             android:onClick="restart"
             android:textStyle="bold"
             android:text="@string/text.already.registered"/>
+
+        <TextView
+            android:id="@+id/tvVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="center"/>
 
     </LinearLayout>
 

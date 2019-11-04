@@ -1,7 +1,7 @@
 package co.yodo.launcher.ui.contract;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import co.yodo.launcher.utils.GuiUtils;
 
